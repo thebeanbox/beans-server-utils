@@ -1,4 +1,4 @@
-include("bau/shared/commands.lua")
-AddCSLuaFile("bau/shared/commands.lua")
+include("bsu/shared/commands.lua")
+AddCSLuaFile("bsu/shared/commands.lua")
 
-AddCSLuaFile("autorun/bau_init.lua") -- init for client side
+AddCSLuaFile("autorun/bsu_init.lua") -- init for client side
