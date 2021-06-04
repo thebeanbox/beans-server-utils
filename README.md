@@ -1,2 +1,2 @@
-# gmod-server-addons
+# beans-server-addons
 [Beans Server Trello](https://trello.com/b/eCPszybD/beans-gmod)
