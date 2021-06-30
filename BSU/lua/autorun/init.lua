@@ -1,6 +1,7 @@
-SV_DIR = "bsu/server/"
-SH_DIR = "bsu/shared/"
-CL_DIR = "bsu/client/"
+DIR = "bsu/"
+SV_DIR = DIR .. "server/"
+SH_DIR = DIR .. "shared/"
+CL_DIR = DIR .. "client/"
 
 -- SETUP IMPORTANT FILES
 MsgN("[BSU] INITIALIZING...")
@@ -10,6 +11,12 @@ include(SV_DIR .. "teams.lua") -- load team data from db
 include(SV_DIR .. "players.lua") -- assign player data from db to players and manage rank perms
 
 MsgN("[BSU] FINISHED MAIN SETUP")
+
+-- SETUP CHATBOX
+
+for _, file in ipairs(file.Find(DIR .. "chatbox/*.lua", "LUA")) do
+	AddCSLuaFile(DIR .. "chatbox/" .. file)
+end
 
 -- LOAD OTHER FILES
 MsgN("[BSU] LOADING FILES:")
@@ -39,4 +46,4 @@ end
 MsgN("[BSU] FINISHED LOADING " .. (#shFiles + #clFiles) .. " FILES")
 
 -- INIT CLIENT SIDE
-AddCSLuaFile("bsu/cl_init.lua")
+AddCSLuaFile("autorun/cl_init.lua")

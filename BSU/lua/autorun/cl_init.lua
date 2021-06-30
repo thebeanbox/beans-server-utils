@@ -1,7 +1,10 @@
-SH_DIR = "bsu/shared/"
-CL_DIR = "bsu/client/"
+DIR = "bsu/"
+SH_DIR = DIR .. "shared/"
+CL_DIR = DIR .. "client/"
 
--- LOADING FILES
+include(SH_DIR .. "chatbox.lua")
+
+--[[-- LOADING FILES
 MsgN("[BSU] LOADING FILES:")
 
 local shFiles = file.Find(SH_DIR .. "*.lua", "LUA") -- shared files
@@ -22,7 +25,7 @@ for _, file in ipairs(clFiles) do -- including client files
 	
 	include(CL_DIR .. file)
 	
-	MsgN(" " .. fileSum .. ". client/" .. file)
+	MsgN(" " .. fileNum .. ". client/" .. file)
 end
 
-MsgN("[BSU] FINISHED LOADING " .. (#shFiles + #clFiles) .. " FILES")
+MsgN("[BSU] FINISHED LOADING " .. (#shFiles + #clFiles) .. " FILES")]]
