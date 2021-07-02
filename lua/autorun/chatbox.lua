@@ -49,7 +49,7 @@ bsuChat.chatTypes = {
 	server     = { icon = "information" }, -- misc server msgs
 	connect    = { icon = "connect" }, -- player joined server
 	disconnect = { icon = "disconnect" }, -- player left server
-	namechange = { icon = "user_edit"} -- player changed name
+	namechange = { icon = "user_edit" } -- player changed name
 }
 
 -- include other files
@@ -67,6 +67,11 @@ concommand.Add("bsu_chatbox_clear", function() -- clears all chat messages
 		$("#chatbox > *").empty();
 	]])
 end)
+
+-- create the chatbox
+if not IsValid(bsuChat.frame) then
+	bsuChat.create()
+end
 
 hook.Add("PlayerBindPress", "BSU_OpenChatbox", function(ply, bind, pressed) -- opens the chatbox
 	if bind == "messagemode" || bind == "messagemode2" then
@@ -90,11 +95,5 @@ end)
 hook.Add("HUDShouldDraw", "BSU_HideDefaultChatbox", function(name) -- hide the default chatbox
 	if name == "CHudChat" then
 		return false
-	end
-end)
-
-hook.Add("Initialize", "BSU_InitiateChatbox", function() -- create the chatbox panel clientside
-	if not IsValid(bsuChat.frame) then
-		bsuChat.create()
 	end
 end)
