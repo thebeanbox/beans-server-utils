@@ -10,7 +10,7 @@ if SERVER then
 	} -- in the future this would probably be integrated into a gui of sorts, updated dynamically so if an admin sees that the map doesnt have the corners set, we can add them on the fly.
 	util.AddNetworkString("BSU_SkyboxNetMessage") -- get the networking for the hud ready to go
 
-    if not pos[game.GetMap()] then print("BSU Skybox Protection - this map does not have vectors set for the skybox! this will not operate until vectors are set.") end
+    if !pos[game.GetMap()] then print("BSU Skybox Protection - this map does not have vectors set for the skybox! this will not operate until vectors are set.") end
 
 	hook.Add("Think", "BSU_SkyboxCheck", function()
 		if not pos[game.GetMap()] then return end
@@ -32,3 +32,4 @@ if SERVER then
 	        end
 end
 end)
+end
