@@ -19,6 +19,7 @@ else
     local lPly = LocalPlayer()
     local inSkybox
     local inSkyStr = "loading..."
+
     local randomNumber = math.random(0, 9999)
     local statHud = vgui.Create("DFrame")
         statHud:SetPos(hudX, hudY)
@@ -32,10 +33,17 @@ else
 
     //-- Functions
     function drawHud(self, w, h)
-        local plyHealth = math.Clamp(lPly:Health(), 0, 999)
-        local plyArmor = math.Clamp(lPly:Armor(), 0, 999)
+        local barWidth = w-10
+        local plyHealth = math.Clamp((lPly:Health()/100)*barWidth, 0, barWidth)
+        local plyArmor = math.Clamp((lPly:Armor()/100)*barWidth, 0, barWidth)
 
-        draw.RoundedBox(0, 0, 0, w, h, Color(255, 0, 255, 100))
+        -- Draw Background
+        draw.RoundedBox(5, 0, 0, w, h, Color(0, 0, 0, 100))
+        -- Draw Health Bar
+        draw.RoundedBox(3, 5, 5, plyHealth, 20, Color(255, 0, 0, 255))
+        draw.RoundedBox(3, 5, 5, barWidth, 20, Color(0, 255, 0, 255))
+        -- Draw Armor Bar
+        draw.RoundedBox(5, 5, 20, plyArmor, 5, Color(0, 200, 255, 255))
     end
 
     function hideHud(name)
