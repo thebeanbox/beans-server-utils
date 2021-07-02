@@ -5,7 +5,7 @@ if SERVER then
 	print("BSU Skybox Protection - initalizing!")
 
 	pos = {--Corner1, Corner2
-		gm_flatgrass = { Vector(-7735,-7796,-16128), Vector(8535,8476,-13017) },
+		gm_flatgrass = { Vector(-7735,-7796,-16128), Vector(8535,8476,-13317) },
 		gm_bigcity_night = { Vector(3060, 3060, 4200), Vector(-3060, -3060, 5800) }
 	} -- in the future this would probably be integrated into a gui of sorts, updated dynamically so if an admin sees that the map doesnt have the corners set, we can add them on the fly.
 	util.AddNetworkString("BSU_SkyboxNetMessage") -- get the networking for the hud ready to go
@@ -27,6 +27,7 @@ if SERVER then
 		for i=1, #fents do
 	        local current = fents[i]
 			if !current:IsPlayer() and !current:GetClass()=="predicted_viewmodel" then
+                print("a!")
 				current:Remove()
 				current:GetOwner():PrintMessage(HUD_PRINTTALK, "you aren't permitted to build here yet!")
             end
