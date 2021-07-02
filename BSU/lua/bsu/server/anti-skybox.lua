@@ -13,6 +13,7 @@ if SERVER then
 	function skyboxRemove(ply, ent)
 			ent:Remove()
 			ply:PrintMessage(HUD_PRINTTALK, "you aren't permitted to build here yet!")
+			print(ent:GetClass())
 		end
 	end
 
@@ -23,7 +24,7 @@ if SERVER then
 		local lents = ents.FindInBox(c1, c2)
 		for i=1, #lents do
 	        local current = lents[i]
-			if(!current:IsPlayer() && util.IsValidPhysicsObject(current, current:GetPhysicsObjectCount()) --[[ && current:GetOwner() (check if the owner is allowed to put stuff here ]] ) then -- im going to fucking commit murder before this works right
+			if !current:IsPlayer() && !current:GetClass()=="predicted_viewmodel" then
 				skyboxRemove(current:GetOwner(), current)
 	        end
 end
