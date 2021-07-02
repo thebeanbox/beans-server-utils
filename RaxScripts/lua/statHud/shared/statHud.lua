@@ -42,7 +42,7 @@ else
         draw.DrawText("Health: "..plyHealth, "fontMain", hudX+5, hudY+5, Color(255,255,255,255), 0)
         draw.DrawText("Armor: "..plyArmor, "fontMain", hudX+5, hudY+20, Color(255,255,255,255), 0)
         
-        if inSkybox then inSkyStr = "YOU ARE IN SKYBOX!!!" else inSKyStr = "YOU ARE NOT IN THE SKYBOX!!!!!!" end
+        if inSkybox then inSkyStr = "YOU ARE IN SKYBOX!!!" else inSkyStr = "YOU ARE NOT IN THE SKYBOX!!!!!!" end
         draw.DrawText(inSkyStr, "fontMain", hudX+5, hudY+35, Color(255,0,0,255), 0)
     end
 
