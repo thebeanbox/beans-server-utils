@@ -9,6 +9,7 @@ MsgN("[BSU] INITIALIZING...")
 include(SV_DIR .. "database.lua") -- setup the db
 include(SV_DIR .. "teams.lua") -- load team data from db
 include(SV_DIR .. "players.lua") -- assign player data from db to players and manage rank perms
+include(SV_DIR .. "anti_skybox.lua") -- skybox prop spawn protection
 
 MsgN("[BSU] FINISHED MAIN SETUP")
 
