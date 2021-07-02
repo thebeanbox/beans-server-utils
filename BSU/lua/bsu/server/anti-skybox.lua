@@ -26,7 +26,7 @@ if SERVER then
 
 		for i=1, #fents do
 	        local current = fents[i]
-			if !current:IsPlayer() and !current:GetClass()=="predicted_viewmodel" then
+			if !current:IsPlayer() and !current:GetClass()=="predicted_viewmodel" then -- < not detecting anything even when i spawn props??
                 print("a!")
 				current:Remove()
 				current:GetOwner():PrintMessage(HUD_PRINTTALK, "you aren't permitted to build here yet!")
