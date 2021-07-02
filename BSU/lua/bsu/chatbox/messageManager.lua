@@ -1,5 +1,5 @@
--- messageHandler.lua
--- Handles formattting messages and player avatars
+-- messageManager.lua by Bonyoze
+-- Manager formatting messages and player avatars
 
 bsuChat.imageDataCache = {}
 

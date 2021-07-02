@@ -1,5 +1,5 @@
--- chatHandler.lua
--- Handles chat sending and messages appearing on the chatbox
+-- chatManager.lua by Bonyoze
+-- Manages chat sending and messages appearing on the chatbox
 
 function bsuChat.send(data) -- adds a message to the chatbox
 	if not IsValid(bsuChat.frame) then
@@ -21,7 +21,7 @@ function bsuChat.send(data) -- adds a message to the chatbox
 		(() => {
 			const messageVisible = ]] .. (visible and "true" or "false") .. [[,
 			chatType = ]] .. (data.chatType or "null") .. [[,
-			chatIcon = ]] .. ((data.chatType and chatTypes[data.chatType]) and ('"' .. chatTypes[data.chatType].icon .. '"') or "null") .. [[,
+			chatIcon = ]] .. ((data.chatType and bsuChat.chatTypes[data.chatType]) and ('"' .. bsuChat.chatTypes[data.chatType].icon .. '"') or "null") .. [[,
 			timestamp = ]] .. ((data.showTimestamp == nil || data.showTimestamp) and "true" or "false") .. [[,
 			avatar = ]] .. (data.avatar and ('"' .. string.JavascriptSafe(data.avatar) .. '"') or "null") .. [[,
 			name = ]] .. (data.name and ('"' .. string.JavascriptSafe(data.name) .. '"') or "null") .. [[,
@@ -88,7 +88,7 @@ function bsuChat.send(data) -- adds a message to the chatbox
 				.addClass("messageText")
 				.appendTo(messageContainerChild);
 
-			window.scrollTo(0, document.body.scrollHeight);
+			scrollToBottom(true);
 		})();
 	]])
 	
@@ -126,7 +126,7 @@ function bsuChat.send(data) -- adds a message to the chatbox
 								"text-decoration": "]] .. (strikethrough and "line-through" or "none") .. [["
 							}
 						)
-						.appendTo($(".messageContainer").last().find(".messageText")[0]);
+						.appendTo($("#chatbox > .messageContainer").last().find(".messageText")[0]);
 				]]);
 			elseif type == "hyperlink" then
 				bsuChat.html:Call([[
@@ -150,7 +150,7 @@ function bsuChat.send(data) -- adds a message to the chatbox
 								}
 							);
 						})
-						.appendTo($(".messageContainer").last().find("div").find(".messageText")[0]);
+						.appendTo($("#chatbox > .messageContainer").last().find("div").find(".messageText")[0]);
 				]]);
 			elseif type == "image" then
 				bsuChat.html:Call([[
@@ -179,7 +179,7 @@ function bsuChat.send(data) -- adds a message to the chatbox
 						}).appendTo(
 							$("<div>")
 								.addClass("messageImage")
-								.appendTo($(".messageContainer").last().find("div")[0])
+								.appendTo($("#chatbox > .messageContainer").last().find("div")[0])
 						);
 				]]);
 			elseif type == "color" then
@@ -195,7 +195,7 @@ function bsuChat.send(data) -- adds a message to the chatbox
 	
 		if not hasText then -- remove right margin if there is no text
 			bsuChat.html:Call([[
-				$(".messageHeader").last().css("margin-right", "-6px");
+				$(".messageContainer").last().find(".messageHeader").css("margin-right", "-6px");
 			]])
 		end
 	end
@@ -214,7 +214,7 @@ function chat.AddText(...) -- other messages
 	)
 end
 
-hook.Add("OnPlayerChat", "", function(player, text, teamChat, isDead) -- messages from players
+hook.Add("OnPlayerChat", "BSU_SendPlayerMsgs", function(player, text, teamChat, isDead) -- messages from players
 	if not teamChat or (teamChat and LocalPlayer():Team() == player:Team()) then
 		local name, nameColor = (player and player:IsValid()) and player:Nick() or "Console", (player and player:IsValid()) and team.GetColor(player:Team()) or Color(151, 211, 255)
 		local messageContent = formatPlyMsg(text)
@@ -243,7 +243,7 @@ hook.Add("OnPlayerChat", "", function(player, text, teamChat, isDead) -- message
 	return true
 end)
 
-hook.Add("ChatText", "", function(index, name, text, chatType) -- messages from the server
+hook.Add("ChatText", "BSU_SendServerMsgs", function(index, name, text, chatType) -- messages from the server
 	if chatType != "chat" then
 		local col = Color(151, 211, 255) -- default color
 		
