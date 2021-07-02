@@ -12,12 +12,6 @@ if SERVER then
 
     if not pos[game.GetMap()] then print("BSU Skybox Protection - this map does not have vectors set for the skybox! this will not operate until vectors are set.") end
 
-	function skyboxRemove(ply, ent)
-			ent:Remove()
-			ply:PrintMessage(HUD_PRINTTALK, "you aren't permitted to build here yet!")
-		end
-	end
-
 	hook.Add("Think", "BSU_SkyboxCheck", function()
 		if not pos[game.GetMap()] then return end
 		local c1 = pos[game.GetMap()][1]
@@ -33,7 +27,8 @@ if SERVER then
 		for i=1, #lents do
 	        local current = lents[i]
 			if !current:IsPlayer() && !current:GetClass()=="predicted_viewmodel" then
-				skyboxRemove(current:GetOwner(), current)
+				ent:Remove()
+				ply:PrintMessage(HUD_PRINTTALK, "you aren't permitted to build here yet!")
 	        end
 end
 end)
