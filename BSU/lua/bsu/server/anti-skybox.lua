@@ -1,0 +1,31 @@
+-- initally created by wisp22 (hori)
+-- this script's purpose is to keep guests from spawning props in the skybox, just because its really fucking annoying and chances are a minge wont last long enough to get frequent anyway, and building extra stuff in the skybox isnt that important to people anyway.
+
+if SERVER then
+	print("BSU Skybox Protection - initalizing!")
+
+	pos = {--Corner1, Corner2
+		gm_flatgrass = { Vector(-7735,-7796,-16128), Vector(8535,8476,-13017) }
+	} -- in the future this would probably be integrated into a gui of sorts, updated dynamically so if an admin sees that the map doesnt have the corners set, we can add them on the fly.
+
+    if not pos[game.GetMap()] then print("BSU Skybox Protection - this map does not have vectors set for the skybox! this will not operate until vectors are set.") end
+
+	function skyboxRemove(ply, ent)
+			ent:Remove()
+			ply:PrintMessage(HUD_PRINTTALK, "you aren't permitted to build here yet!")
+			print(ent:GetClass())
+		end
+	end
+
+	hook.Add("Think", "BSU_SkyboxCheck", function()
+		if not pos[game.GetMap()] then return end
+		local c1 = pos[game.GetMap()][1]
+		local c2 = pos[game.GetMap()][2]
+		local lents = ents.FindInBox(c1, c2)
+		for i=1, #lents do
+	        local current = lents[i]
+			if !current:IsPlayer() && !current:GetClass()=="predicted_viewmodel" then
+				skyboxRemove(current:GetOwner(), current)
+	        end
+end
+end)
