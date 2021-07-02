@@ -16,7 +16,7 @@ if SERVER then
 		if not pos[game.GetMap()] then return end
 		local c1 = pos[game.GetMap()][1]
 		local c2 = pos[game.GetMap()][2]
-		local lents = ents.FindInBox(c1, c2)
+		local fents = ents.FindInBox(c1, c2)
 
 		for i, v in ipairs( player.GetAll() ) do
 			net.Start("BSU_SkyboxNetMessage")
@@ -24,9 +24,9 @@ if SERVER then
 			net.Send(v)
 		end
 
-		for i=1, #lents do
-	        local current = lents[i]
-			if !current:IsPlayer() && !current:GetClass()=="predicted_viewmodel" then
+		for i=1, #fents do
+	        local current = fents[i]
+			if !current:IsPlayer() and !current:GetClass()=="predicted_viewmodel" then
 				ent:Remove()
 				ply:PrintMessage(HUD_PRINTTALK, "you aren't permitted to build here yet!")
 	        end
