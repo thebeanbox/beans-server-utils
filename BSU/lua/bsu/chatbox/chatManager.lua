@@ -15,12 +15,12 @@ function bsuChat.send(data) -- adds a message to the chatbox
 	if data.chatType and bsuChat.chatButtons[data.chatType] then
 		visible = bsuChat.chatButtons[data.chatType]:GetToggle()
 	end
-
+	
 	bsuChat.html:Call(
 	[[
 		(() => {
 			const messageVisible = ]] .. (visible and "true" or "false") .. [[,
-			chatType = ]] .. (data.chatType or "null") .. [[,
+			chatType = ]] .. (data.chatType and ('"' .. data.chatType .. '"') or "null") .. [[,
 			chatIcon = ]] .. ((data.chatType and bsuChat.chatTypes[data.chatType]) and ('"' .. bsuChat.chatTypes[data.chatType].icon .. '"') or "null") .. [[,
 			timestamp = ]] .. ((data.showTimestamp == nil || data.showTimestamp) and "true" or "false") .. [[,
 			avatar = ]] .. (data.avatar and ('"' .. string.JavascriptSafe(data.avatar) .. '"') or "null") .. [[,
@@ -214,7 +214,7 @@ function chat.AddText(...) -- other messages
 	)
 end
 
-hook.Add("OnPlayerChat", "BSU_SendPlayerMsgs", function(player, text, teamChat, isDead) -- messages from players
+hook.Add("OnPlayerChat", "BSU_SendPlayerMsg", function(player, text, teamChat, isDead) -- messages from players
 	if not teamChat or (teamChat and LocalPlayer():Team() == player:Team()) then
 		local name, nameColor = (player and player:IsValid()) and player:Nick() or "Console", (player and player:IsValid()) and team.GetColor(player:Team()) or Color(151, 211, 255)
 		local messageContent = formatPlyMsg(text)
@@ -229,7 +229,7 @@ hook.Add("OnPlayerChat", "BSU_SendPlayerMsgs", function(player, text, teamChat, 
 
 		bsuChat.send(
 			{
-				chatType = not teamChat and 1 or 2, -- global or team
+				chatType = not teamChat and "global" or "team",
 				messageContent = messageContent,
 				sender = player,
 				name = name,
@@ -243,21 +243,13 @@ hook.Add("OnPlayerChat", "BSU_SendPlayerMsgs", function(player, text, teamChat, 
 	return true
 end)
 
-hook.Add("ChatText", "BSU_SendServerMsgs", function(index, name, text, chatType) -- messages from the server
-	if chatType != "chat" then
-		local col = Color(151, 211, 255) -- default color
-		
-		if chatType == "joinleave" || chatType == "servermsg" then -- game msgs
-			col = Color(0, 160, 255)
-		elseif chatType == "namechange" || chatType == "teamchange" then -- player info msgs
-			col = Color(255, 123, 0)
-		end
-		
-		
+hook.Add("ChatText", "BSU_SendServerMsg", function(index, name, text, chatType) -- messages from the server
+	if chatType == "servermsg" then
+
 		bsuChat.send(
 			{
-				chatType = 3, -- server
-				messageContent = formatMsg(col, text),
+				chatType = "server", -- server
+				messageContent = formatMsg(Color(0, 160, 255), text),
 				showTimestamp = chatType != "none"
 			}
 		)
@@ -266,4 +258,94 @@ hook.Add("ChatText", "BSU_SendServerMsgs", function(index, name, text, chatType)
 	end
 
 	return true
+end)
+
+net.Receive("BSU_PlayerJoinLeaveMsg", function() -- custom player join/leave message
+	local name, nameColor, joinLeave = net.ReadString(), net.ReadTable(), net.ReadBool()
+	
+	bsuChat.send(
+		{
+			chatType = joinLeave and "connect" or "disconnect",
+			messageContent = {
+				{ -- set name color
+					type = "color",
+					value = nameColor
+				},
+				{ -- make upcoming name bold
+					type = "bold",
+					value = true
+				},
+				{ -- player name
+					type = "text",
+					value = name
+				},
+				{ -- no longer bold
+					type = "bold",
+					value = false
+				},
+				{ -- reset color
+					type = "color",
+					value = color_white
+				},
+				{ -- joined or left text
+					type = "text",
+					value = joinLeave and " has joined the server" or " has left the server"
+				}
+			}
+		}
+	)
+
+	MsgC(nameColor, name, color_white, joinLeave and " has joined the server" or " has left the server", "\n")
+end)
+
+gameevent.Listen("player_changename")
+hook.Add("player_changename", "BSU_PlayerNameChangeMsg", function(data) -- custom player name change message
+	local player = Player(data.userid)
+	local nameColor = team.GetColor(Player(data.userid):Team())
+	
+	bsuChat.send(
+		{
+			chatType = "namechange",
+			messageContent = {
+				{ -- set name color
+					type = "color",
+					value = nameColor
+				},
+				{ -- make upcoming name bold
+					type = "bold",
+					value = true
+				},
+				{ -- old name
+					type = "text",
+					value = data.oldname
+				},
+				{ -- no longer bold
+					type = "bold",
+					value = false
+				},
+				{ -- reset color
+					type = "color",
+					value = color_white
+				},
+				{
+					type = "text",
+					value = " changed their name to "
+				},
+				{ -- set name color again
+					type = "color",
+					value = nameColor
+				},
+				{ -- make upcoming name bold
+					type = "bold",
+					value = true
+				},
+				{ -- new name
+					type = "text",
+					value = data.newname
+				},
+			}
+		}
+	)
+
+	MsgC(nameColor, data.oldname, color_white, " changed their name to ", nameColor, data.newname, "\n")
 end)

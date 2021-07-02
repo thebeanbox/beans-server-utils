@@ -35,27 +35,31 @@ function bsuChat.create()
 	
 	bsuChat.chatButtons = {}
 
-	local numToggleable = 0
-	for _, v in ipairs(bsuChat.chatTypes) do
-		if v.toggleable then numToggleable = numToggleable + 1 end
+	local buttonTypes = {}
+
+	for type, v in pairs(bsuChat.chatTypes) do
+		if v.toggleable then table.insert(buttonTypes, type) end
 	end
 
-	for i, v in ipairs(bsuChat.chatTypes) do
+	for type, v in pairs(bsuChat.chatTypes) do
 		if not v.toggleable then continue end
 
 		local button = vgui.Create("DButton", bsuChat.frame)
-		table.insert(bsuChat.chatButtons, button)
-		button:SetPos(i * 75 - 75, 0)
+		button:SetPos(table.Count(bsuChat.chatButtons) * 75, 0)
 		button:SetSize(75, 25)
-		button:SetText(string.upper(string.sub(v.type, 1, 1)) .. string.sub(v.type, 2, #v.type))
+		button:SetText(string.upper(string.sub(type, 1, 1)) .. string.sub(type, 2, #type))
 		button:SetIcon("icon16/" .. v.icon .. ".png")
 		button:SetIsToggle(true)
 		button:SetToggle(true)
 
+		bsuChat.chatButtons[type] = button
+
+		local index = table.Count(bsuChat.chatButtons)
+
 		button.onPaint = function(self, w, h)
 			draw.RoundedBoxEx(5, 0, 0, w, h, Color(255, 255, 255),
-				i == 1 or not bsuChat.chatButtons[i - 1]:GetToggle(), i == numToggleable or not bsuChat.chatButtons[i + 1]:GetToggle(),
-				i == 1 or not bsuChat.chatButtons[i - 1]:GetToggle(), i == numToggleable or not bsuChat.chatButtons[i + 1]:GetToggle()
+				index == 1 or not bsuChat.chatButtons[buttonTypes[index - 1]]:GetToggle(), index == #buttonTypes or not bsuChat.chatButtons[buttonTypes[index + 1]]:GetToggle(),
+				index == 1 or not bsuChat.chatButtons[buttonTypes[index - 1]]:GetToggle(), index == #buttonTypes or not bsuChat.chatButtons[buttonTypes[index + 1]]:GetToggle()
 			)
 		end
 		button.Paint = button.onPaint
@@ -64,7 +68,7 @@ function bsuChat.create()
 			bsuChat.html:Call([[
 				(() => {
 					const messages = $("#chatbox > .messageContainer").filter(function() {
-						return $(this).attr("chatType") == ]] .. i .. [[;
+						return $(this).attr("chatType") == "]] .. type .. [[";
 					});
 
 					if (messages.length) {
@@ -121,10 +125,6 @@ function bsuChat.create()
 					border: 2px solid #F5F5F5;
 					background-color: white;
 				}
-				
-				[contenteditable] {
-					outline: 0px solid transparent;
-				}
 
 				* {
 					user-select: none;
@@ -171,6 +171,13 @@ function bsuChat.create()
 					background-color: rgba(0, 0, 0, 0.75);
 					height: 28px;
 				}
+				#inputChatIcon > img {
+					display: inline;
+					vertical-align: top;
+					padding: 6px;
+					width: 16px;
+					height: 16px;
+				}
 
 				#inputText {
 					display: inline;
@@ -216,7 +223,7 @@ function bsuChat.create()
 				.chatIcon {
 					display: inline;
 					vertical-align: top;
-					padding: 6px;
+					padding: 6px 0 6px 6px;
 					width: 16px;
 					height: 16px;
 				}
@@ -308,7 +315,7 @@ function bsuChat.create()
 							<hr>
 							<div>
 								<div id="inputChatIcon">
-									<img class="chatIcon"></img>
+									<img></img>
 								</div>
 								<div id="inputText">
 									<input type="text" maxlength=126 spellcheck="false"></input>
@@ -325,9 +332,9 @@ function bsuChat.create()
 			
 			const updateInputChatIcon = () => {
 				$("#inputChatIcon > img").attr("src", "asset://garrysmod/materials/icon16/" + ((!teamChat) ? "]]
-					.. bsuChat.chatTypes[1].icon
+					.. bsuChat.chatTypes["global"].icon
 					.. [[" : "]]
-					.. bsuChat.chatTypes[2].icon
+					.. bsuChat.chatTypes["team"].icon
 					.. [[") + ".png");
 			}
 			
