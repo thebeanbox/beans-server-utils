@@ -3,11 +3,32 @@
 
 if SERVER then
 	print("BSU Skybox Protection - initalizing!")
+    dataFile = "bsu/anti-skybox_data.json"
 
-	pos = {--Corner1, Corner2
-		gm_flatgrass = { Vector(-7735,-7796,-16128), Vector(8535,8476,-13317) },
-		gm_bigcity_night = { Vector(3060, 3060, 4200), Vector(-3060, -3060, 5800) }
-	} -- in the future this would probably be integrated into a gui of sorts, updated dynamically so if an admin sees that the map doesnt have the corners set, we can add them on the fly.
+    if not file.Exists("bsu/", "DATA") then
+        file.CreateDir("bsu/")
+        print("BSU Skybox Protection - data/bsu did not exist! creating directory, the fact that it did not exist is probably very bad!")
+    end
+
+    if not file.Exists(dataFile, "DATA") then
+        local baseFileWrite = {
+            gm_flatgrass = { Vector(-7735,-7796,-16128), Vector(8535,8476,-13317) },
+            gm_bigcity_night = { Vector(3060, 3060, 4200), Vector(-3060, -3060, 5800) }
+        }
+        file.Write(dataFile, util.TableToJSON(baseFileWrite))
+        print("BSU Skybox Protection - data/" .. dataFile .. " did not exist (this is bad!) creating file, make sure to add skybox data for the current map!")
+    end
+    skyboxDataTable = any
+
+    function reloadSkyboxFile()
+        print("BSU Skybox Protection - reloading skybox dataset!")
+        skyboxDataTable = file.Read(dataFile, "DATA")
+        PrintTable(util.JSONToTable(skyboxDataTable))
+        pos = util.JSONToTable(skyboxDataTable)
+    end
+    timer.Simple(3, reloadSkyboxFile)
+
+
 	util.AddNetworkString("BSU_SkyboxNetMessage") -- get the networking for the hud ready to go
 
     if !pos[game.GetMap()] then print("BSU Skybox Protection - this map does not have vectors set for the skybox! this will not operate until vectors are set.") end
@@ -26,7 +47,7 @@ if SERVER then
 
 		for i=1, #fents do
 	        local current = fents[i]
-			if !current:IsPlayer() and !current:GetClass()=="predicted_viewmodel" then -- < not detecting anything even when i spawn props??
+			if !current:IsPlayer() and !current:GetClass()=="predicted_viewmodel" then
                 print("a!")
 				current:Remove()
 				current:GetOwner():PrintMessage(HUD_PRINTTALK, "you aren't permitted to build here yet!")
