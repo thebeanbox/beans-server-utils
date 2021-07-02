@@ -21,6 +21,7 @@ else
     local hudW = 100
     local hudH = 40
     local lPly = LocalPlayer()
+    local inSkybox
     local inSkyStr = "Dummy Text!"
     local randomNumber = math.random(0, 9999)
 
