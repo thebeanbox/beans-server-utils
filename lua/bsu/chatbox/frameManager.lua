@@ -1,10 +1,27 @@
 -- frameManager.lua by Bonyoze
 -- Creates and manages showing the chatbox frames
 
+surface.CreateFont("bsuChat_inputBox",
+	{
+		font = "Marlett",
+		size = 16,
+		weight = 1000,
+		antialias = true,
+		shadow = true,
+		extended = true
+	}
+)
+
+local mainChatTypes = {}
+for type, v in pairs(bsuChat.chatTypes) do
+	if v.toggleable then table.insert(mainChatTypes, type) end
+end
+
 function bsuChat.create()
+	-- main chatbox frame
 	bsuChat.frame = vgui.Create("DFrame")
-	bsuChat.frame:SetSize(ScrW() * 0.3, ScrH() * 0.4)
-	bsuChat.frame:SetPos(ScrW() * 0.02, (ScrH() - bsuChat.frame:GetTall()) - ScrH() * 0.125)
+	bsuChat.frame:SetSize(ScrW() * 0.3, ScrH() * 0.3)
+	bsuChat.frame:SetPos(ScrW() * 0.02, (ScrH() - bsuChat.frame:GetTall()) - ScrH() * 0.115)
 	bsuChat.frame:SetTitle("")
 	bsuChat.frame:SetScreenLock(true)
 	bsuChat.frame:ShowCloseButton(false)
@@ -14,14 +31,24 @@ function bsuChat.create()
 	bsuChat.frame:SetMinHeight(bsuChat.frame:GetTall() / 2)
 	
 	bsuChat.frame.Paint = function(self, w, h)
+		-- chatbox background
 		bsuChat.blur(self, 5, 10, 50)
 		draw.RoundedBox(5, 0, 0, w, h, Color(0, 0, 0, 180))
+
+		-- top
 		draw.RoundedBox(5, 0, 0, w, 25, Color(0, 0, 0, 225))
+
+		-- entry background
+		draw.RoundedBox(5, 38, h - 33, w - 43, 28, Color(0, 0, 0, 225))
+
+		-- chat icon background
+		draw.RoundedBox(5, 5, h - 33, 28, 28, Color(0, 0, 0, 225))
 	end
 	bsuChat.frame.oldPaint = bsuChat.frame.Paint;
 	
 	hook.Add("Think", bsuChat.frame, function(self)
 		if bsuChat.isOpen then
+			bsuChat.entry:RequestFocus()
 			if gui.IsGameUIVisible() or input.IsKeyDown(KEY_ESCAPE) then
 				gui.HideGameUI()
 				bsuChat.hide()
@@ -29,17 +56,96 @@ function bsuChat.create()
 		end
 	end)
 	
-	bsuChat.frame.OnSizeChanged = function(self, width, height)
-		bsuChat.html:SetSize(width - 10, height - 35)
+	bsuChat.frame.OnSizeChanged = function(self, w, h)
+		bsuChat.entry:SetSize(w - 53, 28)
+		bsuChat.entry:SetPos(43, h - 33)
+
+		bsuChat.chatIcon:SetPos(11, h - 27)
+
+		bsuChat.html:SetSize(w - 10, h - 68)
 	end
+
+	-- text entry box
+	bsuChat.entry = vgui.Create("DTextEntry", bsuChat.frame)
+	bsuChat.entry:SetSize(bsuChat.frame:GetWide() - 53, 28)
+	bsuChat.entry:SetPos(43, bsuChat.frame:GetTall() - 33)
+	bsuChat.entry:SetFont("bsuChat_inputBox")
+	bsuChat.entry:SetTextColor(color_white)
+	bsuChat.entry:SetCursorColor(color_white)
+	bsuChat.entry:SetHighlightColor(Color(49, 153, 220))
+	bsuChat.entry:SetEnterAllowed(false)
+	bsuChat.entry:SetDrawBorder(false)
+	bsuChat.entry:SetDrawBackground(false)
 	
-	bsuChat.chatButtons = {}
-
-	local buttonTypes = {}
-
-	for type, v in pairs(bsuChat.chatTypes) do
-		if v.toggleable then table.insert(buttonTypes, type) end
+	bsuChat.entry.AllowInput = function(self)
+		return #self:GetText() == 126
 	end
+
+	bsuChat.entry.OnTextChanged = function(self)
+		if self and self.GetText then 
+			gamemode.Call("ChatTextChanged", self:GetText() or "")
+		end
+	end
+
+	bsuChat.entry.OnKeyCodeTyped = function(self, code)
+		local text = self:GetText()
+		if code == KEY_TAB then
+			if text != "" then
+				local textObjs = string.Split(text, " ")
+				local lastText = textObjs[#textObjs]
+
+				if lastText != "" then
+					local suggestions = {}
+
+					for _, v in ipairs(player.GetAll()) do
+						local name = v:Nick()
+						if #text < #name then
+							local find = string.find(name, text, 1, false)
+							if find and find == 1 then
+								table.insert(suggestions, name)
+							end
+						end
+					end
+
+					self:OpenAutoComplete(suggestions)
+				end
+			end
+		elseif code == KEY_ENTER then
+			if text != "" then
+				if bsuChat.chatType == "global" then
+					LocalPlayer():ConCommand("say \"" .. text .. "\"")
+				elseif bsuChat.chatType == "team" then
+					LocalPlayer():ConCommand("say_team \"" .. text .. "\"")
+				elseif bsuChat.chatType == "admin" then
+					-- admin chat stuff
+				end
+
+				bsuChat.hide()
+			end
+		end
+	end
+
+	-- chat type icon/button
+	bsuChat.chatIcon = vgui.Create("DImageButton", bsuChat.frame)
+	bsuChat.chatIcon:SetSize(16, 16)
+	bsuChat.chatIcon:SetPos(11, bsuChat.frame:GetTall() - 27)
+	bsuChat.chatIcon:SetImage("icon16/" .. bsuChat.chatTypes[bsuChat.chatType].icon .. ".png")
+
+	bsuChat.chatIcon.DoClick = function()
+		local index = 1
+		for i, v in ipairs(mainChatTypes) do
+			if v == bsuChat.chatType then
+				index = i % #mainChatTypes + 1
+				break
+			end
+		end
+
+		bsuChat.chatType = mainChatTypes[index]
+		bsuChat.chatIcon:SetImage("icon16/" .. bsuChat.chatTypes[bsuChat.chatType].icon .. ".png")
+	end
+
+	-- chat message toggle buttons
+	bsuChat.chatButtons = {}
 
 	for type, v in pairs(bsuChat.chatTypes) do
 		if not v.toggleable then continue end
@@ -58,8 +164,8 @@ function bsuChat.create()
 
 		button.onPaint = function(self, w, h)
 			draw.RoundedBoxEx(5, 0, 0, w, h, Color(255, 255, 255),
-				index == 1 or not bsuChat.chatButtons[buttonTypes[index - 1]]:GetToggle(), index == #buttonTypes or not bsuChat.chatButtons[buttonTypes[index + 1]]:GetToggle(),
-				index == 1 or not bsuChat.chatButtons[buttonTypes[index - 1]]:GetToggle(), index == #buttonTypes or not bsuChat.chatButtons[buttonTypes[index + 1]]:GetToggle()
+				index == 1 or not bsuChat.chatButtons[mainChatTypes[index - 1]]:GetToggle(), index == #mainChatTypes or not bsuChat.chatButtons[mainChatTypes[index + 1]]:GetToggle(),
+				index == 1 or not bsuChat.chatButtons[mainChatTypes[index - 1]]:GetToggle(), index == #mainChatTypes or not bsuChat.chatButtons[mainChatTypes[index + 1]]:GetToggle()
 			)
 		end
 		button.Paint = button.onPaint
@@ -93,20 +199,16 @@ function bsuChat.create()
 		end
 	end
 	
+	-- chatbox html
 	bsuChat.html = vgui.Create("DHTML", bsuChat.frame)
-	bsuChat.html:SetSize(bsuChat.frame:GetWide() - 10, bsuChat.frame:GetTall() - 35)
+	bsuChat.html:SetSize(bsuChat.frame:GetWide() - 10, bsuChat.frame:GetTall() - 68)
 	bsuChat.html:SetPos(5, 30)
 
 	--bsuChat.html.ConsoleMessage = function() end -- prevents html print messages from appearing in the client's console
 
 	bsuChat.html:SetHTML([[
 		<head>
-			<httpProtocol>  
-				<customHeaders>
-					<add name="Access-Control-Allow-Origin" value="*"/>
-				</customHeaders>
-			</httpProtocol>
-			<link href="https://fonts.googleapis.com/css2?family=Merriweather+Sans:wght@400&display=swap" rel="stylesheet">
+			<link href="https://fonts.googleapis.com/css2?family=Merriweather+Sans:wght@300&display=swap" rel="stylesheet">
 			<style>
 				::selection {
 					color: white;
@@ -137,65 +239,20 @@ function bsuChat.create()
 					margin: 0;
 					padding: 0;
 					overflow: hidden;
-					letter-spacing: 0.5px;
+					letter-spacing: 1px;
 					text-align: left;
 					text-shadow: 1px 1px 0 black, 1px 1px 1px black, 1px 1px 2px black, 1px 1px 3px black;
 					font-family: Merriweather Sans, sans-serif;
 				}
 
-				hr {
-					border: 3px solid rgba(0, 0, 0, 0.75);
-					border-radius: 3px;
-				}
-
 				#chatboxContainer {
 					display: block;
 					overflow-y: auto;
-					width: 100vw;
+					width: 100%;
 					height: 100%;
 				}
-				#chatboxContainer > div {
-					
-				}
-
-				#inputboxContainer > div {
-					border-radius: 5px;
-					background-color: rgba(255, 255, 255, 0.25);
-					width: 100vw;
-				}
-
-				#inputChatIcon {
-					display: inline-block;
-					vertical-align: top;
-					border-radius: 5px;
-					background-color: rgba(0, 0, 0, 0.75);
-					height: 28px;
-				}
-				#inputChatIcon > img {
-					display: inline;
-					vertical-align: top;
-					padding: 6px;
-					width: 16px;
-					height: 16px;
-				}
-
-				#inputText {
-					display: inline;
-					padding-right: 6px;
-				}
-				#inputText > input {
-					display: table-cell;
-					width: calc(100vw - 38px);
-					height: 28px;
-					background-color: rgba(0, 0, 0, 0);
-					border: 0px solid transparent;
-					outline: 0px solid transparent;
-					font-size: 14px;
-					letter-spacing: 0.5px;
-					text-shadow: 1px 1px 0 black, 1px 1px 1px black, 1px 1px 2px black, 1px 1px 3px black;
-					font-family: Merriweather Sans, sans-serif;
-					line-height: 28px;
-					color: white;
+				#chatbox {
+					padding-bottom: -4px;
 				}
 				
 				.messageContainer {
@@ -234,6 +291,7 @@ function bsuChat.create()
 					padding-left: 4px;
 					padding-right: 4px;
 					color: white;
+					font-weight: bold;
 					font-size: 10px;
 					line-height: 28px;
 				}
@@ -301,42 +359,12 @@ function bsuChat.create()
 			<script src="asset://garrysmod/html/js/thirdparty/jquery.js"></script>
 		</head>
 		<body>
-			<table cellspacing=0 cellpadding=0 style="position: absolute; bottom: 0; left: 0; width: inherit; height: inherit;">
-				<tr>
-					<td>
-						<div id="chatboxContainer">
-							<div id="chatbox"></div>
-						</div>
-					</td>
-				</tr>
-				<tr style="height: 0;">
-					<td>
-						<div id="inputboxContainer">
-							<hr>
-							<div>
-								<div id="inputChatIcon">
-									<img></img>
-								</div>
-								<div id="inputText">
-									<input type="text" maxlength=126 spellcheck="false"></input>
-								</div>
-							</div>
-						</div>
-					</td>
-				</tr>
-			</table>
+			<div id="chatboxContainer">
+				<div id="chatbox"></div>
+			</div>
 		</body>
 		<script>
-			var isOpen = false,
-			teamChat = false;
-			
-			const updateInputChatIcon = () => {
-				$("#inputChatIcon > img").attr("src", "asset://garrysmod/materials/icon16/" + ((!teamChat) ? "]]
-					.. bsuChat.chatTypes["global"].icon
-					.. [[" : "]]
-					.. bsuChat.chatTypes["team"].icon
-					.. [[") + ".png");
-			}
+			var isOpen = false;
 			
 			const scrollToBottom = check => {
 				const el = $("#chatboxContainer");
@@ -366,24 +394,6 @@ function bsuChat.create()
 			const haltFadeAnim = () => {
 				isOpen = true;
 			}
-
-			// add input key detecting
-			$("#inputText > input")
-				.keydown(function(e) {
-					if (e.key === "Tab") {
-						teamChat = !teamChat;
-						updateInputChatIcon();
-						
-						e.preventDefault();
-					} else if (e.key === "Enter") {
-						bsuChat.sayText(teamChat, $(this).val());
-						$(this).val("");
-					}
-				});
-
-			
-			// set input chat type icon
-			updateInputChatIcon();
 			
 			// run fade anim on start
 			if (!isOpen) runFadeAnim();
@@ -402,13 +412,8 @@ function bsuChat.create()
 
 	bsuChat.html:AddFunction("bsuChat", "popOutFrame", function(type, msgSendTime, args)
 		if bsuChat.popOut and bsuChat.popOut:IsValid() then
-			if msgSendTime == bsuChat.popOut.id then
-				bsuChat.popOut:Close()
-				bsuChat.focusInputBox()
-				return
-			else
-				bsuChat.popOut:Close()
-			end
+			bsuChat.popOut:Close()
+			if msgSendTime == bsuChat.popOut.id then return end
 		end
 
 		bsuChat.popOut = vgui.Create("DFrame")
@@ -430,10 +435,6 @@ function bsuChat.create()
 			draw.RoundedBox(5, 0, 0, w, 25, Color(0, 0, 0, 225))
 		end
 		bsuChat.popOut.oldPaint = bsuChat.popOut.Paint
-
-		bsuChat.popOut.OnClose = function()
-			bsuChat.focusInputBox()
-		end
 
 		bsuChat.popOut.html = vgui.Create("DHTML", bsuChat.popOut)
 		bsuChat.popOut.html:Dock(FILL)
@@ -469,8 +470,6 @@ function bsuChat.create()
 		end
 	end)
 	
-	--bsuChat.html:SetAllowLua(true)
-	
 	bsuChat.hide()
 end
 
@@ -503,9 +502,6 @@ function bsuChat.hide() -- closes chatbox
 			$(".messageContainer > div").each(function() {
 				$(this).css("background-color", "rgba(0, 0, 0, 0)");
 			});
-			
-			// hide input box
-			$("#inputboxContainer").css("visibility", "hidden");
 
 			// plays fade out anim for recent messages
 			runFadeAnim();
@@ -546,10 +542,8 @@ function bsuChat.hide() -- closes chatbox
 
 	gui.EnableScreenClicker(false)
 	
-	-- clear input box
-	bsuChat.html:Call([[
-		$("#inputText > input").val("");
-	]])
+	-- clear entry text
+	bsuChat.entry:SetText("")
 	
 	gamemode.Call("ChatTextChanged", "")
 	gamemode.Call("FinishChat")
@@ -575,9 +569,6 @@ function bsuChat.show() -- opens chatbox
 						.css("opacity", 1)
 						.children(":first").css("background-color", "rgba(255, 255, 255, 0.25)");
 				});
-
-				// show input box
-				$("#inputboxContainer").css("visibility", "visible");
 			})();
 		]]
 	)
@@ -605,16 +596,7 @@ function bsuChat.show() -- opens chatbox
 
 		bsuChat.popOut:MakePopup()
 	end
-
-	bsuChat.focusInputBox()
 	
 	gamemode.Call("StartChat")
 end
 chat.Open = bsuChat.show
-
-function bsuChat.focusInputBox()
-	bsuChat.html:RequestFocus()
-	bsuChat.html:Call([[
-		$("#inputText > input").focus();
-	]])
-end
