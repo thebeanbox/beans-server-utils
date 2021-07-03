@@ -17,13 +17,25 @@ else
     local hudY = resH * 0.925
     local hudW = 150
     local hudH = 30
-    local lPly = LocalPlayer()
+    local lPly
     local inSkybox
     local inSkyStr = "loading..."
 
     local randomNumber = math.random(0, 9999)
 
-    
+    function initPanel()
+        lPly = LocalPlayer()
+        statHud = vgui.Create("DFrame")
+            statHud:SetPos(hudX, hudY)
+            statHud:SetSize(hudW, hudH)
+            statHud:SetSizable(false)
+            statHud:SetScreenLock(false)
+            statHud:ShowCloseButton(false)
+            statHud:SetDraggable(false)
+            statHud:SetTitle("")
+            statHud.Paint = drawHud
+    end
+
     //-- Functions
     function drawHud(self, w, h)
         local barWidth = w-10
@@ -39,17 +51,7 @@ else
         draw.RoundedBox(20, 5, 20, plyArmor, 5, Color(0, 150, 255, 255))
     end
 
-    function initPanel()
-        statHud = vgui.Create("DFrame")
-            statHud:SetPos(hudX, hudY)
-            statHud:SetSize(hudW, hudH)
-            statHud:SetSizable(false)
-            statHud:SetScreenLock(false)
-            statHud:ShowCloseButton(false)
-            statHud:SetDraggable(false)
-            statHud:SetTitle("")
-            statHud.Paint = drawHud
-    end
+
 
     function hideHud(name)
         if hideHuds[name] then
