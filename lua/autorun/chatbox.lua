@@ -68,11 +68,6 @@ concommand.Add("bsu_chatbox_clear", function() -- clears all chat messages
 	]])
 end)
 
--- create the chatbox
-if not IsValid(bsuChat.frame) then
-	bsuChat.create()
-end
-
 hook.Add("PlayerBindPress", "BSU_OpenChatbox", function(ply, bind, pressed) -- opens the chatbox
 	if bind == "messagemode" || bind == "messagemode2" then
 		if IsValid(bsuChat.frame) then
@@ -95,5 +90,11 @@ end)
 hook.Add("HUDShouldDraw", "BSU_HideDefaultChatbox", function(name) -- hide the default chatbox
 	if name == "CHudChat" then
 		return false
+	end
+end)
+
+hook.Add("InitPostEntity", "BSU_ChatboxInit", function()
+	if not IsValid(bsuChat.frame) then
+		bsuChat.create()
 	end
 end)
