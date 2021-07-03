@@ -149,13 +149,13 @@ function bsuChat.create()
 				}
 
 				#chatboxContainer {
-					display: flex;
+					display: block;
 					overflow-y: auto;
 					width: 100vw;
 					height: 100%;
 				}
 				#chatboxContainer > div {
-					margin-top: auto !important;
+					
 				}
 
 				#inputboxContainer > div {
