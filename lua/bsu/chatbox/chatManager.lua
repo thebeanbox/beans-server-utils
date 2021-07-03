@@ -2,9 +2,7 @@
 -- Manages chat sending and messages appearing on the chatbox
 
 function bsuChat.send(data) -- adds a message to the chatbox
-	if not IsValid(bsuChat.frame) then
-		bsuChat.create()
-	end
+	if not IsValid(bsuChat.frame) then return end
 		
 	if not data.avatar and data.sender and data.sender:IsPlayer() then
 		data.avatar = loadPlyAvatarIcon(data.sender, data)
@@ -136,7 +134,7 @@ function bsuChat.send(data) -- adds a message to the chatbox
 						.css(
 							{
 								"font-style": "]] .. (italic and "italic" or "normal") .. [[",
-								"font-weight": "]] .. (bold and "900" or "normal") .. [["
+								"font-weight": "]] .. (bold and "bold" or "normal") .. [["
 							}
 						)
 						.click(function() {

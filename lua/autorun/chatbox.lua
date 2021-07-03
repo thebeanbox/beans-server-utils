@@ -39,6 +39,7 @@ errorImage = "data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAMAAADz0U6
 
 bsuChat = {}
 bsuChat.isOpen = false
+bsuChat.chatType = "global"
 bsuChat.chatTypes = {
 	-- Main types (DO NOT REMOVE)
 	global     = { icon = "world", toggleable = true },
@@ -70,6 +71,14 @@ end)
 
 hook.Add("PlayerBindPress", "BSU_OpenChatbox", function(ply, bind, pressed) -- opens the chatbox
 	if bind == "messagemode" || bind == "messagemode2" then
+		-- set current chatType
+		if bind == "messagemode" then
+			bsuChat.chatType = "global"
+		elseif bind == "messagemode2" then
+			bsuChat.chatType = "team"
+		end
+
+		-- show the chatbox
 		if IsValid(bsuChat.frame) then
 			bsuChat.show()
 		else
@@ -77,11 +86,8 @@ hook.Add("PlayerBindPress", "BSU_OpenChatbox", function(ply, bind, pressed) -- o
 			bsuChat.show()
 		end
 
-		-- set the current chat mode to either global or team
-		bsuChat.html:Call([[
-			teamChat = ]] .. (bind == "messagemode" and "false" or "true") .. [[;
-			updateInputChatIcon();
-		]])
+		-- update chat icon
+		bsuChat.chatIcon:SetImage("icon16/" .. bsuChat.chatTypes[bsuChat.chatType].icon .. ".png")
 
 		return true
 	end
@@ -93,7 +99,7 @@ hook.Add("HUDShouldDraw", "BSU_HideDefaultChatbox", function(name) -- hide the d
 	end
 end)
 
-hook.Add("InitPostEntity", "BSU_ChatboxInit", function()
+hook.Add("InitPostEntity", "BSU_ChatboxInit", function() -- chatbox initiate on client
 	if not IsValid(bsuChat.frame) then
 		bsuChat.create()
 	end
