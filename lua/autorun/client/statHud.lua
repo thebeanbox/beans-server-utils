@@ -47,7 +47,7 @@ else
         -- Draw Health Bar
         draw.RoundedBox(5, 5, 5, barWidth, 20, Color(175, 0, 0, 255))
         draw.RoundedBox(5, 5, 5, plyHealth, 20, Color(0, 255, 0, 255))
-        draw.drawText(lPly:Health(), "fontMain", 5, 5, Color(255,255,255,255), 0)
+        draw.DrawText(lPly:Health(), "fontMain", 5, 5, Color(255,255,255,255), 0)
         -- Draw Armor Bar
         draw.RoundedBox(10, 5, 20, plyArmor, 5, Color(0, 150, 255, 255))
     end
