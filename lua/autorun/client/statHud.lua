@@ -23,19 +23,8 @@ else
 
     local randomNumber = math.random(0, 9999)
 
+    
     //-- Functions
-    function initPanel()
-        statHud = vgui.Create("DFrame")
-            statHud:SetPos(hudX, hudY)
-            statHud:SetSize(hudW, hudH)
-            statHud:SetSizable(false)
-            statHud:SetScreenLock(false)
-            statHud:ShowCloseButton(false)
-            statHud:SetDraggable(false)
-            statHud:SetTitle("")
-            statHud.Paint = drawHud
-    end
-
     function drawHud(self, w, h)
         local barWidth = w-10
         plyHealth = Lerp(0.1, plyHealth, math.Clamp((lPly:Health()/lPly:GetMaxHealth())*barWidth, 0, barWidth))
@@ -48,6 +37,18 @@ else
         draw.RoundedBox(10, 5, 5, plyHealth, 20, Color(0, 255, 0, 255))
         -- Draw Armor Bar
         draw.RoundedBox(20, 5, 20, plyArmor, 5, Color(0, 150, 255, 255))
+    end
+
+    function initPanel()
+        statHud = vgui.Create("DFrame")
+            statHud:SetPos(hudX, hudY)
+            statHud:SetSize(hudW, hudH)
+            statHud:SetSizable(false)
+            statHud:SetScreenLock(false)
+            statHud:ShowCloseButton(false)
+            statHud:SetDraggable(false)
+            statHud:SetTitle("")
+            statHud.Paint = drawHud
     end
 
     function hideHud(name)
