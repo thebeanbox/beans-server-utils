@@ -22,17 +22,19 @@ else
     local inSkyStr = "loading..."
 
     local randomNumber = math.random(0, 9999)
-    local statHud = vgui.Create("DFrame")
-        statHud:SetPos(hudX, hudY)
-        statHud:SetSize(hudW, hudH)
-        statHud:SetSizable(false)
-        statHud:SetScreenLock(false)
-        statHud:ShowCloseButton(false)
-        statHud:SetDraggable(false)
-        statHud:SetTitle("")
-
 
     //-- Functions
+    function initPanel()
+        statHud = vgui.Create("DFrame")
+            statHud:SetPos(hudX, hudY)
+            statHud:SetSize(hudW, hudH)
+            statHud:SetSizable(false)
+            statHud:SetScreenLock(false)
+            statHud:ShowCloseButton(false)
+            statHud:SetDraggable(false)
+            statHud:SetTitle("")
+    end
+
     function drawHud(self, w, h)
         local barWidth = w-10
         plyHealth = Lerp(0.1, plyHealth, math.Clamp((lPly:Health()/lPly:GetMaxHealth())*barWidth, 0, barWidth))
@@ -55,7 +57,7 @@ else
 
     
     //-- Hooks
-    statHud.Paint = drawHud
     hook.Add("HUDShouldDraw", "statHud_hideHud", hideHud)
-
+    hook.Add("InitPostEntity", "BSU_ChatboxInit", initPanel)
+    statHud.Paint = drawHud
 end
