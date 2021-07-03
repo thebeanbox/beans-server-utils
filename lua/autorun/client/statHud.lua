@@ -43,12 +43,13 @@ else
         plyArmor = Lerp(0.1, plyArmor, math.Clamp((lPly:Armor()/lPly:GetMaxArmor())*barWidth, 0, barWidth))
 
         -- Draw Background
-        draw.RoundedBox(10, 0, 0, w, h, Color(0, 0, 0, 100))
+        draw.RoundedBox(5, 0, 0, w, h, Color(0, 0, 0, 200))
         -- Draw Health Bar
-        draw.RoundedBox(10, 5, 5, barWidth, 20, Color(200, 0, 0, 255))
-        draw.RoundedBox(10, 5, 5, plyHealth, 20, Color(0, 255, 0, 255))
+        draw.RoundedBox(5, 5, 5, barWidth, 20, Color(175, 0, 0, 255))
+        draw.RoundedBox(5, 5, 5, plyHealth, 20, Color(0, 255, 0, 255))
+        draw.drawText(lPly:Health(), "fontMain", 5, 5, Color(255,255,255,255), 0)
         -- Draw Armor Bar
-        draw.RoundedBox(20, 5, 20, plyArmor, 5, Color(0, 150, 255, 255))
+        draw.RoundedBox(10, 5, 20, plyArmor, 5, Color(0, 150, 255, 255))
     end
 
 
