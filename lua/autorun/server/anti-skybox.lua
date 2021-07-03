@@ -34,24 +34,25 @@ if SERVER then
     if !pos[game.GetMap()] then print("BSU Skybox Protection - this map does not have vectors set for the skybox! this will not operate until vectors are set.") end
 
 	hook.Add("Think", "BSU_SkyboxCheck", function()
-		if not pos[game.GetMap()] then return end
-		local c1 = pos[game.GetMap()][1]
-		local c2 = pos[game.GetMap()][2]
-		local fents = ents.FindInBox(c1, c2)
+		if pos[game.GetMap()] then
+			local c1 = pos[game.GetMap()][1]
+			local c2 = pos[game.GetMap()][2]
+			local fents = ents.FindInBox(c1, c2)
 
-		for i, v in ipairs( player.GetAll() ) do
-			net.Start("BSU_SkyboxNetMessage")
-			net.WriteBool(v:GetPos():WithinAABox(c1, c2))
-			net.Send(v)
+			for i, v in ipairs( player.GetAll() ) do
+				net.Start("BSU_SkyboxNetMessage")
+				net.WriteBool(v:GetPos():WithinAABox(c1, c2))
+				net.Send(v)
+			end
+
+			for i=1, #fents do
+				local current = fents[i]
+				if !current:IsPlayer() and !current:GetClass()=="predicted_viewmodel" then
+					print("a!")
+					current:Remove()
+					current:GetOwner():PrintMessage(HUD_PRINTTALK, "you aren't permitted to build here yet!")
+				end
+			end
 		end
-
-		for i=1, #fents do
-	        local current = fents[i]
-			if !current:IsPlayer() and !current:GetClass()=="predicted_viewmodel" then
-                print("a!")
-				current:Remove()
-				current:GetOwner():PrintMessage(HUD_PRINTTALK, "you aren't permitted to build here yet!")
-            end
-        end
-    end)
+	end)
 end
