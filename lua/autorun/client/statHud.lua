@@ -19,10 +19,8 @@ else
     local hudW = 150
     local hudH = 40
     local hasArmor = 0
-    local lPly
-    local inSkybox
+    local lPly, inSkybox
     local inSkyStr = "loading..."
-    local randomNumber = math.random(0, 9999)
 
     //-- Functions
     function initPanel()
@@ -76,5 +74,5 @@ else
     //-- Hooks
     initPanel()
     hook.Add("HUDShouldDraw", "statHud_hideHud", hideHud)
-    hook.Add("InitPostEntity", "BSU_ChatboxInit", initPanel)
+    hook.Add("InitPostEntity", "statHud_initHud", initPanel)
 end
