@@ -33,6 +33,7 @@ else
             statHud:ShowCloseButton(false)
             statHud:SetDraggable(false)
             statHud:SetTitle("")
+            statHud.Paint = drawHud
     end
 
     function drawHud(self, w, h)
@@ -59,5 +60,4 @@ else
     //-- Hooks
     hook.Add("HUDShouldDraw", "statHud_hideHud", hideHud)
     hook.Add("InitPostEntity", "BSU_ChatboxInit", initPanel)
-    statHud.Paint = drawHud
 end
