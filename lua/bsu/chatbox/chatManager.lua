@@ -245,16 +245,23 @@ end)
 
 hook.Add("ChatText", "BSU_SendServerMsg", function(index, name, text, chatType) -- messages from the server
 	if chatType == "servermsg" then
-
 		bsuChat.send(
 			{
 				chatType = "server", -- server
 				messageContent = formatMsg(Color(0, 160, 255), text),
-				showTimestamp = chatType != "none"
 			}
 		)
 
 		MsgC(col, text, "\n")
+	elseif chatType == "none" then
+		bsuChat.send(
+			{
+				messageContent = formatMsg(text),
+				showTimestamp = false
+			}
+		)
+
+		MsgC(text, "\n")
 	end
 
 	return true
