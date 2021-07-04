@@ -19,21 +19,23 @@ else
     local hudW = 150
     local hudH = 40
     local hasArmor = 0
-    local lPly, inSkybox
+    local lPly, inSkybox, statHud
     local inSkyStr = "loading..."
 
     //-- Functions
     function initPanel()
         lPly = LocalPlayer()
-        statHud = vgui.Create("DFrame")
-            statHud:SetPos(hudX, hudY)
-            statHud:SetSize(hudW, hudH/2)
-            statHud:SetSizable(false)
-            statHud:SetScreenLock(false)
-            statHud:ShowCloseButton(false)
-            statHud:SetDraggable(false)
-            statHud:SetTitle("")
-            statHud.Paint = drawHud
+        if not statHud:IsValid() then
+            statHud = vgui.Create("DFrame")
+                statHud:SetPos(hudX, hudY)
+                statHud:SetSize(hudW, hudH/2)
+                statHud:SetSizable(false)
+                statHud:SetScreenLock(false)
+                statHud:ShowCloseButton(false)
+                statHud:SetDraggable(false)
+                statHud:SetTitle("")
+                statHud.Paint = drawHud
+        end
     end
 
     function drawHud(self, w, h)
