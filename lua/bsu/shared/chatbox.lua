@@ -3,14 +3,9 @@
 
 if SERVER then
 	-- send files to client-side
-	AddCSLuaFile("bsu/chatbox/frameManager.lua")
-	MsgN("[BSU SERVER] Sent chatbox/frameManager.lua (client-side)")
-
-	AddCSLuaFile("bsu/chatbox/chatManager.lua")
-	MsgN("[BSU SERVER] Sent chatbox/chatManager.lua (client-side)")
-
-	AddCSLuaFile("bsu/chatbox/messageManager.lua")
-	MsgN("[BSU SERVER] Sent chatbox/messageManager.lua (client-side)")
+	AddCSLuaFile("bsu/modules/chatbox/frameManager.lua")
+	AddCSLuaFile("bsu/modules/chatbox/chatManager.lua")
+	AddCSLuaFile("bsu/modules/chatbox/messageManager.lua")
 
 	-- setup hooks for player join/leave custom messages
 	util.AddNetworkString("BSU_PlayerJoinLeaveMsg")
@@ -18,26 +13,29 @@ if SERVER then
 	hook.Add("PlayerInitialSpawn", "BSU_PlayerConnectMsg", function(ply)
 		net.Start("BSU_PlayerJoinLeaveMsg")
 			net.WriteString(ply:Nick())
-			net.WriteTable(team.GetColor(ply:Team()))
+			net.WriteTable(BSU:GetPlayerData(ply) and team.GetColor(BSU:GetPlayerData(ply)) or team.GetColor(ply:Team()))
 			net.WriteBool(true)
+			net.WriteBool(BSU:GetPlayerData(ply) == nil) -- is first time joining
+			net.WriteBool(ply:IsBot()) -- player is a bot
 		net.Send(player.GetAll())
 	end)
 	hook.Add("PlayerDisconnected", "BSU_PlayerDisconnectMsg", function(ply)
 		net.Start("BSU_PlayerJoinLeaveMsg")
 			net.WriteString(ply:Nick())
-			net.WriteTable(team.GetColor(ply:Team()))
+			net.WriteTable(BSU:GetPlayerData(ply) and team.GetColor(BSU:GetPlayerData(ply)) or team.GetColor(ply:Team()))
 			net.WriteBool(false)
+			-- these must be added but aren't used
+			net.WriteBool(false)
+			net.WriteBool(ply:IsBot())
 		net.Send(player.GetAll())
 	end)
 
 	return
 end
 
-MsgN("[BSU CLIENT] Loaded chatbox.lua")
-
 errorImage = "data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAMAAADz0U65AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAGUExURf8A/gAAACcac5cAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAARSURBVBhXY2BgRIPkiDAyAAAEyAAhvFw1dgAAAABJRU5ErkJggg=="
 
-bsuChat = {}
+bsuChat = bsuChat or {}
 bsuChat.isOpen = false
 bsuChat.chatType = "global"
 bsuChat.chatTypes = {
@@ -54,14 +52,9 @@ bsuChat.chatTypes = {
 }
 
 -- include other files
-include("bsu/chatbox/frameManager.lua")
-MsgN("[BSU CLIENT] Loaded chatbox/frameManager.lua")
-
-include("bsu/chatbox/chatManager.lua")
-MsgN("[BSU CLIENT] Loaded chatbox/chatManager.lua")
-
-include("bsu/chatbox/messageManager.lua")
-MsgN("[BSU CLIENT] Loaded chatbox/messageManager.lua")
+include("bsu/modules/chatbox/frameManager.lua")
+include("bsu/modules/chatbox/chatManager.lua")
+include("bsu/modules/chatbox/messageManager.lua")
 
 concommand.Add("bsu_chatbox_clear", function() -- clears all chat messages
 	bsuChat.html:Call([[
@@ -99,7 +92,7 @@ hook.Add("HUDShouldDraw", "BSU_HideDefaultChatbox", function(name) -- hide the d
 	end
 end)
 
-hook.Add("InitPostEntity", "BSU_ChatboxInit", function() -- chatbox initiate on client
+hook.Add("InitPostEntity", "BSU_ChatboxInit", function()
 	if not IsValid(bsuChat.frame) then
 		bsuChat.create()
 	end

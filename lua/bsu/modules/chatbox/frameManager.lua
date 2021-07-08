@@ -399,16 +399,6 @@ function bsuChat.create()
 			if (!isOpen) runFadeAnim();
 		</script>
 	]])
-	
-	bsuChat.html:AddFunction("bsuChat", "sayText", function(teamChat, text)
-		if not teamChat then
-			LocalPlayer():ConCommand("say \"" .. text .. "\"")
-		else
-			LocalPlayer():ConCommand("say_team \"" .. text .. "\"")
-		end
-
-		bsuChat.hide()
-	end)
 
 	bsuChat.html:AddFunction("bsuChat", "popOutFrame", function(type, msgSendTime, args)
 		if bsuChat.popOut and bsuChat.popOut:IsValid() then
