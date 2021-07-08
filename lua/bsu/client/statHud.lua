@@ -1,5 +1,5 @@
 -- Created and Mauled by FadeRax64
-/*
+
 if SERVER then
 
     // Nothing :( !!
