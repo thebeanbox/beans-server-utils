@@ -28,6 +28,9 @@ if SERVER then
 
   include("bsu/base/player.lua")
 
+  include("bsu/developer.lua")
+  AddCSLuaFile("bsu/developer.lua")
+
   -- SERVER MODULES
   for _, file in ipairs(sv) do
     include(SV_DIR .. file)
@@ -47,6 +50,8 @@ else
   MsgN("[BSU CLIENT] Started up")
 
   include("bsu/base/teams.lua")
+
+  include("bsu/developer.lua")
 
   -- CLIENT MODULES
   for _, file in ipairs(sh) do
