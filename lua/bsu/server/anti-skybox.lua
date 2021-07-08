@@ -1,6 +1,6 @@
 -- initally created by wisp22 (hori)
 -- this script's purpose is to keep guests from spawning props in the skybox, just because its really fucking annoying and chances are a minge wont last long enough to get frequent anyway, and building extra stuff in the skybox isnt that important to people anyway.
-
+/*
 if SERVER then
 	print("BSU Skybox Protection - initalizing!")
     dataFile = "bsu/anti-skybox_data.json"

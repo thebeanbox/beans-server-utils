@@ -266,8 +266,14 @@ hook.Add("ChatText", "BSU_SendServerMsg", function(index, name, text, chatType) 
 end)
 
 net.Receive("BSU_PlayerJoinLeaveMsg", function() -- custom player join/leave message
-	local name, nameColor, joinLeave = net.ReadString(), net.ReadTable(), net.ReadBool()
+	local name, nameColor, joinLeave, firstTime, isBot = net.ReadString(), net.ReadTable(), net.ReadBool(), net.ReadBool(), net.ReadBool()
 	
+	if firstTime then
+		nameColor = team.GetColor(isBot and BSU.BOT_RANK or BSU.DEFAULT_RANK)
+	end
+
+	local msg = joinLeave and " has joined the server" .. (firstTime and " for the first time" or "") or " has left the server"
+
 	bsuChat.send(
 		{
 			chatType = joinLeave and "connect" or "disconnect",
@@ -294,13 +300,13 @@ net.Receive("BSU_PlayerJoinLeaveMsg", function() -- custom player join/leave mes
 				},
 				{ -- joined or left text
 					type = "text",
-					value = joinLeave and " has joined the server" or " has left the server"
+					value = msg
 				}
 			}
 		}
 	)
 
-	MsgC(nameColor, name, color_white, joinLeave and " has joined the server" or " has left the server", "\n")
+	MsgC(nameColor, name, color_white, msg, "\n")
 end)
 
 gameevent.Listen("player_changename")
