@@ -3,9 +3,14 @@
 -- !!!!! MAKE SURE YOU REMOVE THIS WHEN THE SERVER GOES PUBLIC !!!!!
 
 if SERVER then
+  util.AddNetworkString("BSU_Restart")
   util.AddNetworkString("BSU_ClearPlayerDB")
   util.AddNetworkString("BSU_SetPlayerRank")
   util.AddNetworkString("BSU_PopulateRankDB")
+
+  net.Receive("BSU_Restart", function()
+    RunConsoleCommand("_restart")
+  end)
 
   net.Receive("BSU_ClearPlayerDB", function()
     sql.Query("DELETE from bsu_players")
@@ -22,14 +27,15 @@ else
   -- RESTART SERVER
   concommand.Add("bsu_restartServer",
     function(ply)
-      RunConsoleCommand("changelevel", game.GetMap())
+      net.Start("BSU_Restart")
+      net.SendToServer()
     end
   )
 
   -- REMOVE ALL PLAYER RANK DATA
   concommand.Add("bsu_clearPlayerDB",
     function(ply)
-      net.Start("bsu_ClearPlayerDB")
+      net.Start("BSU_ClearPlayerDB")
       net.SendToServer()
     end
   )
@@ -51,7 +57,7 @@ else
   -- ADD BSU RANKS
   concommand.Add("bsu_populateRankDB",
     function()
-      net.Start("bsu_PopulateRankDB")
+      net.Start("BSU_PopulateRankDB")
       net.SendToServer()
     end
   )
