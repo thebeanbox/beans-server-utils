@@ -1,9 +1,9 @@
--- frameManager.lua by Bonyoze
+-- chatbox/frameManager.lua by Bonyoze
 -- Creates and manages showing the chatbox frames
 
 surface.CreateFont("bsuChat_inputBox",
 	{
-		font = "Trebuchet24",
+		font = "Trebuchet",
 		size = 16,
 		weight = 1000,
 		antialias = true,

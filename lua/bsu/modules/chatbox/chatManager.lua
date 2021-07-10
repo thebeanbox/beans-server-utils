@@ -1,4 +1,4 @@
--- chatManager.lua by Bonyoze
+-- chatbox/chatManager.lua by Bonyoze
 -- Manages chat sending and messages appearing on the chatbox
 
 function bsuChat.send(data) -- adds a message to the chatbox

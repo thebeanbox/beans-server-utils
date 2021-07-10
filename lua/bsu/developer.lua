@@ -16,8 +16,8 @@ if SERVER then
     sql.Query("DELETE from bsu_players")
   end)
 
-  net.Receive("BSU_SetPlayerRank", function(_, ply)
-    BSU:SetPlayerRank(ply, net.ReadInt(16))
+  net.Receive("BSU_SetPlayerRank", function()
+    BSU:SetPlayerRank(net.ReadEntity(), net.ReadInt(16))
   end)
 
   net.Receive("BSU_PopulateRankDB", function()
@@ -46,6 +46,7 @@ else
       for _, v in ipairs(player.GetAll()) do
         if string.lower(v:Nick()) == string.lower(args[1]) then
           net.Start("BSU_SetPlayerRank")
+            net.WriteEntity(v)
             net.WriteInt(args[2], 16)
           net.SendToServer()
           return

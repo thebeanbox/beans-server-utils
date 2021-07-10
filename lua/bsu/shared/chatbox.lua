@@ -92,7 +92,7 @@ hook.Add("HUDShouldDraw", "BSU_HideDefaultChatbox", function(name) -- hide the d
 	end
 end)
 
-hook.Add("InitPostEntity", "BSU_ChatboxInit", function()
+hook.Add("OnGamemodeLoaded", "BSU_ChatboxInit", function()
 	if not IsValid(bsuChat.frame) then
 		bsuChat.create()
 	end
