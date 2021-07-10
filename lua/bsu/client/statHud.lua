@@ -13,11 +13,9 @@ else
     local plyHealth, plyArmor = 0, 0
     local hideHuds = {CHudHealth=true, CHudBattery=true}
     local icons = {heart = Material("icon16/heart.png"), shield = Material("icon16/shield.png")}
-    local resW,resH = ScrW(),ScrH()
-    local hudX = resW * 0.025
-    local hudY = resH * 0.925
-    local hudW = 150
-    local hudH = 40
+    local resW, resH = ScrW(), ScrH()
+    local hudX, hudY = resW * 0.025, resH * 0.925
+    local hudW, hudH = 150, 40
     local hasArmor = 0
     local lPly, inSkybox, statHud
     local inSkyStr = "loading..."
@@ -25,7 +23,7 @@ else
     //-- Functions
     function initPanel()
         lPly = LocalPlayer()
-        if not statHud:IsValid() then
+        if not statHud then
             statHud = vgui.Create("DFrame")
                 statHud:SetPos(hudX, hudY)
                 statHud:SetSize(hudW, hudH/2)
