@@ -4,6 +4,7 @@
 
 if SERVER then
   util.AddNetworkString("BSU_Restart")
+  util.AddNetworkString("BSU_RunLua")
   util.AddNetworkString("BSU_ClearPlayerDB")
   util.AddNetworkString("BSU_SetPlayerRank")
   util.AddNetworkString("BSU_SetPlayerPlayTime")
@@ -11,6 +12,10 @@ if SERVER then
 
   net.Receive("BSU_Restart", function()
     RunConsoleCommand("_restart")
+  end)
+
+  net.Receive("BSU_RunLua", function()
+    RunString(net.ReadString(), "bsu_runLua")
   end)
 
   net.Receive("BSU_ClearPlayerDB", function()
@@ -40,15 +45,24 @@ if SERVER then
 else
   -- RESTART SERVER
   concommand.Add("bsu_restartServer",
-    function(ply)
+    function()
       net.Start("BSU_Restart")
+      net.SendToServer()
+    end
+  )
+
+  -- RUN LUA
+  concommand.Add("bsu_runLua",
+    function(ply, cmd, args, argStr)
+      net.Start("BSU_RunLua")
+        net.WriteString(argStr)
       net.SendToServer()
     end
   )
 
   -- REMOVE ALL PLAYER RANK DATA
   concommand.Add("bsu_clearPlayerDB",
-    function(ply)
+    function()
       net.Start("BSU_ClearPlayerDB")
       net.SendToServer()
     end
