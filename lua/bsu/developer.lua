@@ -40,7 +40,7 @@ if SERVER then
   end)
 
   net.Receive("BSU_PopulateRankDB", function()
-    BSU:populateBSURanks()
+    BSU:PopulateBSURanks()
   end)
 else
   -- RESTART SERVER

@@ -8,7 +8,7 @@ sql.Query("CREATE TABLE IF NOT EXISTS bsu_rankRestricts(rankIndex INTEGER NOT NU
 
 // TEMPORARY RANK SETUP
 
-function BSU:populateBSURanks()
+function BSU:PopulateBSURanks()
   local bsuRanks = {
     [100] = {
       name = "Poopyfart",
@@ -52,7 +52,7 @@ function BSU:populateBSURanks()
     [108] = {
       name = "Bot",
       color = "0074ff",
-      afk = 60 * 60
+      afk = 15 * 60
     }
   }
 

@@ -74,7 +74,9 @@ if SERVER then
 	end
 
 	net.Receive("BSU_ClientData", function(len, ply)
-		if not ply.bsu then -- client init (send all existing client data to them)
+		if not ply.bsu or (ply.bsu and ply.bsu.clientInitiated) then -- client init (send all existing client data to them)
+			ply.bsu = ply.bsu or {}
+			ply.bsu.clientInitiated = true
 			for _, v in ipairs(player.GetAll()) do
 				if v != ply and v.bsu then
 					BSU:SendClientData(v, v.bsu, false, ply)
