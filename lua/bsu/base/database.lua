@@ -46,6 +46,10 @@ function BSU:populateBSURanks()
       afk = 60 * 60
     },
     [107] = {
+       name = "Owner",
+       color = "d664fd",
+       afk = 60 * 60
+    [108] = {
       name = "Bot",
       color = "0074ff",
       afk = 60 * 60
