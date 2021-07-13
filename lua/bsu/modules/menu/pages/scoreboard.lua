@@ -212,22 +212,33 @@ for i = 1, game.MaxPlayers() do
 
     local iconsData = {}
 
-    local country = BSU:GetPlayerCountry(self.player)
-    if country != "" then
-      table.insert(iconsData, {
-        image = "flags16/" .. country .. ".png",
-        sizeY = 11,
-        posY = 13
-      })
+    if not self.player:IsBot() then
+      -- append if linux user and if not bot
+      local isLinux = BSU:GetPlayerIsLinux(self.player)
+      if isLinux then
+        table.insert(iconsData, {
+          image = "icon16/tux.png",
+        })
+      end
+      
+      -- append country flag icon if not bot
+      local country = BSU:GetPlayerCountry(self.player)
+      if country != "" then
+        table.insert(iconsData, {
+          image = "flags16/" .. country .. ".png",
+          sizeY = 11,
+          posY = 13
+        })
+      end
     end
 
+    -- append status icon
     local status = BSU:GetPlayerStatus(self.player)
-    if status then
-      table.insert(iconsData, {
-        image = "icon16/status_" .. status .. ".png"
-      })
-    end
+    table.insert(iconsData, {
+      image = "icon16/status_" .. status .. ".png"
+    })
 
+    -- append mode (build or pvp)
     local mode = BSU:GetPlayerMode(self.player) == "build" and "wrench" or "gun"
     table.insert(iconsData, {
       image = "icon16/" .. mode .. ".png"
