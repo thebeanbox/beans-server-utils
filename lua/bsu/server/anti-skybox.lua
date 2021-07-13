@@ -19,6 +19,7 @@ if SERVER then
         print("BSU Skybox Protection - data/" .. dataFile .. " did not exist (this is bad!) creating file, make sure to add skybox data for the current map!")
     end
     skyboxDataTable = any
+	pos = any
 
     function reloadSkyboxFile()
         print("BSU Skybox Protection - reloading skybox dataset!")
