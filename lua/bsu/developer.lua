@@ -6,6 +6,7 @@ if SERVER then
   util.AddNetworkString("BSU_Restart")
   util.AddNetworkString("BSU_ClearPlayerDB")
   util.AddNetworkString("BSU_SetPlayerRank")
+  util.AddNetworkString("BSU_SetPlayerPlayTime")
   util.AddNetworkString("BSU_PopulateRankDB")
 
   net.Receive("BSU_Restart", function()
@@ -16,8 +17,21 @@ if SERVER then
     sql.Query("DELETE from bsu_players")
   end)
 
+  net.Receive("BSU_SetPlayerPlayTime", function()
+    local ply, time = net.ReadEntity(), net.ReadInt(32)
+    BSU:SetPlayerDBData(ply, {
+      playTime = time
+    })
+  end)
+
   net.Receive("BSU_SetPlayerRank", function()
-    BSU:SetPlayerRank(net.ReadEntity(), net.ReadInt(16))
+    local ply, rank = net.ReadEntity(), net.ReadInt(16)
+
+    BSU:SetPlayerDBData(ply, {
+      rankIndex = rank
+    })
+    
+    ply:SetTeam(rank)
   end)
 
   net.Receive("BSU_PopulateRankDB", function()
@@ -37,6 +51,22 @@ else
     function(ply)
       net.Start("BSU_ClearPlayerDB")
       net.SendToServer()
+    end
+  )
+
+  -- ADD TO PLAYER PLAY TIME
+
+  concommand.Add("bsu_setPlayerPlayTime",
+    function(ply, cmd, args)
+      for _, v in ipairs(player.GetAll()) do
+        if string.lower(v:Nick()) == string.lower(args[1]) then
+          net.Start("BSU_SetPlayerPlayTime")
+            net.WriteEntity(v)
+            net.WriteInt(args[2], 32)
+          net.SendToServer()
+          return
+        end
+      end
     end
   )
 

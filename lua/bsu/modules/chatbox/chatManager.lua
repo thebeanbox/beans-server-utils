@@ -267,10 +267,6 @@ end)
 
 net.Receive("BSU_PlayerJoinLeaveMsg", function() -- custom player join/leave message
 	local name, nameColor, joinLeave, firstTime, isBot = net.ReadString(), net.ReadTable(), net.ReadBool(), net.ReadBool(), net.ReadBool()
-	
-	if firstTime then
-		nameColor = team.GetColor(isBot and BSU.BOT_RANK or BSU.DEFAULT_RANK)
-	end
 
 	local msg = joinLeave and " has joined the server" .. (firstTime and " for the first time" or "") or " has left the server"
 

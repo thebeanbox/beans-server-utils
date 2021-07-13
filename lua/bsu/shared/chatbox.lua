@@ -11,18 +11,22 @@ if SERVER then
 	util.AddNetworkString("BSU_PlayerJoinLeaveMsg")
 
 	hook.Add("PlayerInitialSpawn", "BSU_PlayerConnectMsg", function(ply)
+		local plyData = BSU:GetPlayerDBData(ply)
+
 		net.Start("BSU_PlayerJoinLeaveMsg")
 			net.WriteString(ply:Nick())
-			net.WriteTable(BSU:GetPlayerData(ply) and team.GetColor(BSU:GetPlayerData(ply)) or team.GetColor(ply:Team()))
+			net.WriteTable(plyData and team.GetColor(plyData.rankIndex) or team.GetColor(ply:IsBot() and BSU.BOT_RANK or BSU.DEFAULT_RANK))
 			net.WriteBool(true)
-			net.WriteBool(BSU:GetPlayerData(ply) == nil) -- is first time joining
+			net.WriteBool(plyData == nil) -- is first time joining
 			net.WriteBool(ply:IsBot()) -- player is a bot
 		net.Send(player.GetAll())
 	end)
 	hook.Add("PlayerDisconnected", "BSU_PlayerDisconnectMsg", function(ply)
+		local plyData = BSU:GetPlayerDBData(ply)
+
 		net.Start("BSU_PlayerJoinLeaveMsg")
 			net.WriteString(ply:Nick())
-			net.WriteTable(BSU:GetPlayerData(ply) and team.GetColor(BSU:GetPlayerData(ply)) or team.GetColor(ply:Team()))
+			net.WriteTable(plyData and team.GetColor(plyData.rankIndex) or team.GetColor(ply:IsBot() and BSU.BOT_RANK or BSU.DEFAULT_RANK))
 			net.WriteBool(false)
 			-- these must be added but aren't used
 			net.WriteBool(false)

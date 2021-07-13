@@ -19,9 +19,13 @@ else
     local function menuManage(open)
       if not bsuMenu.frame:IsKeyboardInputEnabled() then
         if open then
-          bsuMenu.show()
+          if not bsuMenu.sheet:IsVisible() then
+            bsuMenu.show()
+          end
         else
-          bsuMenu.hide()
+          if bsuMenu.sheet:IsVisible() then
+            bsuMenu.hide()
+          end
         end
       end
     end

@@ -27,6 +27,16 @@ if SERVER then
   AddCSLuaFile("bsu/base/teams.lua")
 
   include("bsu/base/player.lua")
+  AddCSLuaFile("bsu/base/player.lua")
+
+  resource.AddSingleFile("materials/BSU/scoreboard/windows.png")
+  resource.AddSingleFile("materials/BSU/scoreboard/linux.png")
+  resource.AddSingleFile("materials/BSU/scoreboard/mac.png")
+  resource.AddSingleFile("materials/BSU/scoreboard/active.png")
+  resource.AddSingleFile("materials/BSU/scoreboard/unactive.png")
+  resource.AddSingleFile("materials/BSU/scoreboard/afk.png")
+  resource.AddSingleFile("materials/BSU/scoreboard/build.png")
+  resource.AddSingleFile("materials/BSU/scoreboard/pvp.png")
 
   include("bsu/developer.lua")
   AddCSLuaFile("bsu/developer.lua")
@@ -50,6 +60,7 @@ else
   MsgN("[BSU CLIENT] Started up")
 
   include("bsu/base/teams.lua")
+  include("bsu/base/player.lua")
 
   include("bsu/developer.lua")
 

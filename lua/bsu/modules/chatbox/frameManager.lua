@@ -3,9 +3,9 @@
 
 surface.CreateFont("bsuChat_inputBox",
 	{
-		font = "Trebuchet",
+		font = "Arial",
 		size = 16,
-		weight = 1000,
+		weight = 400,
 		antialias = true,
 		shadow = true,
 		extended = true

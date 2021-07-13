@@ -15,6 +15,7 @@ function bsuMenu.create()
   -- pages container
   bsuMenu.sheet = vgui.Create("DPropertySheet", bsuMenu.frame)
   bsuMenu.sheet:SetSize(bsuMenu.frame:GetWide(), bsuMenu.frame:GetTall())
+  bsuMenu.sheet:SetFadeTime(0)
   bsuMenu.sheet:SetPos(0, 0)
 
   bsuMenu.sheet.Paint = function(self, w, h)
@@ -24,11 +25,22 @@ function bsuMenu.create()
   end
   bsuMenu.sheet.oldPaint = bsuMenu.sheet.Paint
 
+  hook.Add("Think", bsuMenu.sheet, function()
+    if gui.IsGameUIVisible() then
+      bsuMenu.hide()
+    end
+  end)
+
   local tabOnPaint = function(self, w, h)
     draw.RoundedBoxEx(5, 0, 0, w, h, Color(40, 40, 40), true, true)
   end
   local tabOffPaint = function(self, w, h)
     draw.RoundedBoxEx(5, 0, 0, w, h, Color(10, 10, 10), true, true)
+  end
+
+  bsuMenu.sheet.OnActiveTabChanged = function(self, old, new)
+    old.Paint = tabOffPaint
+    new.Paint = tabOnPaint
   end
 
   local pagesData = {} -- temp table
@@ -49,46 +61,33 @@ function bsuMenu.create()
   -- add the pages
   for _, page in ipairs(pagesData) do
     page.pnl:SetParent(bsuMenu.sheet)
-    local tab = bsuMenu.sheet:AddSheet(page.name, page.pnl, page.icon).Tab
-    tab.Paint = tab:IsActive() and tabOnPaint or tabOffPaint
-    tab.OnReleased = function(self)
-      for _, v in ipairs(bsuMenu.sheet:GetItems()) do
-        v.Tab.Paint = v.Tab == self and tabOnPaint or tabOffPaint
-      end
-    end
+    local tabData = bsuMenu.sheet:AddSheet(page.name, page.pnl, page.icon)
+
+    if tabData.Name == "Scoreboard" then bsuMenu.sheet:SetActiveTab(tabData.Tab) end -- set scoreboard to active tab
+    
+    tabData.Tab.Paint = tabData.Tab:IsActive() and tabOnPaint or tabOffPaint
   end
 
   bsuMenu.hide()
 
-  hook.Add("OnTextEntryGetFocus", "BSU_MenuFocus", function(pnl)
+  -- setup some hooks
+
+  hook.Add("OnTextEntryGetFocus", "BSU_MenuFocus", function(pnl) -- allows you to type in text entries
     if pnl:HasParent(bsuMenu.sheet) then
       bsuMenu.frame:SetKeyboardInputEnabled(true)
       pnl:RequestFocus()
     end
   end)
 
-  hook.Add("OnTextEntryLoseFocus", "BSU_MenuUnfocus", function(pnl)
+  hook.Add("OnTextEntryLoseFocus", "BSU_MenuUnfocus", function(pnl) -- allows you to continue using your keys after no longer using a text entry
     if pnl:HasParent(bsuMenu.sheet) then
       bsuMenu.frame:SetKeyboardInputEnabled(false)
     end
   end)
 
-  hook.Add("VGUIMousePressed", "BSU_BSU_MenuMouse", function(pnl, code)
-    if not pnl:HasParent(bsuMenu.sheet) then
+  hook.Add("VGUIMousePressed", "BSU_MenuClickHide", function(pnl) -- hides the menu if you click off of it
+    if pnl:GetClassName() == "CGModBase" then
       bsuMenu.hide()
-    elseif code == MOUSE_4 or code == MOUSE_5 then
-      local active, items = bsuMenu.sheet:GetActiveTab(), bsuMenu.sheet:GetItems()
-      for i = 1, #items do
-        if items[i].Tab == active then
-          local index = i + (code == MOUSE_4 and -1 or 1)
-          if index >= 1 and index <= #items then
-            local new = items[index].Tab
-            bsuMenu.sheet:SetActiveTab(new)
-            new:OnReleased()
-          end
-          break
-        end
-      end
     end
   end)
 end

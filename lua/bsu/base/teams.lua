@@ -15,10 +15,19 @@ if SERVER then
                 table.insert(tbl, {
                     index = tonumber(entry.rankIndex),
                     name = entry.rankName,
-                    color = HexColor(entry.rankColor)
+                    color = HexColor(entry.rankColor),
+                    afk = tonumber(entry.afkTimeout)
                 })
             end
             return tbl
+        end
+    end
+
+    function BSU:GetRank(index)
+        for _, rank in ipairs(BSU:GetRanks()) do
+            if rank.index == index then
+                return rank
+            end
         end
     end
 
