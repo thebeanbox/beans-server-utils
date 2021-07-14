@@ -72,7 +72,7 @@ else
 
     
     //-- Hooks
-    initPanel()
+    timer.Simple(2, initPanel)
     hook.Add("HUDShouldDraw", "statHud_hideHud", hideHud)
     hook.Add("InitPostEntity", "statHud_initHud", initPanel)
 end
