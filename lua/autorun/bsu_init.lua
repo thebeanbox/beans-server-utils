@@ -14,7 +14,7 @@ BSU = BSU or {}
 
 -- const values
 BSU.DEFAULT_RANK = 101 -- Guest team index
-BSU.BOT_RANK = 107 -- Bot team index
+BSU.BOT_RANK = 108 -- Bot team index
 
 -- SERVER/CLIENT SETUP
 if SERVER then
