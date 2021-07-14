@@ -217,7 +217,7 @@ for i = 1, game.MaxPlayers() do
       local os = BSU:GetPlayerOS(self.player)
       if os != "" then
         table.insert(iconsData, {
-          image = os == "windows" and "materials/bsu/windows.png" or os == "linux" and "icon16/tux.png" or os == "mac" and "materials/bsu/mac.png",
+          image = os == "windows" and "materials/bsu/scoreboard/windows.png" or os == "linux" and "icon16/tux.png" or os == "mac" and "materials/bsu/scoreboard/mac.png",
         })
       end
 
