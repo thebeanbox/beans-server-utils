@@ -83,7 +83,9 @@ concommand.Add("bsu_hudsize", function(ply, cmd, args)
     local argSize = tonumber(args[1])
     if argSize  and (argSize >= minSize and argSize <= maxSize) then
         targetW, targetH = argSize, argSize
+        --hudX, hudY = targetW * resW * 0.025, targetH * resH * 0.925
         hudW, hudH = targetW * 150, targetH * 40
+        --dpStatHud:SetPos(hudX, hudY)
         dpStatHud:SetSize(hudW, hudH/2)
     else
         MsgC( Color(255,0,0), "Must use a number between "..minSize.." and "..maxSize.."!\n" )
