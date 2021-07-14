@@ -140,7 +140,7 @@ else
 		local initData = {
 			isAFK = false,
 			isFocused = system.HasFocus(),
-			country = system.GetCountry().
+			country = system.GetCountry(),
 			os = system.IsWindows() and "windows" or system.IsLinux() and "linux" or system.IsOSX() and "mac"
 		}
 		LocalPlayer().bsu = initData
