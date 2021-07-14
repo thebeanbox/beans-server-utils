@@ -30,8 +30,8 @@ if SERVER then
   AddCSLuaFile("bsu/base/player.lua")
 
   -- load assets
-  resource.AddSingleFile("materials/bsu/windows.png")
-  resource.AddSingleFile("materials/bsu/mac.png")
+  resource.AddSingleFile("materials/bsu/scoreboard/windows.png")
+  resource.AddSingleFile("materials/bsu/scoreboard/mac.png")
 
   include("bsu/developer.lua")
   AddCSLuaFile("bsu/developer.lua")
