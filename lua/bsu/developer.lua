@@ -47,16 +47,20 @@ if SERVER then
   
   net.Receive("BSU_GetPlayerRankColor", function(_, sender)
       local ply = net.ReadEntity()
-      local hex = BSU:GetPlayerRankColor(ply)
+      local color = BSU:GetPlayerRankColor(ply)
       net.Start("BSU_GetPlayerRankColor")
-        net.WriteString(hex)
+        net.WriteTable(color)
       net.Send(sender)
+  end)
+
+  net.Receive("BSU_SetPlayerRankColor", function()
+    local ply, rgb = net.ReadEntity(), net.ReadTable()
+    BSU:SetPlayerRankColor(ply, rgb)
   end)
 else
   net.Receive("BSU_GetPlayerRankColor", function()
-      local hex = net.ReadString():gsub("#","")
-      local col = Color(tonumber("0x" .. hex:sub(1, 2)), tonumber("0x" .. hex:sub(3, 4)), tonumber("0x" .. hex:sub(5, 6)), alpha or 255)
-      MsgC(col, hex)
+    local color = net.ReadTable()
+    MsgC(color, color.r .. " " .. color.g .. " " .. color.b)
   end)
 
   -- RESTART SERVER
@@ -122,12 +126,29 @@ else
       net.SendToServer()
     end
   )
+
+  -- GET PLAYER RANK COLOR
   concommand.Add("BSU_getPlayerRankColor",
     function(ply, cmd, args)
       for _, v in ipairs(player.GetAll()) do
         if string.lower(v:Nick()) == string.lower(args[1]) then
           net.Start("BSU_GetPlayerRankColor")
             net.WriteEntity(v)
+          net.SendToServer()
+          return
+        end
+      end
+    end
+  )
+
+  -- SET PLAYER RANK COLOR
+  concommand.Add("BSU_setPlayerRankColor",
+    function(ply, cmd, args)
+      for _, v in ipairs(player.GetAll()) do
+        if string.lower(v:Nick()) == string.lower(args[1]) then
+          net.Start("BSU_SetPlayerRankColor")
+            net.WriteEntity(v)
+            net.WriteTable(Color(args[2], args[3], args[4]))
           net.SendToServer()
           return
         end

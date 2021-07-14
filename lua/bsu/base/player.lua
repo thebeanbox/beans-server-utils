@@ -1,7 +1,7 @@
 -- player.lua by Bonyoze
 
-local function RGBToHex(r,g,b)
-    local rgb = (r * 0x10000) + (g * 0x100) + b
+function BSU:ColorToHex(color)
+    local rgb = (color.r * 0x10000) + (color.g * 0x100) + color.b
     return string.format("%x", rgb)
 end
 
@@ -32,12 +32,16 @@ end
 function BSU:GetPlayerRankColor(ply)
 	local data = BSU:GetPlayerDBData(ply)
 	if data then
-		if data.rankColor then return data.rankColor else return BSU:GetRank(data.rankIndex).color end
+		if data.rankColor then
+			return BSU:HexToColor(data.rankColor)
+		else
+			return BSU:GetRank(data.rankIndex).color
+		end
 	end
 end
 
 function BSU:SetPlayerRankColor(ply, color)
-	sql.Query(string.format("UPDATE bsu_players SET rankColor = '%s' WHERE steamId = '%s'", RGBToHex(color.r, color.g, color.b), ply:SteamId64()))
+	sql.Query(string.format("UPDATE bsu_players SET rankColor = '%s' WHERE steamId = '%s'", BSU:ColorToHex(color), ply:SteamID64()))
 end
 
 function BSU:ReceiveClientData(ply, data)

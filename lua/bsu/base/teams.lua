@@ -1,7 +1,7 @@
 -- teams.lua by Bonyoze
 
 if SERVER then
-    local function HexToColor(hex, alpha)
+    function BSU:HexToColor(hex, alpha)
         local hex = hex:gsub("#","")
         return Color(tonumber("0x" .. hex:sub(1,2)), tonumber("0x" .. hex:sub(3,4)), tonumber("0x" .. hex:sub(5,6)), alpha or 255)
     end
@@ -15,7 +15,7 @@ if SERVER then
                 table.insert(tbl, {
                     index = tonumber(entry.rankIndex),
                     name = entry.rankName,
-                    color = HexToColor(entry.rankColor),
+                    color = BSU:HexToColor(entry.rankColor),
                     afk = tonumber(entry.afkTimeout)
                 })
             end
