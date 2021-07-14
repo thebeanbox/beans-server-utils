@@ -16,6 +16,10 @@ else
   include("bsu/modules/menu/frameManager.lua")
   
   hook.Add("OnGamemodeLoaded", "BSU_MenuInit", function()
+    if not IsValid(bsuMenu.frame) then
+      bsuMenu.create()
+    end
+
     local function menuManage(open)
       if not bsuMenu.frame:IsKeyboardInputEnabled() then
         if open then
@@ -36,10 +40,6 @@ else
     
     function GAMEMODE:ScoreboardHide()
       menuManage(false)
-    end
-
-    if not IsValid(bsuMenu.frame) then
-      bsuMenu.create()
     end
   end)
 end
