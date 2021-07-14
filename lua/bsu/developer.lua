@@ -9,6 +9,8 @@ if SERVER then
   util.AddNetworkString("BSU_SetPlayerRank")
   util.AddNetworkString("BSU_SetPlayerPlayTime")
   util.AddNetworkString("BSU_PopulateRankDB")
+  util.AddNetworkString("BSU_GetRankColor")
+  util.AddNetworkString("BSU_SetRankColor")
 
   net.Receive("BSU_Restart", function()
     RunConsoleCommand("_restart")
@@ -42,7 +44,21 @@ if SERVER then
   net.Receive("BSU_PopulateRankDB", function()
     BSU:PopulateBSURanks()
   end)
+  
+  net.Receive("BSU_GetRankColor", function(_, sender)
+      local ply = net.ReadEntity()
+      local hex = BSU:GetRankColor(ply)
+      net.Start("BSU_GetRankColor")
+      net.WriteString(hex)
+      net.Send(sender)
+  end)
 else
+  net.Receive("BSU_GetRankColor", function()
+      local boobs = net.ReadString()
+      local hex = boobs:gsub("#","")
+      local col = Color(tonumber("0x" .. hex:sub(1,2)), tonumber("0x" .. hex:sub(3,4)), tonumber("0x" .. hex:sub(5,6)), alpha or 255)
+      MsgC(col, boobs)
+  end)
   -- RESTART SERVER
   concommand.Add("bsu_restartServer",
     function()
@@ -104,6 +120,18 @@ else
     function()
       net.Start("BSU_PopulateRankDB")
       net.SendToServer()
+    end
+  )
+  concommand.Add("bsu_GetRankColor,
+    function(ply, cmd, args)
+      for _, v in ipairs(player.Getall()) do
+        if string.lower(v:Nick()) == string.lower(args[1]) then
+          net.Start("BSU_GetRankColor")
+          net.WriteEntity(v)
+          net.SendToServer()
+          return
+        end
+      end
     end
   )
 end
