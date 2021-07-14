@@ -122,7 +122,7 @@ else
       net.SendToServer()
     end
   )
-  concommand.Add("bsu_GetRankColor,
+  concommand.Add("bsu_GetRankColor",
     function(ply, cmd, args)
       for _, v in ipairs(player.Getall()) do
         if string.lower(v:Nick()) == string.lower(args[1]) then
