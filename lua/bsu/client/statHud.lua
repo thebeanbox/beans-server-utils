@@ -62,6 +62,8 @@ else
             surface.SetMaterial(icons.shield)
             surface.DrawTexturedRect(10, 20, 16, 16)
         end
+            
+        draw.DrawText(inSkybox ? "You are in the skybox." : "You are not in the skybox.", 30, 5, inSkybox ? Color(255, 75, 75, 255) : Color (75, 255, 75, 255), 0)
     end
 
     function hideHud(name)
