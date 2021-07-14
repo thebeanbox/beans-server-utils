@@ -16,8 +16,8 @@ function BSU:GetPlayerCountry(ply)
 	return not ply:IsBot() and ply.bsu and ply.bsu.country or ""
 end
 
-function BSU:GetPlayerIsLinux(ply)
-	return not ply:IsBot() and ply.bsu and ply.bsu.isLinux or false
+function BSU:GetPlayerOS(ply)
+	return not ply:IsBot() and ply.bsu and ply.bsu.os or ""
 end
 
 function BSU:GetPlayerMode(ply)
@@ -74,9 +74,9 @@ if SERVER then
 	end
 
 	net.Receive("BSU_ClientData", function(len, ply)
-		if not ply.bsu or (ply.bsu and ply.bsu.clientInitiated) then -- client init (send all existing client data to them)
-			ply.bsu = ply.bsu or {}
-			ply.bsu.clientInitiated = true
+		local init, data = net.ReadBool(), net.ReadData(len)
+
+		if init then -- client init (send all existing client data to them)
 			for _, v in ipairs(player.GetAll()) do
 				if v != ply and v.bsu then
 					BSU:SendClientData(v, v.bsu, false, ply)
@@ -84,7 +84,7 @@ if SERVER then
 			end
 		end
 
-		local data = util.JSONToTable(util.Decompress(net.ReadData(len)))
+		local data = util.JSONToTable(util.Decompress(data))
 		BSU:ReceiveClientData(ply, data)
 		BSU:SendClientData(ply, data, true)
 	end)
@@ -123,8 +123,9 @@ if SERVER then
 		if victim != attacker then BSU:SetPlayerValue(attacker, "kills", BSU:GetPlayerKills(attacker) + 1) end
 	end)
 else
-	function BSU:SendClientData(data)
+	function BSU:SendClientData(init, data)
 		net.Start("BSU_ClientData")
+			net.WriteBool(init)
 			net.WriteData(util.Compress(util.TableToJSON(data)))
 		net.SendToServer()
 	end
@@ -138,12 +139,12 @@ else
 		-- setup/send init data
 		local initData = {
 			isAFK = false,
-			isLinux = system.IsLinux(),
 			isFocused = system.HasFocus(),
-			country = system.GetCountry()
+			country = system.GetCountry().
+			os = system.IsWindows() and "windows" or system.IsLinux() and "linux" or system.IsOSX() and "mac"
 		}
 		LocalPlayer().bsu = initData
-		BSU:SendClientData(initData)
+		BSU:SendClientData(true, initData)
 
 		-- afk counter
 		--[[if not LocalPlayer():IsBot() then
@@ -158,7 +159,7 @@ else
 			local focus = system.HasFocus()
 			if LocalPlayer().bsu.isFocused != focus then
 				LocalPlayer().bsu.isFocused = focus
-				BSU:SendClientData({ isFocused = focus })
+				BSU:SendClientData(false, { isFocused = focus })
 			end
 		end)
 	end)

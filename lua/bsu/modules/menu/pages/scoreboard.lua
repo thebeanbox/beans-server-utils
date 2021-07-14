@@ -214,13 +214,13 @@ for i = 1, game.MaxPlayers() do
 
     if not self.player:IsBot() then
       -- append if linux user and if not bot
-      local isLinux = BSU:GetPlayerIsLinux(self.player)
-      if isLinux then
+      local os = BSU:GetPlayerOS(self.player)
+      if os != "" then
         table.insert(iconsData, {
-          image = "icon16/tux.png",
+          image = os == "windows" and "materials/bsu/windows.png" or os == "linux" and "icon16/tux.png" or os == "mac" and "materials/bsu/mac.png",
         })
       end
-      
+
       -- append country flag icon if not bot
       local country = BSU:GetPlayerCountry(self.player)
       if country != "" then
