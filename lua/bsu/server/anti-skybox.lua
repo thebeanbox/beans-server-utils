@@ -28,12 +28,13 @@ if SERVER then
         pos = util.JSONToTable(skyboxDataTable)
 	util.AddNetworkString("BSU_SkyboxNetMessage") -- get the networking for the hud ready to go
 	if !pos[game.GetMap()] then print("BSU Skybox Protection - this map does not have vectors set for the skybox! this will not operate until vectors are set.") end
-
     end
     timer.Simple(3, reloadSkyboxFile)
 
 	hook.Add("Think", "BSU_SkyboxCheck", function()
-		if pos[game.GetMap()] then
+		if not pos[game.GetMap()] then
+		 -- idk
+		else
 			local c1 = pos[game.GetMap()][1]
 			local c2 = pos[game.GetMap()][2]
 			local fents = ents.FindInBox(c1, c2)
