@@ -9,8 +9,8 @@ if SERVER then
   util.AddNetworkString("BSU_SetPlayerRank")
   util.AddNetworkString("BSU_SetPlayerPlayTime")
   util.AddNetworkString("BSU_PopulateRankDB")
-  util.AddNetworkString("BSU_GetRankColor")
-  util.AddNetworkString("BSU_SetRankColor")
+  util.AddNetworkString("BSU_GetPlayerRankColor")
+  util.AddNetworkString("BSU_SetPlayerRankColor")
 
   net.Receive("BSU_Restart", function()
     RunConsoleCommand("_restart")
@@ -45,20 +45,20 @@ if SERVER then
     BSU:PopulateBSURanks()
   end)
   
-  net.Receive("BSU_GetRankColor", function(_, sender)
+  net.Receive("BSU_GetPlayerRankColor", function(_, sender)
       local ply = net.ReadEntity()
-      local hex = BSU:GetRankColor(ply)
-      net.Start("BSU_GetRankColor")
-      net.WriteString(hex)
+      local hex = BSU:GetPlayerRankColor(ply)
+      net.Start("BSU_GetPlayerRankColor")
+        net.WriteString(hex)
       net.Send(sender)
   end)
 else
-  net.Receive("BSU_GetRankColor", function()
-      local boobs = net.ReadString()
-      local hex = boobs:gsub("#","")
-      local col = Color(tonumber("0x" .. hex:sub(1,2)), tonumber("0x" .. hex:sub(3,4)), tonumber("0x" .. hex:sub(5,6)), alpha or 255)
-      MsgC(col, boobs)
+  net.Receive("BSU_GetPlayerRankColor", function()
+      local hex = net.ReadString():gsub("#","")
+      local col = Color(tonumber("0x" .. hex:sub(1, 2)), tonumber("0x" .. hex:sub(3, 4)), tonumber("0x" .. hex:sub(5, 6)), alpha or 255)
+      MsgC(col, hex)
   end)
+
   -- RESTART SERVER
   concommand.Add("bsu_restartServer",
     function()
@@ -122,12 +122,12 @@ else
       net.SendToServer()
     end
   )
-  concommand.Add("bsu_GetRankColor",
+  concommand.Add("BSU_getPlayerRankColor",
     function(ply, cmd, args)
-      for _, v in ipairs(player.Getall()) do
+      for _, v in ipairs(player.GetAll()) do
         if string.lower(v:Nick()) == string.lower(args[1]) then
-          net.Start("BSU_GetRankColor")
-          net.WriteEntity(v)
+          net.Start("BSU_GetPlayerRankColor")
+            net.WriteEntity(v)
           net.SendToServer()
           return
         end

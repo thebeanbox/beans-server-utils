@@ -29,14 +29,14 @@ function BSU:GetPlayerMode(ply)
 	return "build" -- temporary
 end
 
-function BSU:GetRankColor(ply)
+function BSU:GetPlayerRankColor(ply)
 	local data = BSU:GetPlayerDBData(ply)
 	if data then
 		if data.rankColor then return data.rankColor else return BSU:GetRank(data.rankIndex).color end
 	end
 end
 
-function BSU:ChangeRankColor(ply, color)
+function BSU:SetPlayerRankColor(ply, color)
 	sql.Query(string.format("UPDATE bsu_players SET rankColor = '%s' WHERE steamId = '%s'", RGBToHex(color.r, color.g, color.b), ply:SteamId64()))
 end
 
