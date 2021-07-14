@@ -51,13 +51,15 @@ end
 
 function drawHud(self, w, h)
     local barWidth = w-10
-    if lPly:Armor()>0 then hasArmor = 1 else hasArmor = 0 end
+    if lPly:Armor() then -- This is disgusting, I gotta think of something else
+        if lPly:Armor()>0 then hasArmor = 1 else hasArmor = 0 end
+    end
     local boolHasArmor = !tobool( hasArmor )
     local hudHeight = ( hud.h/2+5) + ((hud.h/2-5)*hasArmor )
     self:SetSize( hud.w, hudHeight )
 
-    plyHealth = Lerp(0.1, plyHealth, math.Clamp((lPly:Health()/lPly:GetMaxHealth())*barWidth, 0, barWidth))
-    plyArmor = Lerp(0.1, plyArmor, math.Clamp((lPly:Armor()/lPly:GetMaxArmor())*barWidth, 0, barWidth))
+    plyHealth = Lerp( 0.1, plyHealth, math.Clamp((lPly:Health()/lPly:GetMaxHealth())*barWidth, 0, barWidth) )
+    plyArmor = Lerp( 0.1, plyArmor, math.Clamp((lPly:Armor()/lPly:GetMaxArmor())*barWidth, 0, barWidth) )
 
     -- Draw Background
     surface.SetMaterial( blur )
