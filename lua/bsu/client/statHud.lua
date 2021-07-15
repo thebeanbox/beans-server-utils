@@ -5,7 +5,8 @@
 ---- Variables ============================================================================================
 surface.CreateFont("fontMain", {font = "Arial", size = 15, antialias = true, weight = 550})
 net.Receive("BSU_SkyboxNetMessage", function() inSkybox = net.ReadBool() end)
-local lPly, inSkybox, dpStatHud, dpStatIcons, dmBlur
+local lPly = LocalPlayer()
+local inSkybox, dpStatHud, dpStatIcons, dmBlur
 local uvMult = 1/3
 local blur = Material("pp/blurscreen") -- USE pp/blurscreen METHOD INSTEAD!!!
 local resW, resH = ScrW(), ScrH()
@@ -106,7 +107,7 @@ function drawHud(self, w, h)
             surface.SetDrawColor(Color(255,255,255,255))
             draw.DrawText( lPly:Armor(), "fontMain", 30, (h/1.5)-6, Color(255,255,255,255), 0 )
             surface.SetMaterial( icons.sheet )
-            surface.DrawTexturedRectUV( 10, (h/1.5)-6, icons.armor.u, icons.armor.v, icons.armor.u+uvMult, icons.armor.v+uvMult )
+            surface.DrawTexturedRectUV( 10, (h/1.5)-6, 16, 16, icons.armor.u, icons.armor.v, icons.armor.u+uvMult, icons.armor.v+uvMult )
         end
     end
 end
