@@ -11,10 +11,10 @@ TeamList:SetMultiSelect( false )
 TeamList:AddColumn( "Index" )
 TeamList:AddColumn( "Team Name" )
 
-local ranks = BSU:GetRanks()
-table.sort(ranks, function(a, b) return a.index > b.index end)
+local ranks = team.GetAllTeams()
+
 for _, v in pairs(ranks) do
-    TeamList:AddLine(v.index, v.name)
+    TeamList:AddLine(v, team.GetName(v))
 end
 
 TeamList.OnRowSelected = function( lst, index, pnl )
