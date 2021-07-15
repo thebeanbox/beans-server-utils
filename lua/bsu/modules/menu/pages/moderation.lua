@@ -5,7 +5,7 @@ local entry = vgui.Create("DTextEntry", panel)
 entry:SetTabbingDisabled(true) -- this is needed because you have to be holding TAB to open the menu
 entry:Dock(TOP)
 
-local TeamList = vgui.Create( "DListView", f )
+local TeamList = vgui.Create( "DListView", panel )
 TeamList:Dock( FILL )
 TeamList:SetMultiSelect( false )
 TeamList:AddColumn( "Index" )
