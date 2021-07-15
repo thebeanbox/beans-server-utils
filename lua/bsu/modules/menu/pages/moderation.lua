@@ -13,8 +13,8 @@ TeamList:AddColumn( "Team Name" )
 
 local ranks = team.GetAllTeams()
 
-for _, v in pairs(ranks) do
-    TeamList:AddLine(v, team.GetName(v))
+for k, v in pairs(ranks) do
+    TeamList:AddLine(k, v.Name)
 end
 
 TeamList.OnRowSelected = function( lst, index, pnl )
