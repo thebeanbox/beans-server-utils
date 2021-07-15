@@ -214,7 +214,7 @@ end
 
 hook.Add("OnPlayerChat", "BSU_SendPlayerMsg", function(player, text, teamChat, isDead) -- messages from players
 	if not teamChat or (teamChat and LocalPlayer():Team() == player:Team()) then
-		local name, nameColor = (player and player:IsValid()) and player:Nick() or "Console", (player and player:IsValid()) and team.GetColor(player:Team()) or Color(151, 211, 255)
+		local name, nameColor = (player and player:IsValid()) and player:Nick() or "Console", (player and player:IsValid()) and BSU:GetPlayerColor(player) or Color(151, 211, 255)
 		local messageContent = formatPlyMsg(text)
 
 		table.insert(messageContent,

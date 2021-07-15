@@ -119,7 +119,7 @@ for i = 1, game.MaxPlayers() do
     draw.RoundedBox(0, 0, 0, w, 36, color_black)
 
     -- color
-    draw.RoundedBoxEx(5, 2, 2, w - 4, 32, team.GetColor(self.player:Team()), true, false, true, false)
+    draw.RoundedBoxEx(5, 2, 2, w - 4, 32, BSU:GetPlayerColor(self.player), true, false, true, false)
 
     surface.SetDrawColor(Color(0, 0, 0, 125))
 
@@ -215,7 +215,7 @@ for i = 1, game.MaxPlayers() do
     if not self.player:IsBot() then
       -- append if linux user and if not bot
       local os = BSU:GetPlayerOS(self.player)
-      if os != "" then
+      if os then
         table.insert(iconsData, {
           image = os == "windows" and "materials/bsu/scoreboard/windows.png" or os == "linux" and "icon16/tux.png" or os == "mac" and "materials/bsu/scoreboard/mac.png",
         })
@@ -223,7 +223,7 @@ for i = 1, game.MaxPlayers() do
 
       -- append country flag icon if not bot
       local country = BSU:GetPlayerCountry(self.player)
-      if country != "" then
+      if country then
         table.insert(iconsData, {
           image = "flags16/" .. country .. ".png",
           sizeY = 11,
@@ -239,7 +239,7 @@ for i = 1, game.MaxPlayers() do
     })
 
     -- append mode (build or pvp)
-    local mode = BSU:GetPlayerMode(self.player) == "build" and "wrench" or "gun"
+    local mode = BSU:GetPlayerMode(self.player) == "build" and "wrench_orange" or "gun"
     table.insert(iconsData, {
       image = "icon16/" .. mode .. ".png"
     })

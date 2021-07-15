@@ -1,11 +1,6 @@
 -- teams.lua by Bonyoze
 
 if SERVER then
-    function BSU:HexToColor(hex, alpha)
-        local hex = hex:gsub("#","")
-        return Color(tonumber("0x" .. hex:sub(1,2)), tonumber("0x" .. hex:sub(3,4)), tonumber("0x" .. hex:sub(5,6)), alpha or 255)
-    end
-
     function BSU:GetRanks()
         local ranks = sql.Query("SELECT * FROM bsu_ranks")
 

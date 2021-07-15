@@ -1,47 +1,27 @@
 -- player.lua by Bonyoze
 
-function BSU:ColorToHex(color)
-    local rgb = (color.r * 0x10000) + (color.g * 0x100) + color.b
-    return string.format("%x", rgb)
-end
-
 function BSU:GetPlayerPlayTime(ply)
-	return ply.bsu and ply.bsu.playTime or 0
+	return ply:GetNWInt("playTime")
 end
 
 function BSU:GetPlayerKills(ply)
-	return ply.bsu and ply.bsu.kills or 0
+	return ply:GetNWInt("kills")
 end
 
 function BSU:GetPlayerStatus(ply)
-	return ply:IsBot() and "offline" or (ply.bsu and ply.bsu.isAFK or false) and "away" or (ply.bsu and ply.bsu.isFocused == false or false) and "busy" or "online"
+	return ply:IsBot() and "offline" or ply:GetNWBool("isAFK") and "away" or ply:GetNWBool("isFocused") == false and "busy" or "online"
 end
 
 function BSU:GetPlayerCountry(ply)
-	return not ply:IsBot() and ply.bsu and ply.bsu.country or ""
+	return not ply:IsBot() and ply:GetNWString("country")
 end
 
 function BSU:GetPlayerOS(ply)
-	return not ply:IsBot() and ply.bsu and ply.bsu.os or ""
+	return not ply:IsBot() and ply:GetNWString("os")
 end
 
 function BSU:GetPlayerMode(ply)
 	return "build" -- temporary
-end
-
-function BSU:GetPlayerRankColor(ply)
-	local data = BSU:GetPlayerDBData(ply)
-	if data then
-		if data.rankColor then
-			return BSU:HexToColor(data.rankColor)
-		else
-			return BSU:GetRank(data.rankIndex).color
-		end
-	end
-end
-
-function BSU:SetPlayerRankColor(ply, color)
-	sql.Query(string.format("UPDATE bsu_players SET rankColor = '%s' WHERE steamId = '%s'", BSU:ColorToHex(color), ply:SteamID64()))
 end
 
 function BSU:ReceiveClientData(ply, data)
@@ -52,7 +32,9 @@ function BSU:ReceiveClientData(ply, data)
 end
 
 if SERVER then
-	util.AddNetworkString("BSU_ClientData")
+	util.AddNetworkString("BSU_ClientInit")
+	util.AddNetworkString("BSU_ClientAFKStatus")
+	util.AddNetworkString("BSU_ClientFocusedStatus")
 
 	function BSU:GetPlayerDBData(ply)
 		if not ply or not ply:IsValid() then ErrorNoHalt("Tried to get player data of null entity") return end
@@ -63,7 +45,7 @@ if SERVER then
 			return {
 				rankIndex = tonumber(entry.rankIndex),
 				playTime = tonumber(entry.playTime),
-				rankColor = entry.rankColor != "NULL" and entry.rankColor or nil
+				uniqueColor = entry.uniqueColor != "NULL" and entry.uniqueColor or nil
 			}
 		end
 	end
@@ -80,49 +62,74 @@ if SERVER then
 		end
 	end
 
-	function BSU:SendClientData(ply, data, omit, targets)
-		net.Start("BSU_ClientData")
-			net.WriteEntity(ply)
-			net.WriteData(util.Compress(util.TableToJSON(data)))
-		if omit then net.SendOmit(ply) else net.Send(targets or player.GetAll()) end
+	function BSU:SetPlayerRank(ply, index)
+		BSU:SetPlayerDBData(ply, {
+			rankIndex = index
+		})
+		ply:SetTeam(index)
+		
+		local color = BSU:GetRank(index).color
+		ply:SetNWVector("color", Vector(color.r, color.g, color.b))
 	end
 
-	function BSU:SetPlayerValue(ply, name, value)
-		ply.bsu = ply.bsu or {}
-		ply.bsu[name] = value
-		BSU:SendClientData(ply, { [name] = ply.bsu[name] })
-	end
+	function BSU:GetPlayerColor(ply)
+		local plyData = BSU:GetPlayerDBData(ply)
 
-	net.Receive("BSU_ClientData", function(len, ply)
-		local init, data = net.ReadBool(), net.ReadData(len)
+		local uniqueColor = ply:GetNWVector("uniqueColor")
 
-		if init then -- client init (send all existing client data to them)
-			for _, v in ipairs(player.GetAll()) do
-				if v != ply and v.bsu then
-					BSU:SendClientData(v, v.bsu, false, ply)
-				end
-			end
+		if uniqueColor != Vector() then
+			uniqueColor = Color(uniqueColor[1], uniqueColor[2], uniqueColor[3])
+		elseif plyData and plyData.uniqueColor then
+			uniqueColor = BSU:HexToColor(plyData.uniqueColor)
+		else
+			uniqueColor = nil
 		end
 
-		local data = util.JSONToTable(util.Decompress(data))
-		BSU:ReceiveClientData(ply, data)
-		BSU:SendClientData(ply, data, true)
+		local color = ply:GetNWVector("color")
+
+		if color != Vector() then
+			color = Color(color[1], color[2], color[3])
+		elseif plyData then
+			color = BSU:GetRank(plyData.rankIndex).color
+		else
+			color = nil
+		end
+
+		return uniqueColor or color or team.GetColor(ply:IsBot() and BSU.BOT_RANK or BSU.DEFAULT_RANK)
+	end
+
+	net.Receive("BSU_ClientInit", function(_, ply)
+		local country, os = net.ReadString(), net.ReadString()
+
+		ply:SetNWString("country", country)
+		ply:SetNWString("os", os)
 	end)
 
-	-- set player team
+	net.Receive("BSU_ClientFocusedStatus", function(_, ply)
+		local isFocused = net.ReadBool()
+
+		ply:SetNWBool("isFocused", isFocused)
+	end)
+	
 	hook.Add("PlayerSpawn", "BSU_SetPlayerTeam", function(ply)
-		-- setup/receive player data in db
-		local plyData = BSU:GetPlayerDBData(ply)
-		if not plyData then
-			BSU:SetPlayerDBData(ply, {
-				rankIndex = ply:IsBot() and BSU.BOT_RANK or BSU.DEFAULT_RANK
-			})
+		if ply:Team() == 1001 then -- if unassigned then setup rank/team
+			local data = BSU:GetPlayerDBData(ply)
 
-			plyData = BSU:GetPlayerDBData(ply) -- new data
+			if not data then
+				BSU:SetPlayerRank(ply, ply:IsBot() and BSU.BOT_RANK or BSU.DEFAULT_RANK)
+				data = BSU:GetPlayerDBData(ply) -- new data
+			else
+				ply:SetTeam(data.rankIndex)
+
+				local color = BSU:GetRank(data.rankIndex).color
+				ply:SetNWVector("color", Vector(color.r, color.g, color.b))
+			end
+
+			if data.uniqueColor then
+				local color = BSU:HexToColor(data.uniqueColor)
+				ply:SetNWVector("uniqueColor", Vector(color.r, color.g, color.b))
+			end
 		end
-
-		-- set team
-		ply:SetTeam(plyData.rankIndex)
 	end)
 
 	timer.Create("BSU_PlayerPlayTimeCounter", 1, 0, function()
@@ -133,38 +140,42 @@ if SERVER then
 			if plyData then
 				local newVal = plyData.playTime + 1
 				BSU:SetPlayerDBData(ply, { playTime = newVal })
-				BSU:SetPlayerValue(ply, "playTime", newVal)
+				ply:SetNWInt("playTime", newVal)
 			end
 		end
 	end)
 
 	-- track kills for players
 	hook.Add("PlayerDeath", "BSU_PlayerKills", function(victim, inflict, attacker)
-		if victim != attacker then BSU:SetPlayerValue(attacker, "kills", BSU:GetPlayerKills(attacker) + 1) end
+		if victim != attacker then attacker:SetNWInt("kills", attacker:GetNWInt("kills") + 1) end
 	end)
 else
-	function BSU:SendClientData(init, data)
-		net.Start("BSU_ClientData")
-			net.WriteBool(init)
-			net.WriteData(util.Compress(util.TableToJSON(data)))
-		net.SendToServer()
+	function BSU:GetPlayerColor(ply)
+		local uniqueColor = ply:GetNWVector("uniqueColor")
+
+		if uniqueColor != Vector() then
+			uniqueColor = Color(uniqueColor[1], uniqueColor[2], uniqueColor[3])
+		else
+			uniqueColor = nil
+		end
+
+		local color = ply:GetNWVector("color")
+
+		if color != Vector() then
+			color = Color(color[1], color[2], color[3])
+		else
+			color = nil
+		end
+
+		return uniqueColor or color or team.GetColor(ply:IsBot() and BSU.BOT_RANK or BSU.DEFAULT_RANK)
 	end
 
 	hook.Add("InitPostEntity", "BSU_PlayerInit", function()
-		-- receive other client data
-		net.Receive("BSU_ClientData", function(len)
-			BSU:ReceiveClientData(net.ReadEntity(), util.JSONToTable(util.Decompress(net.ReadData(len))))
-		end)
 
-		-- setup/send init data
-		local initData = {
-			isAFK = false,
-			isFocused = system.HasFocus(),
-			country = system.GetCountry(),
-			os = system.IsWindows() and "windows" or system.IsLinux() and "linux" or system.IsOSX() and "mac"
-		}
-		LocalPlayer().bsu = initData
-		BSU:SendClientData(true, initData)
+		net.Start("BSU_ClientInit")
+			net.WriteString(system.GetCountry())
+			net.WriteString(system.IsWindows() and "windows" or system.IsLinux() and "linux" or system.IsOSX() and "mac")
+		net.SendToServer()
 
 		-- afk counter
 		--[[if not LocalPlayer():IsBot() then
@@ -175,11 +186,14 @@ else
 		end]]
 
 		-- check status of game window focus
+		local lastFocused = system.HasFocus()
 		timer.Create("BSU_ClientWindowIsFocused", 1, 0, function()
-			local focus = system.HasFocus()
-			if LocalPlayer().bsu.isFocused != focus then
-				LocalPlayer().bsu.isFocused = focus
-				BSU:SendClientData(false, { isFocused = focus })
+			local currFocused = system.HasFocus()
+			if lastFocused != currFocused then
+				lastFocused = currFocused
+				net.Start("BSU_ClientAFKStatus")
+					net.WriteBool(currFocused)
+				net.SendToServer()
 			end
 		end)
 	end)

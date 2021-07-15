@@ -1,8 +1,7 @@
 -- database.lua by Bonyoze
 -- Manages the server database
 
---sql.Query("DROP TABLE bsu_players")
-sql.Query("CREATE TABLE IF NOT EXISTS bsu_players(steamId TEXT PRIMARY KEY, rankIndex INTEGER, playTime INTEGER DEFAULT 0, rankColor TEXT)") -- player data
+sql.Query("CREATE TABLE IF NOT EXISTS bsu_players(steamId TEXT PRIMARY KEY, rankIndex INTEGER, playTime INTEGER DEFAULT 0, uniqueColor TEXT)") -- player data
 sql.Query("CREATE TABLE IF NOT EXISTS bsu_ranks(rankIndex INTEGER PRIMARY KEY, rankName TEXT NOT NULL, rankColor TEXT NOT NULL, afkTimeout INTEGER DEFAULT 900)") -- rank data
 sql.Query("CREATE TABLE IF NOT EXISTS bsu_rankRestricts(rankIndex INTEGER NOT NULL, restriction TEXT NOT NULL)") -- rank restrictions
 
@@ -49,6 +48,7 @@ function BSU:PopulateBSURanks()
        name = "Owner",
        color = "d664fd",
        afk = 60 * 60
+    },
     [108] = {
       name = "Bot",
       color = "0074ff",

@@ -32,13 +32,7 @@ if SERVER then
   end)
 
   net.Receive("BSU_SetPlayerRank", function()
-    local ply, rank = net.ReadEntity(), net.ReadInt(16)
-
-    BSU:SetPlayerDBData(ply, {
-      rankIndex = rank
-    })
-    
-    ply:SetTeam(rank)
+    BSU:SetPlayerRank(net.ReadEntity(), net.ReadInt(16))
   end)
 
   net.Receive("BSU_PopulateRankDB", function()
@@ -47,15 +41,23 @@ if SERVER then
   
   net.Receive("BSU_GetPlayerRankColor", function(_, sender)
       local ply = net.ReadEntity()
-      local color = BSU:GetPlayerRankColor(ply)
+      local color = BSU:GetPlayerColor(ply)
       net.Start("BSU_GetPlayerRankColor")
         net.WriteTable(color)
       net.Send(sender)
   end)
 
   net.Receive("BSU_SetPlayerRankColor", function()
-    local ply, rgb = net.ReadEntity(), net.ReadTable()
-    BSU:SetPlayerRankColor(ply, rgb)
+    local ply, color = net.ReadEntity(), net.ReadTable()
+    if table.Count(color) > 0 then
+      BSU:SetPlayerDBData(ply, {
+        uniqueColor = BSU:ColorToHex(color)
+      })
+      ply:SetNWVector("uniqueColor", Vector(color.r, color.g, color.b))
+    else
+      sql.Query(string.format("UPDATE bsu_players SET uniqueColor = %s WHERE steamId = '%s'", "NULL", ply:SteamID64()))
+      ply:SetNWVector("uniqueColor", Vector())
+    end
   end)
 else
   net.Receive("BSU_GetPlayerRankColor", function()
@@ -148,7 +150,7 @@ else
         if string.lower(v:Nick()) == string.lower(args[1]) then
           net.Start("BSU_SetPlayerRankColor")
             net.WriteEntity(v)
-            net.WriteTable(Color(args[2], args[3], args[4]))
+            net.WriteTable((args[2] and args[3] and args[4]) and Color(args[2], args[3], args[4]) or {})
           net.SendToServer()
           return
         end
