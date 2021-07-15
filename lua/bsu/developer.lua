@@ -48,15 +48,15 @@ if SERVER then
   end)
 
   net.Receive("BSU_SetPlayerRankColor", function()
-    local ply, color = net.ReadEntity(), net.ReadTable()
-    if table.Count(color) > 0 then
+    local ply, hex = net.ReadEntity(), net.ReadString()
+    if #hex == 6 then
       BSU:SetPlayerDBData(ply, {
-        uniqueColor = BSU:ColorToHex(color)
+        uniqueColor = hex
       })
-      ply:SetNWVector("uniqueColor", Vector(color.r, color.g, color.b))
+      ply:SetNWString("uniqueColor", hex)
     else
       sql.Query(string.format("UPDATE bsu_players SET uniqueColor = %s WHERE steamId = '%s'", "NULL", ply:SteamID64()))
-      ply:SetNWVector("uniqueColor", Vector())
+      ply:SetNWString("uniqueColor", "")
     end
   end)
 else
@@ -150,7 +150,7 @@ else
         if string.lower(v:Nick()) == string.lower(args[1]) then
           net.Start("BSU_SetPlayerRankColor")
             net.WriteEntity(v)
-            net.WriteTable((args[2] and args[3] and args[4]) and Color(args[2], args[3], args[4]) or {})
+            net.WriteString(args[2] or "")
           net.SendToServer()
           return
         end

@@ -81,3 +81,7 @@ else
 
   MsgN("[BSU CLIENT] Finished loading modules")
 end
+
+hook.Add("OnGamemodeLoaded", "BSU_GetTeamColorOverride", function()
+  GAMEMODE.GetTeamColor = BSU.GetPlayerColor
+end)

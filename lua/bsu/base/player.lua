@@ -67,28 +67,27 @@ if SERVER then
 			rankIndex = index
 		})
 		ply:SetTeam(index)
-		
-		local color = BSU:GetRank(index).color
-		ply:SetNWVector("color", Vector(color.r, color.g, color.b))
+
+		ply:SetNWString("color", BSU:ColorToHex(BSU:GetRank(index).color))
 	end
 
 	function BSU:GetPlayerColor(ply)
 		local plyData = BSU:GetPlayerDBData(ply)
 
-		local uniqueColor = ply:GetNWVector("uniqueColor")
+		local uniqueColor = ply:GetNWString("uniqueColor", "")
 
-		if uniqueColor != Vector() then
-			uniqueColor = Color(uniqueColor[1], uniqueColor[2], uniqueColor[3])
+		if uniqueColor != "" then
+			uniqueColor = BSU:HexToColor(uniqueColor)
 		elseif plyData and plyData.uniqueColor then
 			uniqueColor = BSU:HexToColor(plyData.uniqueColor)
 		else
 			uniqueColor = nil
 		end
 
-		local color = ply:GetNWVector("color")
+		local color = ply:GetNWString("color", "")
 
-		if color != Vector() then
-			color = Color(color[1], color[2], color[3])
+		if color != "" then
+			color = BSU:HexToColor(color)
 		elseif plyData then
 			color = BSU:GetRank(plyData.rankIndex).color
 		else
@@ -121,13 +120,11 @@ if SERVER then
 			else
 				ply:SetTeam(data.rankIndex)
 
-				local color = BSU:GetRank(data.rankIndex).color
-				ply:SetNWVector("color", Vector(color.r, color.g, color.b))
+				ply:SetNWString("color", BSU:ColorToHex(BSU:GetRank(data.rankIndex).color))
 			end
 
 			if data.uniqueColor then
-				local color = BSU:HexToColor(data.uniqueColor)
-				ply:SetNWVector("uniqueColor", Vector(color.r, color.g, color.b))
+				ply:SetNWString("uniqueColor", data.uniqueColor)
 			end
 		end
 	end)
@@ -151,18 +148,18 @@ if SERVER then
 	end)
 else
 	function BSU:GetPlayerColor(ply)
-		local uniqueColor = ply:GetNWVector("uniqueColor")
+		local uniqueColor = ply:GetNWString("uniqueColor", "")
 
-		if uniqueColor != Vector() then
-			uniqueColor = Color(uniqueColor[1], uniqueColor[2], uniqueColor[3])
+		if uniqueColor != "" then
+			uniqueColor = BSU:HexToColor(uniqueColor)
 		else
 			uniqueColor = nil
 		end
 
-		local color = ply:GetNWVector("color")
+		local color = ply:GetNWString("color", "")
 
-		if color != Vector() then
-			color = Color(color[1], color[2], color[3])
+		if color != "" then
+			color = BSU:HexToColor(color)
 		else
 			color = nil
 		end
@@ -171,7 +168,6 @@ else
 	end
 
 	hook.Add("InitPostEntity", "BSU_PlayerInit", function()
-
 		net.Start("BSU_ClientInit")
 			net.WriteString(system.GetCountry())
 			net.WriteString(system.IsWindows() and "windows" or system.IsLinux() and "linux" or system.IsOSX() and "mac")
@@ -191,7 +187,7 @@ else
 			local currFocused = system.HasFocus()
 			if lastFocused != currFocused then
 				lastFocused = currFocused
-				net.Start("BSU_ClientAFKStatus")
+				net.Start("BSU_ClientFocusedStatus")
 					net.WriteBool(currFocused)
 				net.SendToServer()
 			end
