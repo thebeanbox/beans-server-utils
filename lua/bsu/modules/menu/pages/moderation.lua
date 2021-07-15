@@ -12,6 +12,7 @@ TeamList:AddColumn( "Index" )
 TeamList:AddColumn( "Team Name" )
 
 local ranks = team.GetAllTeams()
+table.sort(ranks, function(a, b) return a.index > b.index end)
 
 for k, v in pairs(ranks) do
     TeamList:AddLine(k, v.Name)
