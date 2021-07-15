@@ -42,6 +42,7 @@ if SERVER then
   -- load assets
   resource.AddSingleFile("materials/bsu/scoreboard/windows.png")
   resource.AddSingleFile("materials/bsu/scoreboard/mac.png")
+  resource.AddSingleFile("materials/bsu/stathud/stathudIcons16.png")
 
   include("bsu/developer.lua")
   AddCSLuaFile("bsu/developer.lua")
