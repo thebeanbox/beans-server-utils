@@ -1,26 +1,61 @@
-local panel = vgui.Create("DPanel")
-panel.Paint = function() end
+if SERVER then
+    util.AddNetworkString("BSU_menuModerationGetRanks")
+    util.AddNetworkString("BSU_menuModerationChangeRank")
 
-local entry = vgui.Create("DTextEntry", panel)
-entry:SetTabbingDisabled(true) -- this is needed because you have to be holding TAB to open the menu
-entry:Dock(TOP)
+    net.Receive("BSU_menuModerationGetRanks", function(_, ply)
+        net.Start("BSU_menuModerationGetRanks")
+            net.WriteData(util.Compress(util.TableToJSON(BSU:GetRanks())))
+        net.Send(ply)
+    end)
 
-hook.Add("InitPostEntity", "BSU_ModerationPanelDevTeamList", function()
-local TeamList = vgui.Create( "DListView", panel )
-TeamList:Dock( FILL )
-TeamList:SetMultiSelect( false )
-TeamList:AddColumn( "Index" )
-TeamList:AddColumn( "Team Name" )
+    net.Receive("BSU_menuModerationChangeRank", function(_, ply)
+        if BSU:PlayerIsSuperAdmin(ply) then
+            BSU:SetPlayerRank(ply, net.ReadInt(16))
+        end
+    end)
+else
+    local panel = vgui.Create("DPanel")
+    panel.Paint = function() end
 
-local ranks = team.GetAllTeams()
+    local entry = vgui.Create("DTextEntry", panel)
+    entry:SetTabbingDisabled(true)
+    entry:Dock(TOP)
 
-for k, v in pairs() do
-    TeamList:AddLine(k, v.Name)
+    local rankList = vgui.Create("DListView", panel)
+    rankList:Dock(FILL)
+    rankList:SetMultiSelect(false)
+    rankList:AddColumn("Ranks")
+
+    net.Start("BSU_menuModerationGetRanks") -- request the ranks
+    net.SendToServer()
+
+    local ranks
+
+    net.Receive("BSU_menuModerationGetRanks", function(len) -- setup rank list
+        ranks = util.JSONToTable(util.Decompress(net.ReadData(len)))
+
+        table.sort(ranks, function(a, b) return a.index > b.index end)
+
+        for _, v in pairs(ranks) do
+            rankList:AddLine(v.name)
+        end
+    end)
+
+    rankList.OnRowSelected = function(pnl, index, row)
+        if not ranks then return end
+
+        local rankIndex
+        for _, v in pairs(ranks) do
+            if v.name == row:GetValue(1) then
+                rankIndex = v.index
+                break
+            end
+        end
+
+        net.Start("BSU_menuModerationChangeRank")
+            net.WriteInt(rankIndex, 16)
+        net.SendToServer()
+    end
+
+    bsuMenu.addPage(3, "Moderation", panel, "icon16/shield.png")
 end
-
-TeamList.OnRowSelected = function( lst, index, pnl )
-	BSU:SetPlayerRank(LocalPlayer(), index)
-end
-end
-
-bsuMenu.addPage(3, "Moderation", panel, "icon16/shield.png")

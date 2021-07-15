@@ -1,10 +1,14 @@
-local panel = vgui.Create("DPanel")
-panel.Paint = function() end
+if SERVER then
 
-local html = vgui.Create("DHTML", panel)
-html:Dock(FILL)
-html.ConsoleMessage = function() end -- stops html console messages from appearing in the client's console
+else
+  local panel = vgui.Create("DPanel")
+  panel.Paint = function() end
 
-html:OpenURL("http://beanbox.site.nfoservers.com/motd.html")
+  local html = vgui.Create("DHTML", panel)
+  html:Dock(FILL)
+  html.ConsoleMessage = function() end -- stops html console messages from appearing in the client's console
 
-bsuMenu.addPage(1, "MOTD", panel, "icon16/star.png") -- add this page to the client's menu as "MOTD"
+  html:OpenURL("http://beanbox.site.nfoservers.com/motd.html")
+
+  bsuMenu.addPage(1, "MOTD", panel, "icon16/star.png") -- add this page to the client's menu as "MOTD"
+end

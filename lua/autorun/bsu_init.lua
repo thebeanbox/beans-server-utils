@@ -15,6 +15,7 @@ BSU = BSU or {}
 -- const values
 BSU.DEFAULT_RANK = 101 -- Guest team index
 BSU.BOT_RANK = 108 -- Bot team index
+BSU.AFK_TIMEOUT = 900 -- 900 secs (15 mins)
 
 -- some useful functions
 function BSU:HexToColor(hex, alpha)

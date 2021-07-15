@@ -36,16 +36,21 @@ if SERVER then
 	util.AddNetworkString("BSU_ClientAFKStatus")
 	util.AddNetworkString("BSU_ClientFocusedStatus")
 
+	function BSU:RegisterPlayerDBData(ply)
+		sql.Query(string.format("INSERT INTO bsu_players(steamId) VALUES('%s')", ply:SteamID64()))
+	end
+
 	function BSU:GetPlayerDBData(ply)
 		if not ply or not ply:IsValid() then ErrorNoHalt("Tried to get player data of null entity") return end
 
-		local entry = sql.QueryRow("SELECT * FROM bsu_players WHERE steamId = '" .. ply:SteamID64() .. "'")
+		local entry = sql.QueryRow(string.format("SELECT * FROM bsu_players WHERE steamId = '%s'", ply:SteamID64()))
 
 		if entry then
 			return {
 				rankIndex = tonumber(entry.rankIndex),
 				playTime = tonumber(entry.playTime),
-				uniqueColor = entry.uniqueColor != "NULL" and entry.uniqueColor or nil
+				uniqueColor = entry.uniqueColor != "NULL" and entry.uniqueColor or nil,
+				permsOverride = tonumber(entry.permsOverride) == 1
 			}
 		end
 	end
@@ -54,21 +59,70 @@ if SERVER then
 		if not ply:IsValid() then ErrorNoHalt("Tried to set player data to null entity") return end
 
 		if not BSU:GetPlayerDBData(ply) then -- insert a new row
-			sql.Query("INSERT INTO bsu_players(steamId) VALUES('" .. ply:SteamID64() .. "')")
+			BSU:RegisterPlayerDBData(ply)
 		end
+
 		-- update with the data
 		for k, v in pairs(data) do
-			sql.Query("UPDATE bsu_players SET " .. k .. " = " .. sql.SQLStr(tostring(v)) .. " WHERE steamId = '" .. ply:SteamID64() .. "'")
+			sql.Query(string.format("UPDATE bsu_players SET %s = '%s' WHERE steamId = '%s'", k, tostring(v), ply:SteamID64()))
 		end
 	end
 
 	function BSU:SetPlayerRank(ply, index)
-		BSU:SetPlayerDBData(ply, {
-			rankIndex = index
-		})
-		ply:SetTeam(index)
+		local plyData = BSU:GetPlayerDBData(ply)
+		local rankData = BSU:GetRank(index)
 
-		ply:SetNWString("color", BSU:ColorToHex(BSU:GetRank(index).color))
+		if not plyData or plyData.rankIndex != index then
+			BSU:SetPlayerDBData(ply, {
+				rankIndex = index
+			})
+		end
+
+		ply:SetTeam(index) -- set team
+		ply:SetUserGroup(rankData.userGroup) -- set user group
+		ply:SetNWString("color", BSU:ColorToHex(rankData.color)) -- update player color value
+	end
+
+	function BSU:PlayerIsStaff(ply) -- player is a staff member (admin or superadmin usergroup)
+		local plyData = BSU:GetPlayerDBData(ply)
+
+		if plyData then
+			if plyData.permsOverride then
+				return true
+			elseif ply:IsAdmin() or ply:IsSuperAdmin() then
+				return true
+			else
+				return false
+			end
+		else
+			return false
+		end
+	end
+
+	function BSU:PlayerIsSuperAdmin(ply) -- player is a super admin (superadmin usergroup)
+		local plyData = BSU:GetPlayerDBData(ply)
+		print(ply:GetUserGroup())
+		if plyData then
+			if plyData.permsOverride then
+				return true
+			elseif ply:IsSuperAdmin() then
+				return true
+			else
+				return false
+			end
+		else
+			return false
+		end
+	end
+
+	function BSU:PlayerIsOverride(ply) -- player overrides all perms
+		local plyData = BSU:GetPlayerDBData(ply)
+
+		if plyData then
+			return plyData.permsOverride
+		else
+			return false
+		end
 	end
 
 	function BSU:GetPlayerColor(ply)
@@ -118,12 +172,14 @@ if SERVER then
 				BSU:SetPlayerRank(ply, ply:IsBot() and BSU.BOT_RANK or BSU.DEFAULT_RANK)
 				data = BSU:GetPlayerDBData(ply) -- new data
 			else
-				ply:SetTeam(data.rankIndex)
+				local rank = BSU:GetRank(data.rankIndex)
 
-				ply:SetNWString("color", BSU:ColorToHex(BSU:GetRank(data.rankIndex).color))
+				ply:SetTeam(data.rankIndex) -- set team
+				ply:SetUserGroup(rank.userGroup) -- set user group
+				ply:SetNWString("color", BSU:ColorToHex(rank.color)) -- update player color value
 			end
 
-			if data.uniqueColor then
+			if data.uniqueColor then -- set player unique color value
 				ply:SetNWString("uniqueColor", data.uniqueColor)
 			end
 		end

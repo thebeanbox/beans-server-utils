@@ -7,6 +7,7 @@ if SERVER then
 
   local pageFiles = file.Find(MENU_PAGES .. "*.lua", "LUA")
   for _, file in ipairs(pageFiles) do
+    include(MENU_PAGES .. file)
     AddCSLuaFile(MENU_PAGES .. file)
   end
 else

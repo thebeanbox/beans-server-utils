@@ -43,31 +43,6 @@ function bsuMenu.create()
     new.Paint = tabOnPaint
   end
 
-  local pagesData = {} -- temp table
-
-  function bsuMenu.addPage(index, name, pnl, icon)
-    table.insert(pagesData, index, {
-      name = name,
-      pnl = pnl,
-      icon = icon
-    })
-  end
-
-  -- get the pages
-  for _, file in ipairs(bsuMenu.pageFiles) do
-    include(MENU_PAGES .. file)
-  end
-
-  -- add the pages
-  for _, page in ipairs(pagesData) do
-    page.pnl:SetParent(bsuMenu.sheet)
-    local tabData = bsuMenu.sheet:AddSheet(page.name, page.pnl, page.icon)
-
-    if tabData.Name == "Scoreboard" then bsuMenu.sheet:SetActiveTab(tabData.Tab) end -- set scoreboard to active tab
-    
-    tabData.Tab.Paint = tabData.Tab:IsActive() and tabOnPaint or tabOffPaint
-  end
-
   bsuMenu.hide()
 
   -- setup some hooks
@@ -88,6 +63,33 @@ function bsuMenu.create()
   hook.Add("VGUIMousePressed", "BSU_MenuClickHide", function(pnl) -- hides the menu if you click off of it
     if pnl:GetClassName() == "CGModBase" then
       bsuMenu.hide()
+    end
+  end)
+
+  hook.Add("InitPostEntity", "BSU_MenuPagesInit", function()
+    local pagesData = {} -- temp table
+
+    function bsuMenu.addPage(index, name, pnl, icon)
+      table.insert(pagesData, index, {
+        name = name,
+        pnl = pnl,
+        icon = icon
+      })
+    end
+
+    -- get the pages
+    for _, file in ipairs(bsuMenu.pageFiles) do
+      include(MENU_PAGES .. file)
+    end
+
+    -- add the pages
+    for _, page in ipairs(pagesData) do
+      page.pnl:SetParent(bsuMenu.sheet)
+      local tabData = bsuMenu.sheet:AddSheet(page.name, page.pnl, page.icon)
+
+      if tabData.Name == "Scoreboard" then bsuMenu.sheet:SetActiveTab(tabData.Tab) end -- set scoreboard to active tab
+      
+      tabData.Tab.Paint = tabData.Tab:IsActive() and tabOnPaint or tabOffPaint
     end
   end)
 end

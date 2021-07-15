@@ -1,6 +1,8 @@
 -- teams.lua by Bonyoze
 
 if SERVER then
+    util.AddNetworkString("BSU_TeamsSetup")
+
     function BSU:GetRanks()
         local ranks = sql.Query("SELECT * FROM bsu_ranks")
 
@@ -11,7 +13,7 @@ if SERVER then
                     index = tonumber(entry.rankIndex),
                     name = entry.rankName,
                     color = BSU:HexToColor(entry.rankColor),
-                    afk = tonumber(entry.afkTimeout)
+                    userGroup = entry.userGroup
                 })
             end
             return tbl
@@ -26,11 +28,9 @@ if SERVER then
         end
     end
 
-    util.AddNetworkString("BSU_Teams")
-
-    net.Receive("BSU_Teams", function(_, ply) -- send team data to client
+    net.Receive("BSU_TeamsSetup", function(_, ply) -- send team data to client
         local ranks = BSU:GetRanks()
-        net.Start("BSU_Teams")
+        net.Start("BSU_TeamsSetup")
             net.WriteInt(#ranks, 16)
             for _, v in ipairs(ranks) do
                 net.WriteInt(v.index, 16) -- index
@@ -46,7 +46,7 @@ if SERVER then
         team.SetUp(v.index, v.name, v.color)
     end
 else
-    net.Receive("BSU_Teams", function()
+    net.Receive("BSU_TeamsSetup", function()
         local total = net.ReadInt(16)
 
         for _ = 1, total do -- load team data client-side
@@ -56,7 +56,7 @@ else
     end)
 
     hook.Add("InitPostEntity", "BSU_TeamsInit", function()
-        net.Start("BSU_Teams")
+        net.Start("BSU_TeamsSetup")
         net.SendToServer()
     end)
 end
