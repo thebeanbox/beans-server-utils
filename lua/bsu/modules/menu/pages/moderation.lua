@@ -13,7 +13,7 @@ TeamList:AddColumn( "Team Name" )
 
 local ranks = team.GetAllTeams()
 
-for k, v in pairs(table.sortByKey(ranks)) do
+for k, v in pairs(table.SortByKey(ranks)) do
     TeamList:AddLine(k, v.Name)
 end
 
