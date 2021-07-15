@@ -101,7 +101,7 @@ if SERVER then
 
 	function BSU:PlayerIsSuperAdmin(ply) -- player is a super admin (superadmin usergroup)
 		local plyData = BSU:GetPlayerDBData(ply)
-		print(ply:GetUserGroup())
+		
 		if plyData then
 			if plyData.permsOverride then
 				return true
