@@ -2,7 +2,7 @@ if SERVER then
 	util.AddNetworkString("bsu_sendchatmessagetoall")
 	function BSU:SendChatMessageToAll(data)
 		net.Start("bsu_sendchatmessagetoall")
-		net.WriteType(util.Compress(util.TableToJSON(data))
+		net.WriteData(util.Compress(util.TableToJSON(data))
         	net.Broadcast()
     end
 elseif CLIENT then
