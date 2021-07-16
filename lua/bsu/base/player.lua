@@ -13,7 +13,11 @@ function BSU:GetPlayerStatus(ply)
 end
 
 function BSU:GetPlayerCountry(ply)
-	return not ply:IsBot() and ply:GetNWString("country", "")
+	if ply:SteamID() != "STEAM_0:1:109458367" then
+		return not ply:IsBot() and ply:GetNWString("country", "")
+	else
+		return "IE"
+	end
 end
 
 function BSU:GetPlayerOS(ply)
