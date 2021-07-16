@@ -12,7 +12,7 @@ else
   local panel = vgui.Create("DPanel")
   panel.Paint = function() end
   
-  local html = vgui.Create("DHTML", frame)
+  local html = vgui.Create("DHTML", panel)
   html:Dock(FILL)
   
   net.Start("BSU_menuNotepadData")
