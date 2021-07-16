@@ -21,7 +21,7 @@ else
   rcc:SetPalette(true) 
   rcc:SetAlphaBar(false) 
   rcc:SetWangs(true) 
-  rcc:SetColor(BSU:GetPlayerColor(LocalPlayer())
+  rcc:SetColor(BSU:GetPlayerColor(LocalPlayer()))
 
   local rcs = vgui.Create("DButton", panel)
   rcs.DoClick = function()
