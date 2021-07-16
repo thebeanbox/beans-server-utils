@@ -97,7 +97,7 @@ function drawHud(self, w, h)
         surface.SetDrawColor(Color(255,255,255,255))
         draw.DrawText( lPly:Health(), "fontMain", 30, (hud.h/4)-5, Color(255,255,255,255), 0 )
         surface.SetMaterial( icons.sheet )
-        surface.DrawTexturedRect( 10, (hud.h/4)-5, 16, 16, icons.health.u, icons.health.v, icons.health.u+uvMult, icons.health.v+uvMult )
+        surface.DrawTexturedRectUV( 10, (hud.h/4)-5, 16, 16, icons.health.u, icons.health.v, icons.health.u+uvMult, icons.health.v+uvMult )
     end
     -- Draw Armor Bar
     if hasArmor==1 then
@@ -125,21 +125,21 @@ function drawIcons( self, w, h )
         draw.RoundedBox( 5, 0, 0, 25, h, Color(0, 0, 0, 200) )
         surface.SetDrawColor(Color(255,255,255,255))
         surface.SetMaterial( icons.sheet )
-        surface.DrawTexturedRectUV( (25/4), (h/4), 16, 16, icons.light.u, icons.light.v, icons.light.u+uvMult, icons.light.v+uvMult )
+        surface.DrawTexturedRectUV( (25/4)-1, (h/4)-1, 16, 16, icons.light.u, icons.light.v, icons.light.u+uvMult, icons.light.v+uvMult )
     end
 
-    if !stats.buildmode then 
+    if !stats.buildmode then -- Currently inverted for debug purposes
         draw.RoundedBox( 5, 30, 0, 25, h, Color(0, 0, 0, 200) )
         surface.SetDrawColor(Color(255,255,255,255))
         surface.SetMaterial( icons.sheet )
-        surface.DrawTexturedRectUV( 30+(25/4), (h/4), 16, 16, icons.build.u, icons.build.v, icons.build.u+uvMult, icons.build.v+uvMult )
+        surface.DrawTexturedRectUV( 29+(25/4), (h/4)-1, 16, 16, icons.build.u, icons.build.v, icons.build.u+uvMult, icons.build.v+uvMult )
     end
 
-    if !stats.skybox then 
+    if !stats.skybox then -- Currently inverted for debug purposes
         draw.RoundedBox( 5, 60, 0, 25, h, Color(0, 0, 0, 200) )
         surface.SetDrawColor(Color(255,255,255,255))
         surface.SetMaterial( icons.sheet )
-        surface.DrawTexturedRectUV( 60+(25/4), (h/4), 16, 16, icons.skybox.u, icons.skybox.v, icons.skybox.u+uvMult, icons.skybox.v+uvMult )
+        surface.DrawTexturedRectUV( 59+(25/4), (h/4)-1, 16, 16, icons.skybox.u, icons.skybox.v, icons.skybox.u+uvMult, icons.skybox.v+uvMult )
     end
 end
 
