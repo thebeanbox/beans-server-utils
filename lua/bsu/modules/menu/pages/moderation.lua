@@ -1,6 +1,5 @@
 if SERVER then
     util.AddNetworkString("BSU_menuModerationGetRanks")
-    util.AddNetworkString("BSU_menuModerationChangeRank")
 
     net.Receive("BSU_menuModerationGetRanks", function(_, ply)
         net.Start("BSU_menuModerationGetRanks")
@@ -30,7 +29,7 @@ else
     playersManage.playersList:SetPos(5, 5)
     playersManage.playersList:SetSize(250, 200)
     playersManage.playersList:SetMultiSelect(false)
-    playersManage.playersList:SetSortable(true)
+    playersManage.playersList:SetSortable(false)
 
     playersManage.playersList:AddColumn("Steam ID")
     playersManage.playersList:AddColumn("Name")
@@ -40,24 +39,27 @@ else
         for _, player in ipairs(player.GetAll()) do
             local valid = false
             for _, v in ipairs(self.players) do
-                if player == v.ent then
+                if player == v.player then
                     valid = true
                     break
                 end
             end
             if not valid then
-                local line = self.playersList:AddLine(player:SteamID() != "NULL" and player:SteamID() or "", player:Nick())
+                local line = self.playersList:AddLine(player:SteamID(), player:Nick())
                 table.insert(self.players, {
-                    ent = player,
-                    id = line:GetID(),
+                    player = player,
+                    line = line,
                 })
             end
         end
 
         for k, v in ipairs(self.players) do
-            if not v.ent or not v.ent:IsValid() then
-                self.playersList:RemoveLine(v.id)
+            if not v.player or not v.player:IsValid() then
+                self.playersList:RemoveLine(v.line:GetID())
                 table.remove(self.players, k)
+            else
+                v.line:SetColumnText(1, v.player:SteamID())
+                v.line:SetColumnText(2, v.player:Nick())
             end
         end
     end)

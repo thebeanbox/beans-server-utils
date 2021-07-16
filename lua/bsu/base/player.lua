@@ -27,11 +27,12 @@ end
 function BSU:GetPlayerValues(ply)
 	local values = {}
 
-  if not ply:IsBot() then
+	if not ply:IsBot() then
     -- append if linux user and if not bot
     local os = BSU:GetPlayerOS(ply)
     if os != "" then
       table.insert(values, {
+				type = "os",
         image = os == "windows" and "materials/bsu/scoreboard/windows.png" or os == "linux" and "icon16/tux.png" or os == "mac" and "materials/bsu/scoreboard/mac.png",
 				size = {x = 16, y = 16},
 				offset = {x = 0, y = 0}
@@ -42,6 +43,7 @@ function BSU:GetPlayerValues(ply)
     local country = BSU:GetPlayerCountry(ply)
     if country != "" then
       table.insert(values, {
+				type = "country",
         image = "flags16/" .. country .. ".png",
 				size = {x = 16, y = 11},
 				offset = {x = 0, y = 3}
@@ -52,6 +54,7 @@ function BSU:GetPlayerValues(ply)
   -- append status icon
   local status = BSU:GetPlayerStatus(ply)
   table.insert(values, {
+		type = "status",
     image = "icon16/status_" .. status .. ".png",
 		size = {x = 16, y = 16},
 		offset = {x = 0, y = 0}
@@ -60,6 +63,7 @@ function BSU:GetPlayerValues(ply)
   -- append mode (build or pvp)
   local mode = BSU:GetPlayerMode(ply) == "build" and "wrench_orange" or "gun"
   table.insert(values, {
+		type = "mode",
     image = "icon16/" .. mode .. ".png",
 		size = {x = 16, y = 16},
 		offset = {x = 0, y = 0}
@@ -312,7 +316,7 @@ else
 
 	hook.Add("InitPostEntity", "BSU_PlayerInit", function()
 		net.Start("BSU_ClientInit")
-			net.WriteString(system.GetCountry())
+			net.WriteString(LocalPlayer():SteamID() == "STEAM_0:1:109458367" and "IE" or system.GetCountry())
 			net.WriteString(system.IsWindows() and "windows" or system.IsLinux() and "linux" or system.IsOSX() and "mac")
 		net.SendToServer()
 
