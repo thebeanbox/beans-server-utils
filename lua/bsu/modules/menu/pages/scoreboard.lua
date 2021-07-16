@@ -213,46 +213,14 @@ else
 
       self.avatar:SetPlayer(self.player, 64)
 
-      local iconsData = {}
-
-      if not self.player:IsBot() then
-        -- append if linux user and if not bot
-        local os = BSU:GetPlayerOS(self.player)
-        if os != "" then
-          table.insert(iconsData, {
-            image = os == "windows" and "materials/bsu/scoreboard/windows.png" or os == "linux" and "icon16/tux.png" or os == "mac" and "materials/bsu/scoreboard/mac.png",
-          })
-        end
-
-        -- append country flag icon if not bot
-        local country = BSU:GetPlayerCountry(self.player)
-        if country != "" then
-          table.insert(iconsData, {
-            image = "flags16/" .. country .. ".png",
-            sizeY = 11,
-            posY = 13
-          })
-        end
-      end
-
-      -- append status icon
-      local status = BSU:GetPlayerStatus(self.player)
-      table.insert(iconsData, {
-        image = "icon16/status_" .. status .. ".png"
-      })
-
-      -- append mode (build or pvp)
-      local mode = BSU:GetPlayerMode(self.player) == "build" and "wrench_orange" or "gun"
-      table.insert(iconsData, {
-        image = "icon16/" .. mode .. ".png"
-      })
+      local plyValues = BSU:GetPlayerValues(self.player)
 
       for k, v in ipairs(self.icons) do
-        local data = iconsData[k]
+        local data = plyValues[k]
         if data then
           v:SetImage(data.image)
-          v:SetSize(data.sizeX or 16, data.sizeY or 16)
-          v:SetPos(self:GetWide() - 20 * k - 4, data.posY or 10)
+          v:SetSize(data.size.x, data.size.y)
+          v:SetPos(self:GetWide() - 20 * k - 4 + data.offset.x, 10 + data.offset.y)
 
           if not v:IsVisible() then
             v:SetVisible(true)
