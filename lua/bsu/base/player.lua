@@ -27,7 +27,7 @@ end
 function BSU:GetPlayerValues(ply)
 	local values = {}
 
-  if not ply:IsBot() then
+	if not ply:IsBot() then
     -- append if linux user and if not bot
     local os = BSU:GetPlayerOS(ply)
     if os != "" then
