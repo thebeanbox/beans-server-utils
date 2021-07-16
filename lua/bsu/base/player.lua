@@ -13,11 +13,11 @@ function BSU:GetPlayerStatus(ply)
 end
 
 function BSU:GetPlayerCountry(ply)
-	return not ply:IsBot() and ply:GetNWString("country")
+	return not ply:IsBot() and ply:GetNWString("country", false)
 end
 
 function BSU:GetPlayerOS(ply)
-	return not ply:IsBot() and ply:GetNWString("os")
+	return not ply:IsBot() and ply:GetNWString("os", false)
 end
 
 function BSU:GetPlayerMode(ply)
@@ -101,7 +101,7 @@ if SERVER then
 
 	function BSU:PlayerIsSuperAdmin(ply) -- player is a super admin (superadmin usergroup)
 		local plyData = BSU:GetPlayerDBData(ply)
-		
+
 		if plyData then
 			if plyData.permsOverride then
 				return true
