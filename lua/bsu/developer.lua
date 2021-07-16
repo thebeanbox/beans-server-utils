@@ -50,13 +50,9 @@ if SERVER then
   net.Receive("BSU_SetPlayerRankColor", function()
     local ply, hex = net.ReadEntity(), net.ReadString()
     if #hex == 6 then
-      BSU:SetPlayerDBData(ply, {
-        uniqueColor = hex
-      })
-      ply:SetNWString("uniqueColor", hex)
+      BSU:SetPlayerUniqueColor(ply, BSU:HexToColor(hex))
     else
-      sql.Query(string.format("UPDATE bsu_players SET uniqueColor = %s WHERE steamId = '%s'", "NULL", ply:SteamID64()))
-      ply:SetNWString("uniqueColor", "")
+      BSU:ClearPlayerUniqueColor(ply)
     end
   end)
 else

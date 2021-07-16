@@ -13,11 +13,11 @@ function BSU:GetPlayerStatus(ply)
 end
 
 function BSU:GetPlayerCountry(ply)
-	return not ply:IsBot() and ply:GetNWString("country", false)
+	return not ply:IsBot() and ply:GetNWString("country", "")
 end
 
 function BSU:GetPlayerOS(ply)
-	return not ply:IsBot() and ply:GetNWString("os", false)
+	return not ply:IsBot() and ply:GetNWString("os", "")
 end
 
 function BSU:GetPlayerMode(ply)
@@ -179,6 +179,19 @@ if SERVER then
 		end
 
 		return uniqueColor or color or team.GetColor(ply:IsBot() and BSU.BOT_RANK or BSU.DEFAULT_RANK)
+	end
+
+	function BSU:SetPlayerUniqueColor(ply, color)
+		local hex = BSU:ColorToHex(color)
+		BSU:SetPlayerDBData(ply, {
+			uniqueColor = hex
+		})
+		ply:SetNWString("uniqueColor", hex)
+	end
+
+	function BSU:ClearPlayerUniqueColor(ply)
+		sql.Query(string.format("UPDATE bsu_players SET uniqueColor = NULL WHERE steamId = '%s'", ply:SteamID64()))
+    ply:SetNWString("uniqueColor", "")
 	end
 
 	net.Receive("BSU_ClientInit", function(_, ply)
