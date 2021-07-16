@@ -1,13 +1,27 @@
+function BSU:GetPlayerNameValues(ply)
+    local nameColor, name
+    if ply and ply:IsValid() then
+        name = ply:Nick()
+        nameColor = BSU:PlayerGetColor(ply)
+    else
+        name = "Console"
+        nameColor = Color(151, 211, 255)
+    end
+
+    return nameColor, name
+end
+
 if SERVER then
-	util.AddNetworkString("bsu_sendchatmessagetoall")
-	function BSU:SendChatMessageToAll(data)
-		net.Start("bsu_sendchatmessagetoall")
-		net.WriteData(util.Compress(util.TableToJSON(data))
-        	net.Broadcast()
+	util.AddNetworkString("BSU_CommandMessage")
+
+	function BSU:SendCommandMsg()
+		net.Start("BSU_CommandMessage")
+		    net.WriteData(util.Compress(util.TableToJSON({...}))
+        net.Broadcast()
     end
 elseif CLIENT then
-    net.Receive("bsu_sendchatmessagetoall", function(len)
-        str = util.JSONToTable(util.Decompress(net.ReadData(len)))
-        chat.AddText(Color(235, 179, 68), "[BSU]", Color(255, 174, 97), unpack(data))
+    net.Receive("BSU_CommandMessage", function(len)
+        local args = util.JSONToTable(util.Decompress(net.ReadData(len)))
+        chat.AddText(unpack(args))
     end)
 end

@@ -46,7 +46,7 @@ else
 
   list.Paint = function(self, w, h)
     draw.RoundedBox(0, 0, 0, w, 36, color_black)
-
+    
     draw.SimpleText(
       "Name",
       "BSU_ScoreboardText",
@@ -60,7 +60,7 @@ else
     draw.SimpleText(
       "Rank",
       "BSU_ScoreboardText",
-      w / 2,
+      w / 4.6363,
       18,
       color_white,
       TEXT_ALIGN_CENTER,
@@ -70,7 +70,7 @@ else
     draw.SimpleText(
       "Health",
       "BSU_ScoreboardText",
-      w / 2 + 150,
+      w / 2.825,
       18,
       color_white,
       TEXT_ALIGN_CENTER,
@@ -80,7 +80,7 @@ else
     draw.SimpleText(
       "K/D",
       "BSU_ScoreboardText",
-      w / 2 + 300,
+      w / 2,
       18,
       color_white,
       TEXT_ALIGN_CENTER,
@@ -90,7 +90,7 @@ else
     draw.SimpleText(
       "Play Time",
       "BSU_ScoreboardText",
-      w / 2 + 450,
+      w / 1.55,
       18,
       color_white,
       TEXT_ALIGN_CENTER,
@@ -100,7 +100,7 @@ else
     draw.SimpleText(
       "Ping",
       "BSU_ScoreboardText",
-      w / 2 + 600,
+      w / 1.275,
       18,
       color_white,
       TEXT_ALIGN_CENTER,
@@ -150,7 +150,7 @@ else
       draw.SimpleText(
         team.GetName(self.player:Team()),
         "BSU_ScoreboardText",
-        w / 2,
+        w / 4.6363,
         18,
         color_black,
         TEXT_ALIGN_CENTER,
@@ -161,7 +161,7 @@ else
       draw.SimpleText(
         math.max(math.Round(self.player:Health() / self.player:GetMaxHealth(), 2) * 100, 0) .. "%",
         "BSU_ScoreboardText",
-        w / 2 + 150,
+        w / 2.825,
         18,
         color_black,
         TEXT_ALIGN_CENTER,
@@ -172,7 +172,7 @@ else
       draw.SimpleText(
         math.Round((BSU:GetPlayerKills(self.player) + 1) / (self.player:Deaths() + 1), 2),
         "BSU_ScoreboardText",
-        w / 2 + 300,
+        w / 2,
         18,
         color_black,
         TEXT_ALIGN_CENTER,
@@ -188,7 +188,7 @@ else
       draw.SimpleText(
         hours .. ":" .. mins .. ":" .. secs,
         "BSU_ScoreboardText",
-        w / 2 + 450,
+        w / 1.55,
         18,
         color_black,
         TEXT_ALIGN_CENTER,
@@ -199,7 +199,7 @@ else
       draw.SimpleText(
         self.player:Ping(),
         "BSU_ScoreboardText",
-        w / 2 + 600,
+        w / 1.275,
         18,
         color_black,
         TEXT_ALIGN_CENTER,
@@ -213,46 +213,14 @@ else
 
       self.avatar:SetPlayer(self.player, 64)
 
-      local iconsData = {}
-
-      if not self.player:IsBot() then
-        -- append if linux user and if not bot
-        local os = BSU:GetPlayerOS(self.player)
-        if os != "" then
-          table.insert(iconsData, {
-            image = os == "windows" and "materials/bsu/scoreboard/windows.png" or os == "linux" and "icon16/tux.png" or os == "mac" and "materials/bsu/scoreboard/mac.png",
-          })
-        end
-
-        -- append country flag icon if not bot
-        local country = BSU:GetPlayerCountry(self.player)
-        if country != "" then
-          table.insert(iconsData, {
-            image = "flags16/" .. country .. ".png",
-            sizeY = 11,
-            posY = 13
-          })
-        end
-      end
-
-      -- append status icon
-      local status = BSU:GetPlayerStatus(self.player)
-      table.insert(iconsData, {
-        image = "icon16/status_" .. status .. ".png"
-      })
-
-      -- append mode (build or pvp)
-      local mode = BSU:GetPlayerMode(self.player) == "build" and "wrench_orange" or "gun"
-      table.insert(iconsData, {
-        image = "icon16/" .. mode .. ".png"
-      })
+      local plyValues = BSU:GetPlayerValues(self.player)
 
       for k, v in ipairs(self.icons) do
-        local data = iconsData[k]
+        local data = plyValues[k]
         if data then
           v:SetImage(data.image)
-          v:SetSize(data.sizeX or 16, data.sizeY or 16)
-          v:SetPos(self:GetWide() - 20 * k - 4, data.posY or 10)
+          v:SetSize(data.size.x, data.size.y)
+          v:SetPos(self:GetWide() - 20 * k - 4 + data.offset.x, 10 + data.offset.y)
 
           if not v:IsVisible() then
             v:SetVisible(true)

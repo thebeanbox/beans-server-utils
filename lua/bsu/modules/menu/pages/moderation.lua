@@ -14,38 +14,82 @@ if SERVER then
         end
     end)
 else
-    local panel = vgui.Create("DPanel")
-    panel.Paint = function() end
-
-    local entry = vgui.Create("DTextEntry", panel)
-    entry:SetTabbingDisabled(true)
-    entry:Dock(TOP)
-
-    local rankList = vgui.Create("DListView", panel)
-    rankList:Dock(FILL)
-    rankList:SetMultiSelect(false)
-    rankList:AddColumn("Ranks")
-
     net.Start("BSU_menuModerationGetRanks") -- request the ranks
     net.SendToServer()
 
-    local ranks
+    local panel = vgui.Create("DCategoryList")
+    panel.Paint = function() end
 
-    net.Receive("BSU_menuModerationGetRanks", function(len) -- setup rank list
-        ranks = util.JSONToTable(util.Decompress(net.ReadData(len)))
+    panel:Add("Note: this is not finished")
 
-        table.sort(ranks, function(a, b) return a.index > b.index end)
+    -- players management
+    local playersManage = vgui.Create("DPanel")
+    playersManage:DockPadding(5, 5, 5, 5)
 
-        for _, v in pairs(ranks) do
-            rankList:AddLine(v.name)
+    playersManage.playersList = vgui.Create("DListView", playersManage)
+    playersManage.playersList:SetPos(5, 5)
+    playersManage.playersList:SetSize(250, 200)
+    playersManage.playersList:SetMultiSelect(false)
+    playersManage.playersList:SetSortable(true)
+
+    playersManage.playersList:AddColumn("Steam ID")
+    playersManage.playersList:AddColumn("Name")
+
+    playersManage.players = {}
+    hook.Add("Think", playersManage, function(self)
+        for _, player in ipairs(player.GetAll()) do
+            local valid = false
+            for _, v in ipairs(self.players) do
+                if player == v.ent then
+                    valid = true
+                    break
+                end
+            end
+            if not valid then
+                local line = self.playersList:AddLine(player:SteamID() != "NULL" and player:SteamID() or "", player:Nick())
+                table.insert(self.players, {
+                    ent = player,
+                    id = line:GetID(),
+                })
+            end
+        end
+
+        for k, v in ipairs(self.players) do
+            if not v.ent or not v.ent:IsValid() then
+                self.playersList:RemoveLine(v.id)
+                table.remove(self.players, k)
+            end
         end
     end)
 
-    rankList.OnRowSelected = function(pnl, index, row)
+    local playersCategory = panel:Add("Players Management")
+    playersCategory:SetContents(playersManage)
+    playersCategory:SetExpanded(false)
+
+    -- ranks management
+    local ranksManage = vgui.Create("DPanel")
+    ranksManage:DockPadding(5, 5, 5, 5)
+
+    ranksManage.ranksList = vgui.Create("DListView", ranksManage)
+    ranksManage.ranksList:SetPos(5, 5)
+    ranksManage.ranksList:SetSize(200, 200)
+    ranksManage.ranksList:SetMultiSelect(false)
+    ranksManage.ranksList:SetSortable(false)
+
+    ranksManage.ranksList:AddColumn("Index")
+    ranksManage.ranksList:AddColumn("Name")
+
+    local ranksCategory = panel:Add("Ranks Management")
+    ranksCategory:SetContents(ranksManage)
+    ranksCategory:SetExpanded(false)
+
+    ranksManage.ranks = {}
+
+    ranksManage.ranksList.OnRowSelected = function(pnl, index, row)
         if not ranks then return end
 
         local rankIndex
-        for _, v in pairs(ranks) do
+        for _, v in pairs(ranksManage.ranks) do
             if v.name == row:GetValue(1) then
                 rankIndex = v.index
                 break
@@ -56,6 +100,16 @@ else
             net.WriteInt(rankIndex, 16)
         net.SendToServer()
     end
+
+    net.Receive("BSU_menuModerationGetRanks", function(len) -- setup rank list
+        ranksManage.ranks = util.JSONToTable(util.Decompress(net.ReadData(len)))
+
+        table.sort(ranksManage.ranks, function(a, b) return a.index < b.index end)
+
+        for _, v in pairs(ranksManage.ranks) do
+            ranksManage.ranksList:AddLine(v.index, v.name)
+        end
+    end)
 
     bsuMenu.addPage(3, "Moderation", panel, "icon16/shield.png")
 end

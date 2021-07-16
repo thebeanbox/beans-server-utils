@@ -24,6 +24,50 @@ function BSU:GetPlayerMode(ply)
 	return "build" -- temporary
 end
 
+function BSU:GetPlayerValues(ply)
+	local values = {}
+
+  if not ply:IsBot() then
+    -- append if linux user and if not bot
+    local os = BSU:GetPlayerOS(ply)
+    if os != "" then
+      table.insert(values, {
+        image = os == "windows" and "materials/bsu/scoreboard/windows.png" or os == "linux" and "icon16/tux.png" or os == "mac" and "materials/bsu/scoreboard/mac.png",
+				size = {x = 16, y = 16},
+				offset = {x = 0, y = 0}
+      })
+    end
+
+    -- append country flag icon if not bot
+    local country = BSU:GetPlayerCountry(ply)
+    if country != "" then
+      table.insert(values, {
+        image = "flags16/" .. country .. ".png",
+				size = {x = 16, y = 11},
+				offset = {x = 0, y = 3}
+      })
+    end
+  end
+
+  -- append status icon
+  local status = BSU:GetPlayerStatus(ply)
+  table.insert(values, {
+    image = "icon16/status_" .. status .. ".png",
+		size = {x = 16, y = 16},
+		offset = {x = 0, y = 0}
+  })
+
+  -- append mode (build or pvp)
+  local mode = BSU:GetPlayerMode(ply) == "build" and "wrench_orange" or "gun"
+  table.insert(values, {
+    image = "icon16/" .. mode .. ".png",
+		size = {x = 16, y = 16},
+		offset = {x = 0, y = 0}
+  })
+
+	return values
+end
+
 function BSU:ReceiveClientData(ply, data)
 	ply.bsu = ply.bsu or {}
 	for k, v in pairs(data) do
