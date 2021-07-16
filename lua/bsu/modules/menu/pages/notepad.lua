@@ -4,7 +4,7 @@ if SERVER then
   net.Receive("BSU_menuNotepadData", function(_, ply)
     if BSU:PlayerIsStaff(ply) then
       net.Start("BSU_menuNotepadData")
-        net.WriteData(util.Compress(file.Read("bsu/notepad.txt", "DATA"))
+        net.WriteData(util.Compress(file.Read("bsu/notepad.txt", "DATA")))
       net.Send(ply)
     end
   end)
