@@ -24,7 +24,7 @@ local icons     = {
 local hud       = {
     targetW = 1,            targetH = 1,
     minSize = 0.5,          maxSize = 2,
-    x = resW * 0.025,       y = resH * 0.925,
+    x = resW * 0.025,       y = resH * 0.95,
     w = 150,                h = 40
 }
 
@@ -79,6 +79,9 @@ function drawHud(self, w, h)
     if lPly:Armor()>0 then hasArmor = 1 else hasArmor = 0 end
     local boolHasArmor = !tobool( hasArmor )
     local hudHeight = ( hud.h/2+5) + ((hud.h/2-5)*hasArmor )
+
+    if hud.targetW >= 0.6 then dpStatIcons:Show() else dpStatIcons:Hide() end
+    self:SetPos(hud.x, hud.y - ((hudHeight/5) * hasArmor))
     self:SetSize( hud.w, hudHeight )
 
     plyHealth = Lerp( 0.1, plyHealth, math.Clamp((lPly:Health()/lPly:GetMaxHealth())*barWidth, 0, barWidth) )
@@ -86,8 +89,6 @@ function drawHud(self, w, h)
 
     -- Draw Background
     panelBlur(self, 5, 10, 50)
-    surface.SetMaterial( blur )
-    surface.DrawTexturedRect( 0, 0, w, h )
     draw.RoundedBox( 5, 0, 0, w, h, Color(0, 0, 0, 200) )
     -- Draw Health Bar
     draw.RoundedBoxEx( 5, 5, 5, barWidth, (hud.h/2)-5, Color(175, 0, 0, 255), true, true, boolHasArmor, boolHasArmor )
@@ -113,13 +114,15 @@ function drawHud(self, w, h)
 end
 
 function drawIcons( self, w, h )
+    local hudHeight = ( hud.h/2+5) + ((hud.h/2-5)*hasArmor )
+
+    self:SetPos(hud.x, (hud.y-30) - ((hudHeight/5) * hasArmor))
     self:SetSize( hud.w, 25 )
     panelBlur(self, 5, 10, 50)
 
     stats.skybox = inSkybox
     stats.flashlight = lPly:FlashlightIsOn()
     stats.buildmode = lPly:HasGodMode()
-    
 
     if stats.flashlight then 
         draw.RoundedBox( 5, 0, 0, 25, h, Color(0, 0, 0, 200) )
@@ -153,14 +156,11 @@ concommand.Add("bsu_hudsize", function(ply, cmd, args)
     local argSize = tonumber(args[1])
     if argSize  and (argSize >= hud.minSize and argSize <= hud.maxSize) then
         hud.targetW, hud.targetH = argSize, argSize
-        --hud.x, hud.y = hud.targetW * resW * 0.025, hud.targetH * resH * 0.925
+        hud.x, hud.y = (resW * 0.025) - (hud.targetH * 10), (resH * 0.95) - (hud.targetH * 10)
         hud.w, hud.h = hud.targetW * 150, hud.targetH * 40
-        --dpStatHud:SetPos(hud.x, hud.y)
-        --//dpStatHud:SetSize(hud.w, hud.h/2)
     else
         MsgC( Color(255,0,0), "Must use a number between "..hud.minSize.." and "..hud.maxSize.."!\n" )
     end
-
 end)
 
 
