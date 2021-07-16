@@ -13,11 +13,11 @@ function BSU:GetPlayerStatus(ply)
 end
 
 function BSU:GetPlayerCountry(ply)
-	return not ply:IsBot() and ply:GetNWString("country", false)
+	return not ply:IsBot() and ply:GetNWString("country", "")
 end
 
 function BSU:GetPlayerOS(ply)
-	return not ply:IsBot() and ply:GetNWString("os", false)
+	return not ply:IsBot() and ply:GetNWString("os", "")
 end
 
 function BSU:GetPlayerMode(ply)

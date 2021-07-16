@@ -218,7 +218,7 @@ else
       if not self.player:IsBot() then
         -- append if linux user and if not bot
         local os = BSU:GetPlayerOS(self.player)
-        if os then
+        if os != "" then
           table.insert(iconsData, {
             image = os == "windows" and "materials/bsu/scoreboard/windows.png" or os == "linux" and "icon16/tux.png" or os == "mac" and "materials/bsu/scoreboard/mac.png",
           })
@@ -226,7 +226,7 @@ else
 
         -- append country flag icon if not bot
         local country = BSU:GetPlayerCountry(self.player)
-        if country then
+        if country != "" then
           table.insert(iconsData, {
             image = "flags16/" .. country .. ".png",
             sizeY = 11,
