@@ -22,7 +22,7 @@ else
     rcr:SetPos(75, 255)
     rcr:SetText("Reset Custom Color")
     rcr.DoClick = function()
-        BSU:SetPlayerUniqueColor(LocalPlayer())
+        BSU:ClearPlayerUniqueColor(LocalPlayer())
     end
     bsuMenu.addPage(6, "obama guacamole", panel, "icon16/monkey.png")
   end
