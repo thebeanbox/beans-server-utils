@@ -46,23 +46,12 @@ function bsuMenu.create()
   bsuMenu.hide()
 
   -- setup some hooks
-
-  hook.Add("OnTextEntryGetFocus", "BSU_MenuFocus", function(pnl) -- allows you to type in text entries
-    if pnl:HasParent(bsuMenu.sheet) then
-      bsuMenu.frame:SetKeyboardInputEnabled(true)
-      pnl:RequestFocus()
-    end
-  end)
-
-  hook.Add("OnTextEntryLoseFocus", "BSU_MenuUnfocus", function(pnl) -- allows you to continue using your keys after no longer using a text entry
-    if pnl:HasParent(bsuMenu.sheet) then
-      bsuMenu.frame:SetKeyboardInputEnabled(false)
-    end
-  end)
-
+  
   hook.Add("VGUIMousePressed", "BSU_MenuClickHide", function(pnl) -- hides the menu if you click off of it
     if pnl:GetClassName() == "CGModBase" then
       bsuMenu.hide()
+    elseif pnl:HasParent(bsuMenu.sheet) then
+      bsuMenu.frame:SetKeyboardInputEnabled(true)
     end
   end)
 
