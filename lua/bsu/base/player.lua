@@ -181,6 +181,19 @@ if SERVER then
 		return uniqueColor or color or team.GetColor(ply:IsBot() and BSU.BOT_RANK or BSU.DEFAULT_RANK)
 	end
 
+	function BSU:SetPlayerUniqueColor(ply, color)
+		local hex = BSU:ColorToHex(color)
+		BSU:SetPlayerDBData(ply, {
+			uniqueColor = hex
+		})
+		ply:SetNWString("uniqueColor", hex)
+	end
+
+	function BSU:ClearPlayerUniqueColor(ply)
+		sql.Query(string.format("UPDATE bsu_players SET uniqueColor = NULL WHERE steamId = '%s'", ply:SteamID64()))
+    ply:SetNWString("uniqueColor", "")
+	end
+
 	net.Receive("BSU_ClientInit", function(_, ply)
 		local country, os = net.ReadString(), net.ReadString()
 
