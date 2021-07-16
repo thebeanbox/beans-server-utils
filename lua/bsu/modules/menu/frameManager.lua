@@ -50,7 +50,7 @@ function bsuMenu.create()
   hook.Add("VGUIMousePressed", "BSU_MenuClickHide", function(pnl) -- hides the menu if you click off of it
     if pnl:GetClassName() == "CGModBase" then
       bsuMenu.hide()
-    elseif pnl:HasParent(bsuMenu.sheet) then
+    elseif pnl:HasParent(bsuMenu.sheet) and pnl:GetClassName() == "TextEntry" or pnl:GetClassName() == "HtmlPanel" then
       bsuMenu.frame:SetKeyboardInputEnabled(true)
     end
   end)
