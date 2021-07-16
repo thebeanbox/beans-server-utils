@@ -22,4 +22,6 @@ else
     local url = util.Decompress(net.ReadData(len))
     html:OpenURL(url)
   end)
+  
+  bsuMenu.addPage(5, "Notepad", panel, "icon16/pencil.png")
 end
