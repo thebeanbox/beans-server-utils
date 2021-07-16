@@ -3,7 +3,7 @@
 
 
 ---- Variables ============================================================================================
-surface.CreateFont("fontMain", {font = "Tahoma", size = 15, antialias = true, weight = 600, shadow=true})
+surface.CreateFont("fontMain", {font = "Tahoma", size = 15, antialias = true, weight = 600})
 net.Receive("BSU_SkyboxNetMessage", function() inSkybox = net.ReadBool() end)
 local lPly = LocalPlayer()
 local inSkybox, dpStatHud, dpStatIcons, dmBlur

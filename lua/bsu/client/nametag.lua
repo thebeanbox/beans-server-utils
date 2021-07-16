@@ -7,6 +7,7 @@ surface.CreateFont("FontMain", {font = "Arial", size = 15, antialias = true, wei
 surface.CreateFont("FontSub", {font = "Arial", size = 12, antialias = true, weight = 500})
 local nametags = { panels = {}, avatars = {} }
 local ready = false
+local maxDistance = 1000
 
 
 
@@ -42,27 +43,32 @@ end
 
 function drawNameTag(self, w, h)
     local ply = self.Player
-    local data2D = (ply:GetPos() + Vector(0,0,100)):ToScreen()
-    local tSizeX, tSizeY
+    local isInRange = (LocalPlayer():GetPos():Distance(ply:GetPos()) <= maxDistance)
 
-    surface.SetFont("FontMain")
-    local nameW, nameH = surface.GetTextSize(ply:Name())
+    if isInRange then
+        local data2D = (ply:GetPos() + Vector(0,0,100)):ToScreen()
+        local tSizeX, tSizeY
 
-    draw.RoundedBox( 5, 0, 0, w, h, Color(0,0,0,200) )
-    draw.DrawText( ply:Name(), "FontMain", 21, 0, team.GetColor(ply:Team()), 0 )
-    
-    local trace = LocalPlayer():GetEyeTrace()
 
-    if trace.Entity:IsValid() and trace.Entity:IsPlayer() and trace.Entity == ply then
-        tSizeX, tSizeY = 150, 40
-        draw.DrawText( team.GetName(ply:Team()), "FontSub", 21, 16, Color(255,255,255), 0 )
-    else
-        tSizeX, tSizeY = 25+(nameW*1.1), 18
+        surface.SetFont("FontMain")
+        local nameW, nameH = surface.GetTextSize(ply:Name())
+
+        draw.RoundedBox( 5, 0, 0, w, h, Color(0,0,0,200) )
+        draw.DrawText( ply:Name(), "FontMain", 21, 0, team.GetColor(ply:Team()), 0 )
+        
+        local trace = LocalPlayer():GetEyeTrace()
+
+        if trace.Entity:IsValid() and trace.Entity:IsPlayer() and trace.Entity == ply then
+            tSizeX, tSizeY = 150, 40
+            draw.DrawText( team.GetName(ply:Team()), "FontSub", 21, 16, Color(255,255,255), 0 )
+        else
+            tSizeX, tSizeY = 25+(nameW*1.1), 18
+        end
+
+        local posX, posY = data2D.x - (w/2), data2D.y
+        self:SetPos( math.Clamp(posX, 0, ScrW()-w), math.Clamp(posY, 0, ScrH()-h) )
+        self:SetSize( Lerp(0.1, w, tSizeX), Lerp(0.1, h, tSizeY) )
     end
-
-    local posX, posY = data2D.x - (w/2), data2D.y
-    self:SetPos( math.Clamp(posX, 0, ScrW()-w), math.Clamp(posY, 0, ScrH()-h) )
-    self:SetSize( Lerp(0.1, w, tSizeX), Lerp(0.1, h, tSizeY) )
 end
 
 
