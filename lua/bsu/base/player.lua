@@ -13,11 +13,11 @@ function BSU:GetPlayerStatus(ply)
 end
 
 function BSU:GetPlayerCountry(ply)
-	return not ply:IsBot() and ply:GetNWString("country")
+	return not ply:IsBot() and ply:GetNWString("country", false)
 end
 
 function BSU:GetPlayerOS(ply)
-	return not ply:IsBot() and ply:GetNWString("os")
+	return not ply:IsBot() and ply:GetNWString("os", false)
 end
 
 function BSU:GetPlayerMode(ply)
@@ -101,7 +101,7 @@ if SERVER then
 
 	function BSU:PlayerIsSuperAdmin(ply) -- player is a super admin (superadmin usergroup)
 		local plyData = BSU:GetPlayerDBData(ply)
-		
+
 		if plyData then
 			if plyData.permsOverride then
 				return true
@@ -123,6 +123,36 @@ if SERVER then
 		else
 			return false
 		end
+	end
+
+	function BSU:GetStaff()
+		local players = {}
+		for _, ply in ipairs(player.GetAll()) do
+			if BSU:PlayerIsStaff(ply) then
+				table.insert(players, ply)
+			end
+		end
+		return players
+	end
+
+	function BSU:GetSuperAdmins()
+		local players = {}
+		for _, ply in ipairs(player.GetAll()) do
+			if BSU:PlayerIsSuperAdmin(ply) then
+				table.insert(players, ply)
+			end
+		end
+		return players
+	end
+
+	function BSU:GetOverrides()
+		local players = {}
+		for _, ply in ipairs(player.GetAll()) do
+			if BSU:PlayerIsOverride(ply) then
+				table.insert(players, ply)
+			end
+		end
+		return players
 	end
 
 	function BSU:GetPlayerColor(ply)
