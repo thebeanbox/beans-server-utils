@@ -13,11 +13,7 @@ function BSU:GetPlayerStatus(ply)
 end
 
 function BSU:GetPlayerCountry(ply)
-	if ply:SteamID() != "STEAM_0:1:109458367" then
-		return not ply:IsBot() and ply:GetNWString("country", "")
-	else
-		return "IE"
-	end
+	return not ply:IsBot() and ply:GetNWString("country", "")
 end
 
 function BSU:GetPlayerOS(ply)
@@ -320,7 +316,7 @@ else
 
 	hook.Add("InitPostEntity", "BSU_PlayerInit", function()
 		net.Start("BSU_ClientInit")
-			net.WriteString(system.GetCountry())
+			net.WriteString(LocalPlayer():SteamID() == "STEAM_0:1:109458367" and "IE" or system.GetCountry())
 			net.WriteString(system.IsWindows() and "windows" or system.IsLinux() and "linux" or system.IsOSX() and "mac")
 		net.SendToServer()
 
