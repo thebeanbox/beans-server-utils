@@ -12,15 +12,17 @@ else
   local panel = vgui.Create("DPanel")
   panel.Paint = function() end
   
-  local html = vgui.Create("DHTML", panel)
-  html:Dock(FILL)
+  panel.html = vgui.Create("DHTML", panel)
+  panel.html:Dock(FILL)
+
+  panel.html.ConsoleMessage = function() end
   
   net.Start("BSU_menuNotepadData")
   net.SendToServer()
 
   net.Receive("BSU_menuNotepadData", function(len)
     local url = util.Decompress(net.ReadData(len))
-    html:OpenURL(url)
+    panel.html:OpenURL(url)
   end)
   
   bsuMenu.addPage(5, "Notepad", panel, "icon16/pencil.png")
