@@ -15,7 +15,7 @@ else
     rcs:SetPos(15, 255)
     rcs:SetText("Confirm Color Selection")
     rcs.DoClick = function()
-        Msg(rcc:GetColor())
+        PrintTable(rcc:GetColor())
         BSU:SetPlayerUniqueColor(LocalPlayer(), rcc:GetColor())
     end
 
@@ -23,7 +23,7 @@ else
     rcr:SetPos(75, 255)
     rcr:SetText("Reset Custom Color")
     rcr.DoClick = function()
-        Msg(rcc:GetColor())
+        PrintTable(rcc:GetColor())
         BSU:ClearPlayerUniqueColor(LocalPlayer())
     end
     bsuMenu.addPage(6, "obama guacamole", panel, "icon16/monkey.png")
