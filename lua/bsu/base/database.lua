@@ -1,4 +1,4 @@
--- database.lua by Bonyoze
+-- base/database.lua by Bonyoze
 -- Manages the server database
 
 sql.Query("CREATE TABLE IF NOT EXISTS bsu_players(steamId TEXT PRIMARY KEY, rankIndex INTEGER, playTime INTEGER DEFAULT 0, uniqueColor TEXT, permsOverride INTEGER DEFAULT 0)") -- player data
@@ -59,4 +59,4 @@ function BSU:PopulateBSURanks()
   end
 end
 
-BSU:PopulateBSURanks()
+--BSU:PopulateBSURanks()

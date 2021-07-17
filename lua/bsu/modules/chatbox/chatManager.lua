@@ -105,7 +105,7 @@ function bsuChat.send(data) -- adds a message to the chatbox
 		if textSegs[#textSegs].type != "hyperlink" then textSegs[#textSegs].value = string.TrimRight(textSegs[#textSegs].value) end
 	end
 
-	function buildMessageHTML()
+	local function buildMessageHTML()
 		local color, italic, bold, strikethrough = Color(151, 211, 255), false, false, false
 		
 		for _, msg in ipairs(data.messageContent) do

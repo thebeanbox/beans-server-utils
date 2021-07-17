@@ -1,41 +1,45 @@
 -- commands.lua by Bonyoze
 
 bsuCommands = bsuCommands or {}
-
+  
 function BSU:RegisterCommand(data)
   if not data.category then
     data.category = "miscellaneous"
   end
   local category = data.category
+  data.category = nil -- we no longer need this value
   
   if not bsuCommands[category] then bsuCommands[category] = {} end
 
-  data.category = nil -- we no longer need this value
-  if CLIENT then data.exec = nil end -- the client won't be running this
-
+  if CLIENT then data.exec = nil end -- the client won't be needing this
+  
   table.insert(bsuCommands[category], data)
 end
 
-function BSU:GetCommandByName(name)
-  for category, commands in pairs(bsuCommands) do
-    for _, command in ipairs(commands) do
-      if string.lower(command.name) == string.lower(name) then
-        return command
+-- load commands
+include(MODULES_DIR .. "commands/player.lua")
+include(MODULES_DIR .. "commands/chat.lua")
+
+if SERVER then
+  -- send commands to clientside
+  AddCSLuaFile(MODULES_DIR .. "commands/player.lua")
+  AddCSLuaFile(MODULES_DIR .. "commands/chat.lua")
+
+  util.AddNetworkString("BSU_RunCommand")
+
+  function BSU:GetCommandByName(name)
+    for category, commands in pairs(bsuCommands) do
+      for _, command in ipairs(commands) do
+        if string.lower(command.name) == string.lower(name) then
+          return command
+        end
       end
     end
   end
-end
 
-function BSU:FormatCommandArgStr(str)
-  return string.Split(str, " ") -- temporary
-end
-
-function BSU:RunCommand(name, argStr)
-  BSU:GetCommandByName(name).exec(LocalPlayer(), BSU:FormatCommandArgStr(argStr))
-end
-
-if SERVER then
-  util.AddNetworkString("BSU_RunCommand")
+  function BSU:FormatCommandArgStr(str)
+    return string.Split(str, " ") -- temporary
+  end
 
   function BSU:GetPlayerCommandPermission(ply, name)
     local command = BSU:GetCommandByName(name)

@@ -14,7 +14,7 @@ end
 if SERVER then
 	util.AddNetworkString("BSU_CommandMessage")
 
-	function BSU:SendCommandMsg(ply, msgData)
+	function BSU:SendPlayerInfoMsg(ply, msgData)
         local nameColor, name = BSU:GetPlayerNameValues(ply)
 
 		net.Start("BSU_CommandMessage")
@@ -24,7 +24,7 @@ if SERVER then
 else
     net.Receive("BSU_CommandMessage", function(len)
         local data = util.JSONToTable(util.Decompress(net.ReadData(len)))
-
+        
         bsuChat.send(
             {
                 messageContent = {

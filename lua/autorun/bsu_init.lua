@@ -3,13 +3,12 @@
 
 DIR = "bsu/"
 LIB_DIR = DIR .. "base/bsu_lib/"
-CMDS_DIR = DIR .. "base/commands/"
 SV_DIR = DIR .. "server/"
 SH_DIR = DIR .. "shared/"
 CL_DIR = DIR .. "client/"
+MODULES_DIR = DIR .. "modules/"
 
 local lib = file.Find(LIB_DIR .. "*.lua", "LUA") -- bsu library files
-local cmds = file.Find(CMDS_DIR .. "*.lua", "LUA") -- commands files
 local sv = file.Find(SV_DIR .. "*.lua", "LUA") -- server files
 local sh = file.Find(SH_DIR .. "*.lua", "LUA") -- shared files
 local cl = file.Find(CL_DIR .. "*.lua", "LUA") -- client files
@@ -51,15 +50,6 @@ if SERVER then
   include("bsu/base/player.lua")
   AddCSLuaFile("bsu/base/player.lua")
 
-  -- load commands
-  include("bsu/base/commands.lua")
-  AddCSLuaFile("bsu/base/commands.lua")
-
-  for _, file in ipairs(cmds) do
-    include(CMDS_DIR .. file)
-    AddCSLuaFile(CMDS_DIR .. file)
-  end
-
   -- load assets
   resource.AddSingleFile("materials/bsu/scoreboard/windows.png")
   resource.AddSingleFile("materials/bsu/scoreboard/mac.png")
@@ -87,7 +77,7 @@ else
   MsgN("[BSU CLIENT] Started up")
 
   -- load/send library
-  for _, file in  ipairs(lib) do
+  for _, file in ipairs(lib) do
     include(LIB_DIR .. file)
   end
 
@@ -95,14 +85,6 @@ else
   include("bsu/base/teams.lua")
 
   include("bsu/base/player.lua")
-
-  -- load commands
-  include("bsu/base/commands.lua")
-
-  for _, file in ipairs(cmds) do
-    include(CMDS_DIR .. file)
-    AddCSLuaFile(CMDS_DIR .. file)
-  end
 
   include("bsu/developer.lua") -- REMOVE THIS WHEN PUBLIC
 

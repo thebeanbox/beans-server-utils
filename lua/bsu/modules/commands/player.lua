@@ -1,3 +1,5 @@
+-- commands/player.lua by Bonyoze
+
 BSU:RegisterCommand({
     name = "god",
     aliases = { "build" },
@@ -7,15 +9,7 @@ BSU:RegisterCommand({
     exec = function(ply, args)
         ply:GodEnable()
 
-        BSU:SendCommandMsg(
-            ply,
-            {
-                { -- command message
-                    type = "text",
-                    value = " entered god mode for themself"
-                }
-            }
-        )
+        BSU:SendPlayerInfoMsg(ply, { { type = "text", value = " entered god mode for themself" } })
     end
 })
 
@@ -28,15 +22,7 @@ BSU:RegisterCommand({
     exec = function(ply, args)
         ply:GodDisable()
         
-        BSU:SendCommandMsg(
-            ply,
-            {
-                { -- command message
-                    type = "text",
-                    value = " exited god mode for themself"
-                }
-            }
-        )
+        BSU:SendPlayerInfoMsg(ply, { { type = "text", value = " exited god mode for themself" } })
     end
 })
 

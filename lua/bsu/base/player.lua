@@ -1,4 +1,4 @@
--- player.lua by Bonyoze
+-- base/player.lua by Bonyoze
 
 function BSU:GetPlayerPlayTime(ply)
 	return ply:GetNWInt("playTime")
@@ -9,7 +9,7 @@ function BSU:GetPlayerKills(ply)
 end
 
 function BSU:GetPlayerStatus(ply)
-	return ply:IsBot() and "offline" or ply:GetNWBool("isAFK") and "away" or ply:GetNWBool("isFocused") == false and "busy" or "online"
+	return ply:IsBot() and "offline" or ply:GetNWBool("isAFK") == true and "away" or ply:GetNWBool("isFocused") == false and "busy" or "online"
 end
 
 function BSU:GetPlayerCountry(ply)
@@ -21,7 +21,11 @@ function BSU:GetPlayerOS(ply)
 end
 
 function BSU:GetPlayerMode(ply)
-	return "build" -- temporary
+	return "build"
+end
+
+function BSU:GetPlayerAFKDuration(ply)
+	return ply:GetNWFloat("afkTime") != 0 and CurTime() - ply:GetNWFloat("afkTime") + BSU.AFK_TIMEOUT or 0
 end
 
 function BSU:GetPlayerValues(ply)
@@ -81,7 +85,6 @@ end
 
 if SERVER then
 	util.AddNetworkString("BSU_ClientInit")
-	util.AddNetworkString("BSU_ClientAFKStatus")
 	util.AddNetworkString("BSU_ClientFocusedStatus")
 
 	function BSU:RegisterPlayerDBData(ply)
@@ -250,9 +253,7 @@ if SERVER then
 	end)
 
 	net.Receive("BSU_ClientFocusedStatus", function(_, ply)
-		local isFocused = net.ReadBool()
-
-		ply:SetNWBool("isFocused", isFocused)
+		ply:SetNWBool("isFocused", net.ReadBool())
 	end)
 	
 	hook.Add("PlayerSpawn", "BSU_SetPlayerTeam", function(ply)
@@ -293,6 +294,27 @@ if SERVER then
 	hook.Add("PlayerDeath", "BSU_PlayerKills", function(victim, inflict, attacker)
 		if victim != attacker then attacker:SetNWInt("kills", attacker:GetNWInt("kills") + 1) end
 	end)
+
+	-- handle afk players
+	hook.Add("Think", "BSU_HandleAFK", function()
+		for _, ply in ipairs(player.GetAll()) do
+			if ply:GetNWFloat("afkTime") == 0 then ply:SetNWFloat("afkTime", CurTime()) end
+
+			if ply:GetNWFloat("afkTime") + BSU.AFK_TIMEOUT <= CurTime() then -- player hit the afk timeout
+				if not ply:GetNWBool("isAFK") then
+					ply:SetNWBool("isAFK", true)
+					BSU:SendPlayerInfoMsg(ply, { { type = "text", value = " is now AFK" } })
+				end
+			elseif ply:GetNWBool("isAFK") then
+				ply:SetNWBool("isAFK", false)
+				BSU:SendPlayerInfoMsg(ply, { { type = "text", value = " is no longer AFK" } })
+			end
+		end
+	end)
+
+	hook.Add("KeyPress", "BSU_ResetAFKTime", function(ply)
+		ply:SetNWFloat("afkTime", CurTime())
+	end)
 else
 	function BSU:GetPlayerColor(ply)
 		local uniqueColor = ply:GetNWString("uniqueColor", "")
@@ -319,14 +341,6 @@ else
 			net.WriteString(LocalPlayer():SteamID() == "STEAM_0:1:109458367" and "IE" or system.GetCountry())
 			net.WriteString(system.IsWindows() and "windows" or system.IsLinux() and "linux" or system.IsOSX() and "mac")
 		net.SendToServer()
-
-		-- afk counter
-		--[[if not LocalPlayer():IsBot() then
-			local afkCounter = 0
-			timer.Create("BSU_ClientAFKCounter", 1, 0, function()
-				afkCounter = afkCounter + 1
-			end)
-		end]]
 
 		-- check status of game window focus
 		local lastFocused = system.HasFocus()

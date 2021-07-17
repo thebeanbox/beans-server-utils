@@ -541,6 +541,8 @@ end
 chat.Close = bsuChat.hide
 
 function bsuChat.show() -- opens chatbox
+	if gui.IsGameUIVisible() then return end
+	
 	bsuChat.isOpen = true
 	
 	bsuChat.html:Call(
@@ -586,7 +588,5 @@ function bsuChat.show() -- opens chatbox
 
 		bsuChat.popOut:MakePopup()
 	end
-	
-	gamemode.Call("StartChat")
 end
 chat.Open = bsuChat.show

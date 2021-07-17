@@ -1,4 +1,4 @@
--- teams.lua by Bonyoze
+-- base/teams.lua by Bonyoze
 
 if SERVER then
     util.AddNetworkString("BSU_TeamsSetup")
