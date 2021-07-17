@@ -26,7 +26,7 @@ else
     rcs:SetText("Confirm Color Selection")
     rcs.DoClick = function()
         net.Start("BSU_MenuChangeUniqueColor")
-        net.Writebool(true)
+        net.WriteBool(true)
         net.WriteEntity(LocalPlayer())
         net.WriteColor(rcc:GetColor())
         net.SendToServer()
@@ -37,7 +37,7 @@ else
     rcr:SetText("Reset Custom Color")
     rcr.DoClick = function()
         net.Start("BSU_MenuChangeUniqueColor")
-        net.Writebool(false)
+        net.WriteBool(false)
         net.WriteEntity(LocalPlayer())
         net.SendToServer()
     end
