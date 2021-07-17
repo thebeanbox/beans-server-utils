@@ -4,7 +4,7 @@ if SERVER then
         local changereset = net.ReadBool() -- if true, change color, if false, reset color
         local ply = net.ReadEntity()
         if changereset == true then
-            BSU:SetPlayerUniqueColor(ply, net.ReadColor())
+            BSU:SetPlayerUniqueColor(ply, net.ReadTable())
         elseif changereset == false then
             BSU:ResetPlayerUniqueColor(ply)
         end
@@ -28,7 +28,7 @@ else
         net.Start("BSU_MenuChangeUniqueColor")
         net.WriteBool(true)
         net.WriteEntity(LocalPlayer())
-        net.WriteColor(rcc:GetColor())
+        net.WriteTable(rcc:GetColor())
         net.SendToServer()
     end
 
