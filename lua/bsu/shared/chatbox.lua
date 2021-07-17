@@ -36,6 +36,7 @@ end
 errorImage = "data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAMAAADz0U65AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAGUExURf8A/gAAACcac5cAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAARSURBVBhXY2BgRIPkiDAyAAAEyAAhvFw1dgAAAABJRU5ErkJggg=="
 
 bsuChat = bsuChat or {}
+BSU.bsuChat = bsuChat
 bsuChat.isOpen = false
 bsuChat.chatType = "global"
 bsuChat.chatTypes = {

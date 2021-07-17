@@ -2,17 +2,17 @@
 -- Makes all the shit work
 
 DIR = "bsu/"
+LIB_DIR = DIR .. "base/bsu_lib/"
+CMDS_DIR = DIR .. "base/commands/"
 SV_DIR = DIR .. "server/"
 SH_DIR = DIR .. "shared/"
 CL_DIR = DIR .. "client/"
 
-local CMDS_DIR = DIR .. "base/commands/"
-
+local lib = file.Find(LIB_DIR .. "*.lua", "LUA") -- bsu library files
+local cmds = file.Find(CMDS_DIR .. "*.lua", "LUA") -- commands files
 local sv = file.Find(SV_DIR .. "*.lua", "LUA") -- server files
 local sh = file.Find(SH_DIR .. "*.lua", "LUA") -- shared files
 local cl = file.Find(CL_DIR .. "*.lua", "LUA") -- client files
-
-local cmds = file.Find(CMDS_DIR .. "*.lua", "LUA") -- commands files
 
 BSU = BSU or {}
 
@@ -20,6 +20,7 @@ BSU = BSU or {}
 BSU.DEFAULT_RANK = 101 -- Guest team index
 BSU.BOT_RANK = 108 -- Bot team index
 BSU.AFK_TIMEOUT = 900 -- 900 secs (15 mins)
+BSU.CMD_PREFIX = "!"
 
 -- some useful functions
 function BSU:HexToColor(hex, alpha)
@@ -35,6 +36,12 @@ end
 if SERVER then
   MsgN("[BSU SERVER] Started up")
   
+  -- load/send library
+  for _, file in  ipairs(lib) do
+    include(LIB_DIR .. file)
+    AddCSLuaFile(LIB_DIR .. file)
+  end
+
   -- load/send base scripts
   include("bsu/base/database.lua") 
 
@@ -78,6 +85,11 @@ if SERVER then
   MsgN("[BSU SERVER] Finished loading modules")
 else
   MsgN("[BSU CLIENT] Started up")
+
+  -- load/send library
+  for _, file in  ipairs(lib) do
+    include(LIB_DIR .. file)
+  end
 
   -- load base scripts
   include("bsu/base/teams.lua")
