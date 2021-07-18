@@ -16,7 +16,7 @@ function bsuChat.send(data) -- adds a message to the chatbox
 	
 	bsuChat.html:Call(
 	[[
-		(() => {
+		(function() {
 			const messageVisible = ]] .. (visible and "true" or "false") .. [[,
 			chatType = ]] .. (data.chatType and ('"' .. data.chatType .. '"') or "null") .. [[,
 			chatIcon = ]] .. ((data.chatType and bsuChat.chatTypes[data.chatType]) and ('"' .. bsuChat.chatTypes[data.chatType].icon .. '"') or "null") .. [[,
@@ -140,12 +140,8 @@ function bsuChat.send(data) -- adds a message to the chatbox
 						.click(function() {
 							bsuChat.popOutFrame(
 								"hyperlink",
-								$(this).parent().parent().parent()[0].sendTime,
-								{
-									src: "]] .. string.JavascriptSafe(value.url) .. [[",
-									width: 1000,
-									height: 700
-								}
+								$($(this).parent().parent().parent()[0]).data("sendTime"),
+								"]] .. string.JavascriptSafe(value.url) .. [["
 							);
 						})
 						.appendTo($("#chatbox > .messageContainer").last().find("div").find(".messageText")[0]);
@@ -157,11 +153,10 @@ function bsuChat.send(data) -- adds a message to the chatbox
 						.click(function() {
 							bsuChat.popOutFrame(
 								"image",
-								$(this).parent().parent().parent()[0].sendTime,
-								{
-									src: this.src, width: this.width,
-									height: this.height
-								}
+								$($(this).parent().parent().parent()[0]).data("sendTime"),
+								this.src,
+								this.width,
+								this.height
 							);
 						})
 						.error(function() {

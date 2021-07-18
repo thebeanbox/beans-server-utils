@@ -25,8 +25,9 @@ function bsuMenu.create()
   end
   bsuMenu.sheet.oldPaint = bsuMenu.sheet.Paint
 
-  hook.Add("Think", bsuMenu.sheet, function()
+  hook.Add("Think", bsuMenu.sheet, function(self)
     if gui.IsGameUIVisible() then
+      if self:IsVisible() then gui.HideGameUI() end
       bsuMenu.hide()
     end
   end)
@@ -47,7 +48,7 @@ function bsuMenu.create()
 
   -- setup some hooks
   
-  hook.Add("VGUIMousePressed", "BSU_MenuClickHide", function(pnl) -- hides the menu if you click off of it
+  hook.Add("VGUIMousePressed", "BSU_MenuClick", function(pnl)
     if pnl:GetClassName() == "CGModBase" then
       bsuMenu.hide()
     elseif pnl:HasParent(bsuMenu.sheet) and pnl:GetClassName() == "TextEntry" or pnl:GetClassName() == "HtmlPanel" then

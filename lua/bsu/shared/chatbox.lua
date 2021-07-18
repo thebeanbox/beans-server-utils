@@ -65,6 +65,7 @@ end)
 
 hook.Add("PlayerBindPress", "BSU_OpenChatbox", function(ply, bind, pressed) -- opens the chatbox
 	if bind == "messagemode" || bind == "messagemode2" then
+
 		-- set current chatType
 		if bind == "messagemode" then
 			bsuChat.chatType = "global"

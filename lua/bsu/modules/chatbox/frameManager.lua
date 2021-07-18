@@ -119,9 +119,8 @@ function bsuChat.create()
 				elseif bsuChat.chatType == "admin" then
 					-- admin chat stuff
 				end
-
-				bsuChat.hide()
 			end
+			bsuChat.hide()
 		end
 	end
 
@@ -172,7 +171,7 @@ function bsuChat.create()
 
 		button.OnToggled = function(self, state)
 			bsuChat.html:Call([[
-				(() => {
+				(function() {
 					const messages = $("#chatbox > .messageContainer").filter(function() {
 						return $(this).attr("chatType") == "]] .. type .. [[";
 					});
@@ -229,6 +228,7 @@ function bsuChat.create()
 				}
 
 				* {
+					-webkit-user-select: none;
 					user-select: none;
 				}
 				
@@ -294,6 +294,7 @@ function bsuChat.create()
 					font-weight: bold;
 					font-size: 10px;
 					line-height: 28px;
+					cursor: default;
 				}
 				
 				.avatar {
@@ -305,22 +306,24 @@ function bsuChat.create()
 				}
 
 				.name {
-					user-select: text;
 					vertical-align: text-middle;
 					padding-left: 4px;
 					padding-right: 4px;
 					font-size: 14px;
 					font-weight: 900;
 					line-height: 28px;
+					-webkit-user-select: text;
+					user-select: text;
 				}
 
 				.messageText, .messageText > span {
 					display: inline;
-					user-select: text;
 					vertical-align: text-middle;
 					font-size: 14px;
 					line-height: 28px;
-					overflow-wrap: anywhere;
+					word-break: break-word;
+					-webkit-user-select: text;
+					user-select: text;
 				}
 				
 				.hyperlink {
@@ -356,7 +359,8 @@ function bsuChat.create()
 					filter: blur(10px);
 				}
 			</style>
-			<script src="asset://garrysmod/html/js/thirdparty/jquery.js"></script>
+			<script src="asset://garrysmod/html/js/thirdparty/jquery.js" type="text/javascript"></script>
+			<script src="asset://garrysmod/html/js/thirdparty/jquery-ui.js" type="text/javascript"></script>
 		</head>
 		<body>
 			<div id="chatboxContainer">
@@ -366,16 +370,16 @@ function bsuChat.create()
 		<script>
 			var isOpen = false;
 			
-			const scrollToBottom = check => {
+			const scrollToBottom = function(check) {
 				const el = $("#chatboxContainer");
 				if (check) {
 					if (el.scrollTop() + el.height() + 32 < el[0].scrollHeight) return;
 				}
-				el[0].scrollTo(0, el[0].scrollHeight);
+				el[0].scrollTop = el[0].scrollHeight;
 			}
-
+			
 			// message fade effect
-			const runFadeAnim = () => {
+			const runFadeAnim = function() {
 				if (!isOpen) {
 					scrollToBottom();
 
@@ -391,7 +395,7 @@ function bsuChat.create()
 				}
 			}
 			
-			const haltFadeAnim = () => {
+			const haltFadeAnim = function() {
 				isOpen = true;
 			}
 			
@@ -400,47 +404,49 @@ function bsuChat.create()
 		</script>
 	]])
 
-	bsuChat.html:AddFunction("bsuChat", "popOutFrame", function(type, msgSendTime, args)
+	bsuChat.html:AddFunction("bsuChat", "popOutFrame", function(frameType, msgSendTime, src, width, height)
 		if bsuChat.popOut and bsuChat.popOut:IsValid() then
 			bsuChat.popOut:Close()
 			if msgSendTime == bsuChat.popOut.id then return end
 		end
 
-		bsuChat.popOut = vgui.Create("DFrame")
-		bsuChat.popOut.id = msgSendTime
-		bsuChat.popOut:SetSize(args.width + 10, args.height + 34)
-		bsuChat.popOut:SetTitle(args.src)
-		bsuChat.popOut:SetScreenLock(true)
-		bsuChat.popOut:ShowCloseButton(true)
-		bsuChat.popOut:SetDraggable(true)
-		bsuChat.popOut:SetSizable(true)
-		bsuChat.popOut:MakePopup()
-		bsuChat.popOut:SetPos(ScrW() / 2 - bsuChat.popOut:GetWide() / 2, ScrH() / 2 - bsuChat.popOut:GetTall() / 2)
-		bsuChat.popOut.btnMaxim:SetVisible(false)
-		bsuChat.popOut.btnMinim:SetVisible(false)
+		if frameType == "hyperlink" then
+			if not src then return end
 
-		bsuChat.popOut.Paint = function(self, w, h)
-			bsuChat.blur(self, 5, 10, 50)
-			draw.RoundedBox(5, 0, 0, w, h, Color(0, 0, 0, 180))
-			draw.RoundedBox(5, 0, 0, w, 25, Color(0, 0, 0, 225))
-		end
-		bsuChat.popOut.oldPaint = bsuChat.popOut.Paint
+			if bsuChat.popOut then bsuChat.popOut:Close() end
+			bsuChat.hide()
+			gui.OpenURL(src)
+		elseif frameType == "image" then
+			if not src or not width or not height then return end
 
-		bsuChat.popOut.html = vgui.Create("DHTML", bsuChat.popOut)
-		bsuChat.popOut.html:Dock(FILL)
+			bsuChat.popOut = vgui.Create("DFrame")
+			bsuChat.popOut.id = msgSendTime
+			bsuChat.popOut:SetSize(width + 10, height + 34)
+			bsuChat.popOut:SetTitle(src)
+			bsuChat.popOut:SetScreenLock(true)
+			bsuChat.popOut:ShowCloseButton(true)
+			bsuChat.popOut:SetDraggable(true)
+			bsuChat.popOut:SetSizable(true)
+			bsuChat.popOut:MakePopup()
+			bsuChat.popOut:SetPos(ScrW() / 2 - bsuChat.popOut:GetWide() / 2, ScrH() / 2 - bsuChat.popOut:GetTall() / 2)
+			bsuChat.popOut.btnMaxim:SetVisible(false)
+			bsuChat.popOut.btnMinim:SetVisible(false)
+			
+			bsuChat.popOut.Paint = function(self, w, h)
+				bsuChat.blur(self, 5, 10, 50)
+				draw.RoundedBox(5, 0, 0, w, h, Color(0, 0, 0, 180))
+				draw.RoundedBox(5, 0, 0, w, 25, Color(0, 0, 0, 225))
+			end
+			bsuChat.popOut.oldPaint = bsuChat.popOut.Paint
+			
+			bsuChat.popOut.html = vgui.Create("HTML", bsuChat.popOut)
+			bsuChat.popOut.html:Dock(FILL)
 
-		bsuChat.popOut.html.ConsoleMessage = function() end -- prevents html print messages from appearing in the client's console
-
-		if type == "hyperlink" then
-			bsuChat.popOut:SetMinWidth(250)
-			bsuChat.popOut:SetMinHeight(175)
-			bsuChat.popOut.html:OpenURL(args.src)
-		elseif type == "image" then
-			bsuChat.popOut:SetMinWidth(args.width + 10)
-			bsuChat.popOut:SetMinHeight(args.height + 34)
+			bsuChat.popOut:SetMinWidth(width + 10)
+			bsuChat.popOut:SetMinHeight(height + 34)
 			bsuChat.popOut.html:SetHTML([[
 				<body style="margin: 0;">
-					<img style="width: 100%; height: 100%;" src="]] .. args.src .. [["></img>
+					<img style="width: 100%; height: 100%;" src="]] .. src .. [["></img>
 				</body>
 			]])
 		end
@@ -461,6 +467,12 @@ function bsuChat.create()
 	end)
 	
 	bsuChat.hide()
+
+	hook.Add("VGUIMousePressed", "BSU_ChatboxClick", function(pnl)
+    if pnl:GetClassName() == "CGModBase" then
+      bsuChat.hide()
+		end
+  end)
 end
 
 local blur = Material("pp/blurscreen")
@@ -483,7 +495,7 @@ function bsuChat.hide() -- closes chatbox
 	bsuChat.isOpen = false
 	
 	bsuChat.html:Call([[
-		(() => {
+		(function() {
 			isOpen = false;
 			
 			$("#chatboxContainer").css("overflow-y", "hidden"); // hides scrollbar
@@ -541,13 +553,11 @@ end
 chat.Close = bsuChat.hide
 
 function bsuChat.show() -- opens chatbox
-	if gui.IsGameUIVisible() then return end
-	
 	bsuChat.isOpen = true
 	
 	bsuChat.html:Call(
 		[[
-			(() => {
+			(function() {
 				$("#chatboxContainer").css("overflow-y", "auto"); // shows scrollbar
 				
 				scrollToBottom();
