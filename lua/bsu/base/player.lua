@@ -311,6 +311,14 @@ if SERVER then
 			end
 		end
 	end)
+	
+	-- disallow godmoded players from damaging ungodded people in godmode
+	hook.Add("PlayerShouldTakeDamage", "BSU_AntiGodKill", function(victim, attacker)
+		if attacker:IsPlayer() and attacker:HasGodMode() and not victim:HasGodMode() then
+			return false
+		end
+		return true
+	end)
 
 	hook.Add("KeyPress", "BSU_ResetAFKTime", function(ply)
 		ply:SetNWFloat("afkTime", CurTime())
