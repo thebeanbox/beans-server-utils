@@ -21,27 +21,17 @@ BSU.BOT_RANK = 108 -- Bot team index
 BSU.AFK_TIMEOUT = 900 -- 900 secs (15 mins)
 BSU.CMD_PREFIX = "!"
 
--- some useful functions
-function BSU:HexToColor(hex, alpha)
-  local hex = hex:gsub("#","")
-  return Color(tonumber("0x" .. hex:sub(1,2)), tonumber("0x" .. hex:sub(3,4)), tonumber("0x" .. hex:sub(5,6)), alpha or 255)
-end
-
-function BSU:ColorToHex(color)
-  return string.format("%.2x%.2x%.2x", color.r, color.g, color.b)
-end
-
 -- SERVER/CLIENT SETUP
 if SERVER then
   MsgN("[BSU SERVER] Started up")
   
-  -- load/send library
+  -- load/send library files
   for _, file in  ipairs(lib) do
     include(LIB_DIR .. file)
     AddCSLuaFile(LIB_DIR .. file)
   end
 
-  -- load/send base scripts
+  -- load/send base files
   include("bsu/base/database.lua") 
 
   include("bsu/base/teams.lua")
@@ -76,12 +66,12 @@ if SERVER then
 else
   MsgN("[BSU CLIENT] Started up")
 
-  -- load/send library
+  -- load library files
   for _, file in ipairs(lib) do
     include(LIB_DIR .. file)
   end
 
-  -- load base scripts
+  -- load base files
   include("bsu/base/teams.lua")
 
   include("bsu/base/player.lua")

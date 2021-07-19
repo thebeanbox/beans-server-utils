@@ -12,17 +12,17 @@ function BSU:GetPlayerNameValues(ply)
 end
 
 if SERVER then
-	util.AddNetworkString("BSU_CommandMessage")
+	util.AddNetworkString("BSU_PlayerInfoMessage")
 
 	function BSU:SendPlayerInfoMsg(ply, msgData)
         local nameColor, name = BSU:GetPlayerNameValues(ply)
 
-		net.Start("BSU_CommandMessage")
+		net.Start("BSU_PlayerInfoMessage")
 		    net.WriteData(util.Compress(util.TableToJSON({ nameColor = nameColor, name = name, msgData = msgData})))
         net.Broadcast()
     end
 else
-    net.Receive("BSU_CommandMessage", function(len)
+    net.Receive("BSU_PlayerInfoMessage", function(len)
         local data = util.JSONToTable(util.Decompress(net.ReadData(len)))
         
         local msg = ""
