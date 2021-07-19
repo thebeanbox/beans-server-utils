@@ -144,18 +144,20 @@ else
     if not ready then initializePanels() end
     hook.Add( "InitPostEntity", "NameTag_InitializePanels", initializePanels )
 
-    net.Receive("bsuNameTag_sendPly", function(len, ply)
-        createPanel(ply)
+    net.Receive("bsuNameTag_sendPly", function()
+        local sentPly = net.ReadEntity()
+        createPanel(sentPly)
     end)
 
     net.Receive("bsuNameTag_plyDisconnect", function()
-        chat.AddText("detected player disconnect")
+        local sentPly = net.ReadEntity()
         for k,v in ipairs(nametags.panels) do
-            if v.Player == net.readEntity() then
-                table.remove(nametags.panels, k)
-                table.remove(nametags.avatars, k)
-                nametags.panels[k]:Remove()
-                nametags.avatars[k]:Remove()
+            if v.Player == sentPly then
+                v.Paint = nil
+                v.avatarImg:Remove()
+                v:Close()
+                table.remove(v, k)
+                table.remove(v.avatarImg, k)
                 break
             end
         end
