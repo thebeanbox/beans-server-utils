@@ -3,9 +3,9 @@
 
 if SERVER then
 	-- send files to client-side
+	AddCSLuaFile(MODULES_DIR .. "chatbox/messageManager.lua")
 	AddCSLuaFile(MODULES_DIR .. "chatbox/frameManager.lua")
 	AddCSLuaFile(MODULES_DIR .. "chatbox/chatManager.lua")
-	AddCSLuaFile(MODULES_DIR .. "chatbox/messageManager.lua")
 
 	-- setup hooks for player join/leave custom messages
 	util.AddNetworkString("BSU_PlayerJoinLeaveMsg")
@@ -45,17 +45,17 @@ bsuChat.chatTypes = {
 	team       = { icon = "group", toggleable = true  },
 	admin      = { icon = "shield"--[[, toggleable = user is admin]] },
 	private    = { icon = "user_comment" },
+	info     = { icon = "information" },
 	-- Other types (cosmetic)
-	server     = { icon = "information" }, -- misc server msgs
 	connect    = { icon = "connect" }, -- player joined server
 	disconnect = { icon = "disconnect" }, -- player left server
 	namechange = { icon = "user_edit" } -- player changed name
 }
 
 -- include other files
+include(MODULES_DIR .. "chatbox/messageManager.lua")
 include(MODULES_DIR .. "chatbox/frameManager.lua")
 include(MODULES_DIR .. "chatbox/chatManager.lua")
-include(MODULES_DIR .. "chatbox/messageManager.lua")
 
 concommand.Add("bsu_chatbox_clear", function() -- clears all chat messages
 	bsuChat.html:Call([[

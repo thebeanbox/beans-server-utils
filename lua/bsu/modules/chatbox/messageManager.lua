@@ -3,12 +3,12 @@
 
 bsuChat.imageDataCache = {}
 
-function formatMsg(...) -- formats regular print message data table for use in html
+function bsuChat.formatMsg(...) -- formats regular print message data table for use in html
 	local msg = {}
 	
 	for k, arg in pairs({...}) do
 		if type(arg) == "string" then
-			table.Add(msg, formatPlyMsg(arg))
+			table.Add(msg, bsuChat.formatPlyMsg(arg))
 		elseif type(arg) == "table" then
 			table.insert(msg,
 				{
@@ -42,7 +42,7 @@ function formatMsg(...) -- formats regular print message data table for use in h
 	return msg
 end
 
-function formatPlyMsg(text, oldData, oldPos) -- formats player-sent message for use in html
+function bsuChat.formatPlyMsg(text, oldData, oldPos) -- formats player-sent message for use in html
 	local data = oldData or {}
 	local pos = oldPos or 0
 	local index1, index2
@@ -184,7 +184,7 @@ function formatPlyMsg(text, oldData, oldPos) -- formats player-sent message for 
 	}
 end
 
-function loadPlyAvatarIcon(ply, data) -- gets player's avatar in base64
+function bsuChat.loadPlyAvatarIcon(ply, data) -- gets player's avatar in base64
 	local avatar = vgui.Create("AvatarImage")
 		
 	local tex = GetRenderTarget("AvatarRT", 32, 32)
@@ -215,4 +215,58 @@ function loadPlyAvatarIcon(ply, data) -- gets player's avatar in base64
 		data.avatar = "data:image/jpeg;base64," .. string.Replace(util.Base64Encode(imgData), "\n", "")
 		bsuChat.send(data)
 	end)
+end
+
+-- internal functions
+
+function bsuChat._text(text)
+	return {
+		type = "text",
+		value = text
+	}
+end
+
+function bsuChat._hyperlink(url, text)
+	return {
+		type = "hyperlink",
+		value = {
+			url = url,
+			text = text
+		}
+	}
+end
+
+function bsuChat._image(url)
+	return {
+		type = "image",
+		value = url
+	}	
+end
+
+function bsuChat._color(color)
+	return {
+		type = "color",
+		value = color or color_white
+	}
+end
+
+function bsuChat._italic(bool)
+	return {
+		type = "italic",
+		value = bool == nil and true or bool
+	}
+end
+
+function bsuChat._bold(bool)
+	return {
+		type = "bold",
+		value = bool == nil and true or bool
+	}
+end
+
+function bsuChat._strikethrough(bool)
+	return {
+		type = "strikethrough",
+		value = bool == nil and true or bool
+	}
 end

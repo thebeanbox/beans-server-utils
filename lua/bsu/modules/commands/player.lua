@@ -9,7 +9,7 @@ BSU:RegisterCommand({
     exec = function(ply, args)
         ply:GodEnable()
 
-        BSU:SendPlayerInfoMsg(ply, { { type = "text", value = " entered god mode for themself" } })
+        BSU:SendPlayerInfoMsg(ply, bsuChat._text(" entered god mode for themself"))
     end
 })
 
@@ -22,7 +22,7 @@ BSU:RegisterCommand({
     exec = function(ply, args)
         ply:GodDisable()
         
-        BSU:SendPlayerInfoMsg(ply, { { type = "text", value = " exited god mode for themself" } })
+        BSU:SendPlayerInfoMsg(ply, bsuChat._text(" exited god mode for themself"))
     end
 })
 

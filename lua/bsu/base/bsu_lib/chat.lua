@@ -25,39 +25,31 @@ else
     net.Receive("BSU_CommandMessage", function(len)
         local data = util.JSONToTable(util.Decompress(net.ReadData(len)))
         
-        bsuChat.send(
-            {
-                messageContent = {
-                    { -- set name color
-                        type = "color",
-                        value = data.nameColor
-                    },
-                    { -- make upcoming name bold
-                        type = "bold",
-                        value = true
-                    },
-                    { -- player name
-                        type = "text",
-                        value = data.name
-                    },
-                    { -- no longer bold
-                        type = "bold",
-                        value = false
-                    },
-                    { -- reset color
-                        type = "color",
-                        value = color_white
-                    },
-                    unpack(data.msgData)
-                }
-            }
-        )
-
         local msg = ""
         for _, v in ipairs(data.msgData) do
             if v.type == "text" then
                 msg = msg .. v.value
+            elseif v.type == "hyperlink" then
+                msg = msg .. v.value.url
             end
+        end
+
+        if bsuChat then -- custom bsuChat message
+            bsuChat.send(
+                {
+                    chatType = "info",
+                    messageContent = {
+                        bsuChat._color(data.nameColor), -- set name color
+                        bsuChat._bold(), -- make upcoming name bold
+                        bsuChat._text(data.name), -- player name
+                        bsuChat._bold(false), -- no longer bold
+                        bsuChat._color(), -- reset color
+                        unpack(data.msgData)
+                    }
+                }
+            )
+        else -- normal message
+            chat.AddText(data.nameColor, data.name, color_white, msg)
         end
 
         MsgC(data.nameColor, data.name, color_white, msg, "\n")

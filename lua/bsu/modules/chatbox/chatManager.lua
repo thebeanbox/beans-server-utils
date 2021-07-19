@@ -5,7 +5,7 @@ function bsuChat.send(data) -- adds a message to the chatbox
 	if not IsValid(bsuChat.frame) then return end
 		
 	if not data.avatar and data.sender and data.sender:IsPlayer() then
-		data.avatar = loadPlyAvatarIcon(data.sender, data)
+		data.avatar = bsuChat.loadPlyAvatarIcon(data.sender, data)
 		return
 	end
 
@@ -201,7 +201,7 @@ end
 function chat.AddText(...) -- other messages
 	bsuChat.send(
 		{
-			messageContent = formatMsg(...),
+			messageContent = bsuChat.formatMsg(...),
 			showTimestamp = false
 		}
 	)
@@ -210,14 +210,11 @@ end
 hook.Add("OnPlayerChat", "BSU_SendPlayerMsg", function(player, text, teamChat, isDead) -- messages from players
 	if not teamChat or (teamChat and LocalPlayer():Team() == player:Team()) then
 		local name, nameColor = (player and player:IsValid()) and player:Nick() or "Console", (player and player:IsValid()) and BSU:GetPlayerColor(player) or Color(151, 211, 255)
-		local messageContent = formatPlyMsg(text)
+		local messageContent = bsuChat.formatPlyMsg(text)
 
 		table.insert(messageContent,
 			1,
-			{
-				type = "color",
-				value = color_white
-			}
+			bsuChat._color()
 		)
 
 		bsuChat.send(
@@ -240,8 +237,8 @@ hook.Add("ChatText", "BSU_SendServerMsg", function(index, name, text, chatType) 
 	if chatType == "servermsg" then
 		bsuChat.send(
 			{
-				chatType = "server", -- server
-				messageContent = formatMsg(Color(0, 160, 255), text),
+				chatType = "info",
+				messageContent = bsuChat.formatMsg(Color(0, 160, 255), text),
 			}
 		)
 
@@ -249,7 +246,7 @@ hook.Add("ChatText", "BSU_SendServerMsg", function(index, name, text, chatType) 
 	elseif chatType == "none" then
 		bsuChat.send(
 			{
-				messageContent = formatMsg(text),
+				messageContent = bsuChat.formatMsg(text),
 				showTimestamp = false
 			}
 		)
@@ -269,30 +266,12 @@ net.Receive("BSU_PlayerJoinLeaveMsg", function() -- custom player join/leave mes
 		{
 			chatType = joinLeave and "connect" or "disconnect",
 			messageContent = {
-				{ -- set name color
-					type = "color",
-					value = nameColor
-				},
-				{ -- make upcoming name bold
-					type = "bold",
-					value = true
-				},
-				{ -- player name
-					type = "text",
-					value = name
-				},
-				{ -- no longer bold
-					type = "bold",
-					value = false
-				},
-				{ -- reset color
-					type = "color",
-					value = color_white
-				},
-				{ -- joined or left text
-					type = "text",
-					value = msg
-				}
+				bsuChat._color(nameColor), -- set name color
+				bsuChat._bold(), -- make upcoming name bold
+				bsuChat._text(name), -- player name
+				bsuChat._bold(false), -- no longer bold
+				bsuChat._color(), -- reset color
+				bsuChat._text(msg) -- joined or left text
 			}
 		}
 	)
@@ -309,42 +288,15 @@ hook.Add("player_changename", "BSU_PlayerNameChangeMsg", function(data) -- custo
 		{
 			chatType = "namechange",
 			messageContent = {
-				{ -- set name color
-					type = "color",
-					value = nameColor
-				},
-				{ -- make upcoming name bold
-					type = "bold",
-					value = true
-				},
-				{ -- old name
-					type = "text",
-					value = data.oldname
-				},
-				{ -- no longer bold
-					type = "bold",
-					value = false
-				},
-				{ -- reset color
-					type = "color",
-					value = color_white
-				},
-				{
-					type = "text",
-					value = " changed their name to "
-				},
-				{ -- set name color again
-					type = "color",
-					value = nameColor
-				},
-				{ -- make upcoming name bold
-					type = "bold",
-					value = true
-				},
-				{ -- new name
-					type = "text",
-					value = data.newname
-				},
+				bsuChat._color(nameColor), -- set name color
+				bsuChat._bold(), -- make upcoming name bold
+				bsuChat._text(data.oldname), -- old name
+				bsuChat._bold(false), -- no longer bold
+				bsuChat._color(), -- reset color
+				bsuChat._text(" reset their name to "),
+				bsuChat._color(nameColor), -- set name color again
+				bsuChat._bold(), -- make upcoming name bold
+				bsuChat._text(data.newname), -- new name
 			}
 		}
 	)
