@@ -75,74 +75,78 @@ function initPanel()
 end
 
 function drawHud(self, w, h)
-    local barWidth = w-10
-    if lPly:Armor()>0 then hasArmor = 1 else hasArmor = 0 end
-    local boolHasArmor = !tobool( hasArmor )
-    local hudHeight = ( hud.h/2+5) + ((hud.h/2-5)*hasArmor )
+    if lPly:IsValid() then
+        local barWidth = w-10
+        if lPly:Armor()>0 then hasArmor = 1 else hasArmor = 0 end
+        local boolHasArmor = !tobool( hasArmor )
+        local hudHeight = ( hud.h/2+5) + ((hud.h/2-5)*hasArmor )
 
-    if hud.targetW >= 0.6 then dpStatIcons:Show() else dpStatIcons:Hide() end
-    self:SetPos(hud.x, hud.y - ((hudHeight/5) * hasArmor))
-    self:SetSize( hud.w, hudHeight )
+        if hud.targetW >= 0.6 then dpStatIcons:Show() else dpStatIcons:Hide() end
+        self:SetPos(hud.x, hud.y - ((hudHeight/5) * hasArmor))
+        self:SetSize( hud.w, hudHeight )
 
-    plyHealth = Lerp( 0.1, plyHealth, math.Clamp((lPly:Health()/lPly:GetMaxHealth())*barWidth, 0, barWidth) )
-    plyArmor = Lerp( 0.1, plyArmor, math.Clamp((lPly:Armor()/lPly:GetMaxArmor())*barWidth, 0, barWidth) )
+        plyHealth = Lerp( 0.1, plyHealth, math.Clamp((lPly:Health()/lPly:GetMaxHealth())*barWidth, 0, barWidth) )
+        plyArmor = Lerp( 0.1, plyArmor, math.Clamp((lPly:Armor()/lPly:GetMaxArmor())*barWidth, 0, barWidth) )
 
-    -- Draw Background
-    panelBlur(self, 5, 10, 50)
-    draw.RoundedBox( 5, 0, 0, w, h, Color(0, 0, 0, 200) )
-    -- Draw Health Bar
-    draw.RoundedBoxEx( 5, 5, 5, barWidth, (hud.h/2)-5, Color(175, 0, 0, 255), true, true, boolHasArmor, boolHasArmor )
-    draw.RoundedBoxEx( 5, 5, 5, plyHealth, (hud.h/2)-5, Color(0, 200, 0, 255), true, true, boolHasArmor, boolHasArmor )
+        -- Draw Background
+        panelBlur(self, 5, 10, 50)
+        draw.RoundedBox( 5, 0, 0, w, h, Color(0, 0, 0, 200) )
+        -- Draw Health Bar
+        draw.RoundedBoxEx( 5, 5, 5, barWidth, (hud.h/2)-5, Color(175, 0, 0, 255), true, true, boolHasArmor, boolHasArmor )
+        draw.RoundedBoxEx( 5, 5, 5, plyHealth, (hud.h/2)-5, Color(0, 200, 0, 255), true, true, boolHasArmor, boolHasArmor )
 
-    if hud.targetH >= 1 then
-        surface.SetDrawColor(Color(255,255,255,255))
-        draw.DrawText( lPly:Health(), "fontMain", 30, (hud.h/4)-5, Color(255,255,255,255), 0 )
-        surface.SetMaterial( icons.sheet )
-        surface.DrawTexturedRectUV( 10, (hud.h/4)-5, 16, 16, icons.health.u, icons.health.v, icons.health.u+uvMult, icons.health.v+uvMult )
-    end
-    -- Draw Armor Bar
-    if hasArmor==1 then
-        draw.RoundedBoxEx( 5, 5, h/2, barWidth, (h/2)-5, Color(75, 75, 75, 255), false, false, true, true )
-        draw.RoundedBoxEx( 5, 5, h/2, plyArmor, (h/2)-5, Color(0, 150, 255, 255), false, false, true, true )
         if hud.targetH >= 1 then
             surface.SetDrawColor(Color(255,255,255,255))
-            draw.DrawText( lPly:Armor(), "fontMain", 30, (h/1.5)-6, Color(255,255,255,255), 0 )
+            draw.DrawText( lPly:Health(), "fontMain", 30, (hud.h/4)-5, Color(255,255,255,255), 0 )
             surface.SetMaterial( icons.sheet )
-            surface.DrawTexturedRectUV( 10, (h/1.5)-6, 16, 16, icons.armor.u, icons.armor.v, icons.armor.u+uvMult, icons.armor.v+uvMult )
+            surface.DrawTexturedRectUV( 10, (hud.h/4)-5, 16, 16, icons.health.u, icons.health.v, icons.health.u+uvMult, icons.health.v+uvMult )
+        end
+        -- Draw Armor Bar
+        if hasArmor==1 then
+            draw.RoundedBoxEx( 5, 5, h/2, barWidth, (h/2)-5, Color(75, 75, 75, 255), false, false, true, true )
+            draw.RoundedBoxEx( 5, 5, h/2, plyArmor, (h/2)-5, Color(0, 150, 255, 255), false, false, true, true )
+            if hud.targetH >= 1 then
+                surface.SetDrawColor(Color(255,255,255,255))
+                draw.DrawText( lPly:Armor(), "fontMain", 30, (h/1.5)-6, Color(255,255,255,255), 0 )
+                surface.SetMaterial( icons.sheet )
+                surface.DrawTexturedRectUV( 10, (h/1.5)-6, 16, 16, icons.armor.u, icons.armor.v, icons.armor.u+uvMult, icons.armor.v+uvMult )
+            end
         end
     end
 end
 
 function drawIcons( self, w, h )
-    local hudHeight = ( hud.h/2+5) + ((hud.h/2-5)*hasArmor )
+    if lPly:IsValid() then
+        local hudHeight = ( hud.h/2+5) + ((hud.h/2-5)*hasArmor )
 
-    self:SetPos(hud.x, (hud.y-30) - ((hudHeight/5) * hasArmor))
-    self:SetSize( hud.w, 25 )
-    panelBlur(self, 5, 10, 50)
+        self:SetPos(hud.x, (hud.y-30) - ((hudHeight/5) * hasArmor))
+        self:SetSize( hud.w, 25 )
+        panelBlur(self, 5, 10, 50)
 
-    stats.skybox = inSkybox
-    stats.flashlight = lPly:FlashlightIsOn()
-    stats.buildmode = lPly:HasGodMode()
+        stats.skybox = inSkybox
+        stats.flashlight = lPly:FlashlightIsOn()
+        stats.buildmode = lPly:HasGodMode()
 
-    if stats.flashlight then 
-        draw.RoundedBox( 5, 0, 0, 25, h, Color(0, 0, 0, 200) )
-        surface.SetDrawColor(Color(255,255,255,255))
-        surface.SetMaterial( icons.sheet )
-        surface.DrawTexturedRectUV( (25/4)-1, (h/4)-1, 16, 16, icons.light.u, icons.light.v, icons.light.u+uvMult, icons.light.v+uvMult )
-    end
+        if stats.flashlight then 
+            draw.RoundedBox( 5, 0, 0, 25, h, Color(0, 0, 0, 200) )
+            surface.SetDrawColor(Color(255,255,255,255))
+            surface.SetMaterial( icons.sheet )
+            surface.DrawTexturedRectUV( (25/4)-1, (h/4)-1, 16, 16, icons.light.u, icons.light.v, icons.light.u+uvMult, icons.light.v+uvMult )
+        end
 
-    if !stats.buildmode then -- Currently inverted for debug purposes
-        draw.RoundedBox( 5, 30, 0, 25, h, Color(0, 0, 0, 200) )
-        surface.SetDrawColor(Color(255,255,255,255))
-        surface.SetMaterial( icons.sheet )
-        surface.DrawTexturedRectUV( 29+(25/4), (h/4)-1, 16, 16, icons.build.u, icons.build.v, icons.build.u+uvMult, icons.build.v+uvMult )
-    end
+        if !stats.buildmode then -- Currently inverted for debug purposes
+            draw.RoundedBox( 5, 30, 0, 25, h, Color(0, 0, 0, 200) )
+            surface.SetDrawColor(Color(255,255,255,255))
+            surface.SetMaterial( icons.sheet )
+            surface.DrawTexturedRectUV( 29+(25/4), (h/4)-1, 16, 16, icons.build.u, icons.build.v, icons.build.u+uvMult, icons.build.v+uvMult )
+        end
 
-    if !stats.skybox then -- Currently inverted for debug purposes
-        draw.RoundedBox( 5, 60, 0, 25, h, Color(0, 0, 0, 200) )
-        surface.SetDrawColor(Color(255,255,255,255))
-        surface.SetMaterial( icons.sheet )
-        surface.DrawTexturedRectUV( 59+(25/4), (h/4)-1, 16, 16, icons.skybox.u, icons.skybox.v, icons.skybox.u+uvMult, icons.skybox.v+uvMult )
+        if !stats.skybox then -- Currently inverted for debug purposes
+            draw.RoundedBox( 5, 60, 0, 25, h, Color(0, 0, 0, 200) )
+            surface.SetDrawColor(Color(255,255,255,255))
+            surface.SetMaterial( icons.sheet )
+            surface.DrawTexturedRectUV( 59+(25/4), (h/4)-1, 16, 16, icons.skybox.u, icons.skybox.v, icons.skybox.u+uvMult, icons.skybox.v+uvMult )
+        end
     end
 end
 

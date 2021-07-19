@@ -156,8 +156,8 @@ else
                 v.Paint = nil
                 v.avatarImg:Remove()
                 v:Close()
-                table.remove(v, k)
-                table.remove(v.avatarImg, k)
+                table.remove(nametags.panels, k)
+                table.remove(nametags.avatars, k)
                 break
             end
         end
