@@ -21,7 +21,7 @@ function BSU:GetPlayerOS(ply)
 end
 
 function BSU:GetPlayerMode(ply)
-	return "build"
+	return ply:GetNWBool("inGodmode") and "build" or "pvp"
 end
 
 function BSU:GetPlayerAFKDuration(ply)
@@ -273,6 +273,12 @@ if SERVER then
 
 			if data.uniqueColor then -- set player unique color value
 				ply:SetNWString("uniqueColor", data.uniqueColor)
+			end
+
+			-- set players to god mode on join
+			if not ply:IsBot() then
+				ply:GodEnable()
+				ply:SetNWBool("inGodmode", true)
 			end
 		end
 	end)

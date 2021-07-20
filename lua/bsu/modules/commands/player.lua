@@ -8,7 +8,8 @@ BSU:RegisterCommand({
     category = "player",
     exec = function(ply, args)
         ply:GodEnable()
-
+        ply:SetNWBool("inGodmode", true)
+        
         BSU:SendPlayerInfoMsg(ply, { bsuChat._text(" entered god mode for themself") })
     end
 })
@@ -21,7 +22,8 @@ BSU:RegisterCommand({
     category = "player",
     exec = function(ply, args)
         ply:GodDisable()
-        
+        ply:SetNWBool("inGodmode", false)
+
         BSU:SendPlayerInfoMsg(ply, { bsuChat._text(" exited god mode for themself") })
     end
 })
