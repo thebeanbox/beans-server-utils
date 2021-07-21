@@ -1,4 +1,5 @@
-/*
+// this is less resource intensive and less annoying to make work because you don't really need any networking
+
 surface.CreateFont("BSU_NameTagText",
   {
     font = "Arial",
@@ -17,38 +18,38 @@ local materialData = {}
 hook.Add("HUDPaint", "BSU_DrawNameTag", function()
   local players = player.GetAll()
   table.sort(players, function(a, b) return LocalPlayer():GetPos():Distance(a:GetPos()) > LocalPlayer():GetPos():Distance(b:GetPos()) end)
+
   for _, ply in ipairs(players) do
     if ply == LocalPlayer() then continue end
 
     local pos
     local ragdoll = ply:GetRagdollEntity()
 
-    if ply:Alive() or not ragdoll:IsValid() then
-      pos = ply:GetAttachment(ply:LookupAttachment("eyes")).Pos + Vector(0, 0, 20)
+    if ply:Alive() or not ragdoll:IsValid() then -- get the world pos of the player's head or the death ragdoll's head
+      pos = ply:GetBonePosition(ply:LookupBone("ValveBiped.Bip01_Head1")) + Vector(0, 0, 20)
     else
       pos = ragdoll:GetBonePosition(ragdoll:LookupBone("ValveBiped.Bip01_Head1")) + Vector(0, 0, 20)
     end
-      
     if not pos then continue end
 
     local data2D = pos:ToScreen()
-
     if not data2D.visible then continue end
 
     surface.SetFont("BSU_NameTagText")
-    local w, h = surface.GetTextSize(ply:Nick())
+    local w, h = surface.GetTextSize(ply:Nick()) -- get size of text
       
     -- draw name
     local nameAlpha = getDistanceAlpha(ply, 3000, 2000)
     draw.SimpleTextOutlined(ply:Nick(), "BSU_NameTagText", data2D.x, data2D.y, ColorAlpha(BSU:GetPlayerColor(ply), nameAlpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 2, ColorAlpha(color_black, nameAlpha))
-
-    -- draw avatar and status icons
+    
     surface.SetDrawColor(ColorAlpha(color_white, getDistanceAlpha(ply, 500, 100)))
     BSU:SetPlayerAvatarMaterial(ply)
 
+    -- draw avatar
     surface.DrawRect(data2D.x - w / 2 - 36, data2D.y - h - 4, 32, 32)
     surface.DrawTexturedRect(data2D.x - w / 2 - 36, data2D.y - h - 4, 32, 32)
 
+    -- draw status icons
     local statuses = BSU:GetPlayerValues(ply)
 
     for k, v in ipairs(table.Reverse(statuses)) do
@@ -65,7 +66,7 @@ hook.Add("HUDPaint", "BSU_DrawNameTag", function()
           mat = Material(v.image)
         }
       end
-
+      
       surface.SetMaterial(materialData[v.type].mat)
       surface.DrawTexturedRect(data2D.x - w / 2 - 48 + icoX, data2D.y + 8 + icoY, v.size.x, v.size.y)
     end

@@ -185,34 +185,6 @@ function bsuChat.formatPlyMsg(text, oldData, oldPos) -- formats player-sent mess
 end
 
 function bsuChat.loadPlyAvatarIcon(ply, data) -- gets player's avatar in base64
-	local avatar = vgui.Create("AvatarImage")
-		
-	local tex = GetRenderTarget("AvatarRT", 32, 32)
-	
-	avatar:SetPos(0,0)
-	avatar:SetSize(32, 32)
-	avatar:SetPlayer(ply, 32)
-	avatar:SetPaintedManually(true)
-	hook.Add("PostDrawTranslucentRenderables", "", function()
-		hook.Remove("PostDrawTranslucentRenderables", "")
-	
-		render.PushRenderTarget(tex)
-		
-		cam.Start2D()
-		avatar:PaintManual()
-		cam.End2D()
-		
-		local imgData = render.Capture({
-			format = "jpeg",
-			x = 0,
-			y = 0,
-			w = 32,
-			h = 32
-		})
-		
-		render.PopRenderTarget()
-		
-		data.avatar = "data:image/jpeg;base64," .. string.Replace(util.Base64Encode(imgData), "\n", "")
-		bsuChat.send(data)
-	end)
+	data.avatar = "data:image/jpeg;base64," .. util.Base64Encode(BSU:GetPlayerAvatarData(ply), false)
+	bsuChat.send(data)
 end

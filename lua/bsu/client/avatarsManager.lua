@@ -25,6 +25,7 @@ function BSU:SetPlayerAvatarMaterial(ply)
     render.PushRenderTarget(avatarRT)
     render.Clear(0, 0, 0, 255)
     cam.Start2D()
+
     if not ply.bsuAvatar then
       loadAvatar(ply)
     end
@@ -37,4 +38,32 @@ function BSU:SetPlayerAvatarMaterial(ply)
   else
     surface.SetMaterial(avatarDefault)
   end
+end
+
+function BSU:GetPlayerAvatarData(ply)
+  local imgData
+  cam.Start2D()
+  surface.SetDrawColor(color_white)
+  
+  if not ply:IsBot() then
+    if not ply.bsuAvatar then
+      loadAvatar(ply)
+    end
+    ply.bsuAvatar:PaintManual()
+  else
+    surface.SetTexture(surface.GetTextureID("vgui/avatar_default"))
+    surface.DrawRect(0, 0, 64, 64)
+    surface.DrawTexturedRect(0, 0, 64, 64)
+  end
+
+  imgData = render.Capture({
+    format = "jpeg",
+    x = 0,
+    y = 0,
+    w = 64,
+    h = 64
+  })
+  cam.End2D()
+  
+  return imgData
 end
