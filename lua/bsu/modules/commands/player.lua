@@ -28,6 +28,11 @@ BSU:RegisterCommand({
     end
 })
 
+
+
+
+--  << admin commands >> --
+
 BSU:RegisterCommand({
     name = "nameColor",
     aliases = { "uniqueColor" },
@@ -42,3 +47,21 @@ BSU:RegisterCommand({
 
     end
 })
+
+--[[ BSU:RegisterCommand({
+    name = "freeze",
+    aliases = { "freeze" },
+    description = "Freezes a player.",
+    usage = "[<players, defaults to none>]",
+    category = "player",
+    hasPermission = function(ply)
+        return BSU:PlayerIsStaff()
+    end,
+    exec = function(ply, args)
+        local target = -- once we get the command poopoo fart ass shit set up when we can do this
+        if not target:IsFlagSet(FL_FROZEN) then
+            if target:HasGodMode() then ply.preFreezeGodMode = true end
+                target:Lock()
+                BSU:SendPlayerInfoMsg(target, { bsuChat._text(" was frozen by ")})
+    end
+})]]--
