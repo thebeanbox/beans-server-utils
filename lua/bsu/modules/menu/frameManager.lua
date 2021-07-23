@@ -60,7 +60,8 @@ function bsuMenu.create()
     local pagesData = {} -- temp table
 
     function bsuMenu.addPage(index, name, pnl, icon)
-      table.insert(pagesData, index, {
+      table.insert(pagesData, {
+        index = index,
         name = name,
         pnl = pnl,
         icon = icon
@@ -72,14 +73,15 @@ function bsuMenu.create()
       include(MENU_PAGES .. file)
     end
 
+    table.sort(pagesData, function(a, b) return a.index < b.index end) -- sort pages
+
     -- add the pages
     for _, page in ipairs(pagesData) do
       page.pnl:SetParent(bsuMenu.sheet)
       local tabData = bsuMenu.sheet:AddSheet(page.name, page.pnl, page.icon)
+      tabData.Tab.Paint = tabData.Tab:IsActive() and tabOnPaint or tabOffPaint
 
       if tabData.Name == "Scoreboard" then bsuMenu.sheet:SetActiveTab(tabData.Tab) end -- set scoreboard to active tab
-      
-      tabData.Tab.Paint = tabData.Tab:IsActive() and tabOnPaint or tabOffPaint
     end
   end)
 end

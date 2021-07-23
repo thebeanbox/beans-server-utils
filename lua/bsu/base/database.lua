@@ -31,8 +31,7 @@ function BSU:PopulateBSURanks()
     },
     [105] = {
       name = "Mod",
-      color = "4fe0ca",
-      userGroup = "admin"
+      color = "4fe0ca"
     },
     [106] = {
       name = "Admin",

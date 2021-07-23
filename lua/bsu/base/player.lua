@@ -1,5 +1,7 @@
 -- base/player.lua by Bonyoze
 
+local meta = FindMetaTable("Player")
+
 function BSU:GetPlayerPlayTime(ply)
 	return ply:GetNWInt("playTime")
 end
@@ -21,7 +23,7 @@ function BSU:GetPlayerOS(ply)
 end
 
 function BSU:GetPlayerMode(ply)
-	return ply:GetNWBool("inGodmode") and "build" or "pvp"
+	return ply:HasGodMode() and "build" or "pvp"
 end
 
 function BSU:GetPlayerAFKDuration(ply)
@@ -133,37 +135,29 @@ if SERVER then
 		ply:SetUserGroup(rankData.userGroup) -- set user group
 		ply:SetNWString("color", BSU:ColorToHex(rankData.color)) -- update player color value
 	end
-
+	
 	function BSU:PlayerIsStaff(ply) -- player is a staff member (admin or superadmin usergroup)
 		local plyData = BSU:GetPlayerDBData(ply)
 
 		if plyData then
-			if plyData.permsOverride then
-				return true
-			elseif ply:IsAdmin() or ply:IsSuperAdmin() then
-				return true
-			else
-				return false
-			end
-		else
-			return false
+			if plyData.permsOverride then return true end
+			local rankData = BSU:GetRank(plyData.rankIndex)
+			return rankData and (rankData.userGroup == "admin" or rankData.userGroup == "superadmin") or false
 		end
+
+		return false
 	end
 
 	function BSU:PlayerIsSuperAdmin(ply) -- player is a super admin (superadmin usergroup)
 		local plyData = BSU:GetPlayerDBData(ply)
 
 		if plyData then
-			if plyData.permsOverride then
-				return true
-			elseif ply:IsSuperAdmin() then
-				return true
-			else
-				return false
-			end
-		else
-			return false
+			if plyData.permsOverride then return true end
+			local rankData = BSU:GetRank(plyData.rankIndex)
+			return rankData and rankData.userGroup == "superadmin" or false
 		end
+
+		return false
 	end
 
 	function BSU:PlayerIsOverride(ply) -- player overrides all perms
@@ -171,9 +165,9 @@ if SERVER then
 
 		if plyData then
 			return plyData.permsOverride
-		else
-			return false
 		end
+
+		return false
 	end
 
 	function BSU:GetStaff()
@@ -207,6 +201,8 @@ if SERVER then
 	end
 
 	function BSU:GetPlayerColor(ply)
+		if ply == nil or not ply:IsValid() or not ply:IsPlayer() then return Color(151, 211, 255) end
+		
 		local plyData = BSU:GetPlayerDBData(ply)
 
 		local uniqueColor = ply:GetNWString("uniqueColor", "")
@@ -309,11 +305,11 @@ if SERVER then
 			if ply:GetNWFloat("afkTime") + BSU.AFK_TIMEOUT <= CurTime() then -- player hit the afk timeout
 				if not ply:GetNWBool("isAFK") then
 					ply:SetNWBool("isAFK", true)
-					BSU:SendPlayerInfoMsg(ply, { { type = "text", value = " is now AFK" } })
+					BSU:SendPlayerInfoMsg(ply, " is now afk")
 				end
 			elseif ply:GetNWBool("isAFK") then
 				ply:SetNWBool("isAFK", false)
-				BSU:SendPlayerInfoMsg(ply, { { type = "text", value = " is no longer AFK" } })
+				BSU:SendPlayerInfoMsg(ply, " is no longer afk")
 			end
 		end
 	end)
@@ -329,8 +325,29 @@ if SERVER then
 	hook.Add("KeyPress", "BSU_ResetAFKTime", function(ply)
 		ply:SetNWFloat("afkTime", CurTime())
 	end)
+
+	-- fix godmode functions serverside
+	meta.DefaultGodEnable  = meta.DefaultGodEnable  or meta.GodEnable
+	meta.DefaultGodDisable = meta.DefaultGodDisable or meta.GodDisable
+
+	function meta:GodEnable()
+		self:SetNWBool("HasGodMode", true)
+		self:DefaultGodEnable()
+	end
+
+	function meta:GodDisable()
+		self:SetNWBool("HasGodMode", false)
+		self:DefaultGodDisable()
+	end
 else
+	-- fix godmode function clientside
+	function meta:HasGodMode()
+		return self:GetNWBool("HasGodMode")
+	end
+
 	function BSU:GetPlayerColor(ply)
+		if ply == nil or not ply:IsValid() or not ply:IsPlayer() then return Color(151, 211, 255) end
+		
 		local uniqueColor = ply:GetNWString("uniqueColor", "")
 
 		if uniqueColor != "" then

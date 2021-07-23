@@ -241,7 +241,7 @@ function bsuChat.create()
 					overflow: hidden;
 					letter-spacing: 1px;
 					text-align: left;
-					text-shadow: 1px 1px 0 black, 1px 1px 1px black, 1px 1px 2px black, 1px 1px 3px black;
+					text-shadow: 1px 1px 0 black, 1.5px 1.5px 0 black, 2px 2px 1px black, 0 1px 0 black;
 					font-family: Merriweather Sans, sans-serif;
 				}
 

@@ -1,4 +1,4 @@
-if SERVER then
+/*if SERVER then
     util.AddNetworkString("BSU_MenuChangeUniqueColor")
     net.Receive("BSU_MenuChangeUniqueColor", function() 
         local changereset = net.ReadBool() -- if true, change color, if false, reset color

@@ -113,5 +113,5 @@ else
         end
     end)
 
-    bsuMenu.addPage(3, "Moderation", panel, "icon16/shield.png")
+    bsuMenu.addPage(5, "Moderation", panel, "icon16/shield.png")
 end

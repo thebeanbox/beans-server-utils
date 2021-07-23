@@ -1,4 +1,4 @@
-if SERVER then
+/*if SERVER then
   util.AddNetworkString("BSU_menuNotepadData")
   
   net.Receive("BSU_menuNotepadData", function(_, ply)

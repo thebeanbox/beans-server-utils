@@ -8,5 +8,5 @@ else
   entry:SetTabbingDisabled(true) -- this is needed because you have to be holding TAB to open the menu
   entry:Dock(TOP)
 
-  bsuMenu.addPage(4, "Settings", panel, "icon16/cog.png")
+  bsuMenu.addPage(999, "Settings", panel, "icon16/cog.png") -- large index so it's the last tab
 end

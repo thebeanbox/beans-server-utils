@@ -1,67 +1,90 @@
--- commands/player.lua by Bonyoze
+-- commands/player.lua
 
 BSU:RegisterCommand({
     name = "god",
     aliases = { "build" },
-    description = "Enters the target(s) into god mode (they cannot receive damage or inflict damage on players)",
-    usage = "[<players, defaults to self>]",
+    description = "Enters the player(s) into god mode (default player is self)",
     category = "player",
-    exec = function(ply, args)
-        ply:GodEnable()
-        ply:SetNWBool("inGodmode", true)
+    exec = function(sender, args)
+        local targets = BSU:GetPlayersByString(args[1]) or { sender }
+        if #targets == 0 then return end
+
+        for _, ply in ipairs(targets) do
+            ply:GodEnable()
+        end
         
-        BSU:SendPlayerInfoMsg(ply, { bsuChat._text(" entered god mode for themself") })
+        BSU:SendPlayerInfoMsg(sender, " entered god mode for ", targets)
     end
 })
 
 BSU:RegisterCommand({
     name = "ungod",
     aliases = { "pvp" },
-    description = "Exits the target(s) from god mode (they can now receive damage or inflict damage on players again)",
-    usage = "[<players, defaults to self>]",
+    description = "Exits the player(s) from god mode (default player is self)",
     category = "player",
-    exec = function(ply, args)
-        ply:GodDisable()
-        ply:SetNWBool("inGodmode", false)
+    exec = function(sender, args)
+        local targets = BSU:GetPlayersByString(args[1]) or { sender }
+        if #targets == 0 then return end
 
-        BSU:SendPlayerInfoMsg(ply, { bsuChat._text(" exited god mode for themself") })
+        for _, ply in ipairs(targets) do
+            ply:GodDisable()
+        end
+
+        BSU:SendPlayerInfoMsg(sender, " exited god mode for ", targets)
     end
 })
 
+BSU:RegisterCommand({
+    name = "kill",
+    aliases = { "slay" },
+    description = "Kills the player(s) (default player is self)",
+    category = "player",
+    hasPermission = function(sender)
+        return BSU:PlayerIsStaff(sender)
+    end,
+    exec = function(sender, args)
+        local targets = BSU:GetPlayersByString(args[1]) or { sender }
+        if #targets == 0 then return end
 
+        for _, ply in ipairs(targets) do
+            ply:Kill()
+        end
 
-
---  << admin commands >> --
+        BSU:SendPlayerInfoMsg(sender, " killed ", targets)
+    end
+})
 
 BSU:RegisterCommand({
     name = "nameColor",
     aliases = { "uniqueColor" },
-    description = "Sets the target(s) a unique name color (not supplying the color argument will take away the unique name color if they have it)",
-    usage = "[<players, defaults to self>] [<color>]",
+    description = "Sets the player(s) name color (default player is self)",
     category = "player",
-    hasPermission = function(ply)
-        return BSU:PlayerIsSuperAdmin()
+    hasPermission = function(sender)
+        return BSU:PlayerIsSuperAdmin(sender)
     end,
-    exec = function(ply, args)
-        --BSU:SetPlayerUniqueColor(ply, args.color)
+    exec = function(sender, args)
+        local targets = BSU:GetPlayersByString(args[1]) or { sender }
+        if #targets == 0 then return end
 
+        local color
+        if args[2] and args[2] != "" then
+            if args[2] and args[3] and args[4] then -- it's probably rgb
+                if tonumber(args[2]) and tonumber(args[3]) and tonumber(args[4]) then
+                    color = Color(tonumber(args[2]), tonumber(args[3]), tonumber(args[4]))
+                end
+            end
+            if not color and args[2] then -- failed to get rgb, try hex
+                pcall(function()
+                    color = BSU:HexToColor(args[2])
+                end)
+            end
+            if not color then return end
+        end
+        
+        for _, ply in ipairs(targets) do
+            BSU:SetPlayerUniqueColor(ply, color or team.GetColor(ply:Team())) -- set or reset name color
+        end
+
+        BSU:SendPlayerInfoMsg(sender, " " .. (color and "set" or "removed") .. " the name color for ", targets)
     end
 })
-
---[[ BSU:RegisterCommand({
-    name = "freeze",
-    aliases = { "freeze" },
-    description = "Freezes a player.",
-    usage = "[<players, defaults to none>]",
-    category = "player",
-    hasPermission = function(ply)
-        return BSU:PlayerIsStaff()
-    end,
-    exec = function(ply, args)
-        local target = -- once we get the command poopoo fart ass shit set up when we can do this
-        if not target:IsFlagSet(FL_FROZEN) then
-            if target:HasGodMode() then ply.preFreezeGodMode = true end
-                target:Lock()
-                BSU:SendPlayerInfoMsg(target, { bsuChat._text(" was frozen by ")})
-    end
-})]]--

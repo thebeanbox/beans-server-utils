@@ -1,1 +1,1 @@
--- commands/chat.lua by Bonyoze
+-- commands/chat.lua

@@ -151,3 +151,7 @@ function bsuChat._strikethrough(bool)
 		value = bool == nil and true or bool
 	}
 end
+
+function bsuChat._player(ply)
+	return bsuChat._color(BSU:GetPlayerColor(ply)), bsuChat._bold(), bsuChat._text(ply and ply:IsValid() and ply:IsPlayer() and ply:Nick() or "Console"), bsuChat._bold(false)
+end
