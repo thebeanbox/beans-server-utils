@@ -56,7 +56,7 @@ hook.Add("HUDPaint", "BSU_DrawNameTag", function()
       local icoX, icoY = (20 * k) - 4 + v.offset.x, v.offset.y
 
       if materialData[v.type] then
-        if materialData[v.type].path != v.image then
+        if materialData[v.type].path ~= v.image then
           materialData[v.type].path = v.image
           materialData[v.type].mat = Material(v.image)
         end

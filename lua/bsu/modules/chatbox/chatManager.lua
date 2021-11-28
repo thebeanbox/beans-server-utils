@@ -101,8 +101,8 @@ function bsuChat.send(data) -- adds a message to the chatbox
 	end
 
 	if hasText then
-		if textSegs[1].type != "hyperlink" then textSegs[1].value = string.TrimLeft(textSegs[1].value) end
-		if textSegs[#textSegs].type != "hyperlink" then textSegs[#textSegs].value = string.TrimRight(textSegs[#textSegs].value) end
+		if textSegs[1].type ~= "hyperlink" then textSegs[1].value = string.TrimLeft(textSegs[1].value) end
+		if textSegs[#textSegs].type ~= "hyperlink" then textSegs[#textSegs].value = string.TrimRight(textSegs[#textSegs].value) end
 	end
 
 	local function buildMessageHTML()

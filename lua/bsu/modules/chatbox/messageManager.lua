@@ -75,7 +75,7 @@ function bsuChat.formatPlyMsg(text, oldData, oldPos) -- formats player-sent mess
 
 				local bool, newValue
 
-				if type[1] != "/" then
+				if type[1] ~= "/" then
 					bool = true
 				else
 					bool = false
@@ -137,7 +137,7 @@ function bsuChat.formatPlyMsg(text, oldData, oldPos) -- formats player-sent mess
 					type = "strikethrough"
 				end
 				
-				if newValue != nil then
+				if newValue ~= nil then
 					table.insert(data,
 						{
 							type = type,

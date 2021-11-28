@@ -27,7 +27,7 @@ function BSU:GetPlayerMode(ply)
 end
 
 function BSU:GetPlayerAFKDuration(ply)
-	return ply:GetNWFloat("afkTime") != 0 and CurTime() - ply:GetNWFloat("afkTime") + BSU.AFK_TIMEOUT or 0
+	return ply:GetNWFloat("afkTime") ~= 0 and CurTime() - ply:GetNWFloat("afkTime") + BSU.AFK_TIMEOUT or 0
 end
 
 function BSU:GetPlayerValues(ply)
@@ -36,7 +36,7 @@ function BSU:GetPlayerValues(ply)
 	if not ply:IsBot() then
     -- append if linux user and if not bot
     local os = BSU:GetPlayerOS(ply)
-    if os != "" then
+    if os ~= "" then
       table.insert(values, {
 				type = "os",
         image = os == "windows" and "materials/bsu/scoreboard/windows.png" or os == "linux" and "icon16/tux.png" or os == "mac" and "materials/bsu/scoreboard/mac.png",
@@ -47,7 +47,7 @@ function BSU:GetPlayerValues(ply)
 
     -- append country flag icon if not bot
     local country = BSU:GetPlayerCountry(ply)
-    if country != "" then
+    if country ~= "" then
       table.insert(values, {
 				type = "country",
         image = "flags16/" .. country .. ".png",
@@ -102,7 +102,7 @@ if SERVER then
 			return {
 				rankIndex = tonumber(entry.rankIndex),
 				playTime = tonumber(entry.playTime),
-				uniqueColor = entry.uniqueColor != "NULL" and entry.uniqueColor or nil,
+				uniqueColor = entry.uniqueColor ~= "NULL" and entry.uniqueColor or nil,
 				permsOverride = tonumber(entry.permsOverride) == 1
 			}
 		end
@@ -125,7 +125,7 @@ if SERVER then
 		local plyData = BSU:GetPlayerDBData(ply)
 		local rankData = BSU:GetRank(index)
 
-		if not plyData or plyData.rankIndex != index then
+		if not plyData or plyData.rankIndex ~= index then
 			BSU:SetPlayerDBData(ply, {
 				rankIndex = index
 			})
@@ -207,7 +207,7 @@ if SERVER then
 
 		local uniqueColor = ply:GetNWString("uniqueColor", "")
 
-		if uniqueColor != "" then
+		if uniqueColor ~= "" then
 			uniqueColor = BSU:HexToColor(uniqueColor)
 		elseif plyData and plyData.uniqueColor then
 			uniqueColor = BSU:HexToColor(plyData.uniqueColor)
@@ -217,7 +217,7 @@ if SERVER then
 
 		local color = ply:GetNWString("color", "")
 
-		if color != "" then
+		if color ~= "" then
 			color = BSU:HexToColor(color)
 		elseif plyData then
 			color = BSU:GetRank(plyData.rankIndex).color
@@ -294,7 +294,7 @@ if SERVER then
 
 	-- track kills for players
 	hook.Add("PlayerDeath", "BSU_PlayerKills", function(victim, inflict, attacker)
-		if victim != attacker then attacker:SetNWInt("kills", attacker:GetNWInt("kills") + 1) end
+		if victim ~= attacker then attacker:SetNWInt("kills", attacker:GetNWInt("kills") + 1) end
 	end)
 
 	-- handle afk players
@@ -350,7 +350,7 @@ else
 		
 		local uniqueColor = ply:GetNWString("uniqueColor", "")
 
-		if uniqueColor != "" then
+		if uniqueColor ~= "" then
 			uniqueColor = BSU:HexToColor(uniqueColor)
 		else
 			uniqueColor = nil
@@ -358,7 +358,7 @@ else
 
 		local color = ply:GetNWString("color", "")
 
-		if color != "" then
+		if color ~= "" then
 			color = BSU:HexToColor(color)
 		else
 			color = nil
@@ -377,7 +377,7 @@ else
 		local lastFocused = system.HasFocus()
 		timer.Create("BSU_ClientWindowIsFocused", 1, 0, function()
 			local currFocused = system.HasFocus()
-			if lastFocused != currFocused then
+			if lastFocused ~= currFocused then
 				lastFocused = currFocused
 				net.Start("BSU_ClientFocusedStatus")
 					net.WriteBool(currFocused)

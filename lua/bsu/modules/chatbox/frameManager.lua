@@ -90,11 +90,11 @@ function bsuChat.create()
 	bsuChat.entry.OnKeyCodeTyped = function(self, code)
 		local text = self:GetText()
 		if code == KEY_TAB then
-			if text != "" then
+			if text ~= "" then
 				local textObjs = string.Split(text, " ")
 				local lastText = textObjs[#textObjs]
 
-				if lastText != "" then
+				if lastText ~= "" then
 					local suggestions = {}
 
 					for _, v in ipairs(player.GetAll()) do
@@ -111,7 +111,7 @@ function bsuChat.create()
 				end
 			end
 		elseif code == KEY_ENTER then
-			if text != "" then
+			if text ~= "" then
 				if bsuChat.chatType == "global" then
 					LocalPlayer():ConCommand("say \"" .. text .. "\"")
 				elseif bsuChat.chatType == "team" then
