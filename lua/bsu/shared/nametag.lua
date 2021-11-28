@@ -85,6 +85,9 @@ else
 
     function drawNameTag(self, w, h)
         local ply = self.Player
+        if ply == nil then
+            return
+        end
         local data2D = (ply:GetPos() + Vector(0,0,100)):ToScreen()
         local isInRange = ((LocalPlayer():GetPos():Distance(ply:GetPos()) <= maxDistance) and (data2D.visible))
 
