@@ -67,7 +67,7 @@ BSU:RegisterCommand({
     -- 1 target because teleporting to multiple players doesnt make sense
     local target = BSU:GetPlayersByString(args[1])
     if #target <= 0 then return end
-    target = target[0]
+    target = target[1]
     sender:SetPos(target:GetPos())
     BSU:SendCommandMsg(sender, " teleported to ", target})
   end
