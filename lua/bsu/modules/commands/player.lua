@@ -67,7 +67,7 @@ BSU:RegisterCommand({
         if #targets == 0 then return end
 
         local color
-        if args[2] and args[2] != "" then
+        if args[2] and args[2] ~= "" then
             if args[2] and args[3] and args[4] then -- it's probably rgb
                 if tonumber(args[2]) and tonumber(args[3]) and tonumber(args[4]) then
                     color = Color(tonumber(args[2]), tonumber(args[3]), tonumber(args[4]))
