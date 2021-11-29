@@ -5,7 +5,7 @@ sql.Query("CREATE TABLE IF NOT EXISTS bsu_players(steamId TEXT PRIMARY KEY, rank
 sql.Query("CREATE TABLE IF NOT EXISTS bsu_ranks(rankIndex INTEGER PRIMARY KEY, rankName TEXT NOT NULL, rankColor TEXT NOT NULL, userGroup TEXT DEFAULT 'user')") -- rank data
 sql.Query("CREATE TABLE IF NOT EXISTS bsu_rankRestricts(rankIndex INTEGER NOT NULL, restriction TEXT NOT NULL)") -- rank restrictions
 
-// TEMPORARY RANK SETUP
+-- TEMPORARY RANK SETUP
 
 function BSU:PopulateBSURanks()
   local bsuRanks = {

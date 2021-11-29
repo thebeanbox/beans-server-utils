@@ -1,5 +1,5 @@
-// this is less resource intensive and less annoying to make work because networking is not necessary
-/*
+-- this is less resource intensive and less annoying to make work because networking is not necessary
+
 surface.CreateFont("BSU_NameTagText",
   {
     font = "Arial",

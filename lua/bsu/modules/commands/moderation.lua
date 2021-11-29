@@ -52,7 +52,7 @@ BSU:RegisterCommand({
 BSU:RegisterCommand({
   name = "goto",
   aliases = {},
-  description = "Teleport to a player",
+  description = "Teleport to a target",
   category = "player",
   args = {
     {

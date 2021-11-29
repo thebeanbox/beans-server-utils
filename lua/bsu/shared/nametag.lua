@@ -85,7 +85,7 @@ else
 
     function drawNameTag(self, w, h)
         local ply = self.Player
-        if ply == nil then
+        if not ply:IsValid() then
             return
         end
         local data2D = (ply:GetPos() + Vector(0,0,100)):ToScreen()
