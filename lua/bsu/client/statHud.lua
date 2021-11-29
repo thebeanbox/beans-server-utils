@@ -134,14 +134,14 @@ function drawIcons( self, w, h )
             surface.DrawTexturedRectUV( (25/4)-1, (h/4)-1, 16, 16, icons.light.u, icons.light.v, icons.light.u+uvMult, icons.light.v+uvMult )
         end
 
-        if !stats.buildmode then -- Currently inverted for debug purposes
+        if not stats.buildmode then -- Currently inverted for debug purposes
             draw.RoundedBox( 5, 30, 0, 25, h, Color(0, 0, 0, 200) )
             surface.SetDrawColor(Color(255,255,255,255))
             surface.SetMaterial( icons.sheet )
             surface.DrawTexturedRectUV( 29+(25/4), (h/4)-1, 16, 16, icons.build.u, icons.build.v, icons.build.u+uvMult, icons.build.v+uvMult )
         end
 
-        if !stats.skybox then -- Currently inverted for debug purposes
+        if not stats.skybox then -- Currently inverted for debug purposes
             draw.RoundedBox( 5, 60, 0, 25, h, Color(0, 0, 0, 200) )
             surface.SetDrawColor(Color(255,255,255,255))
             surface.SetMaterial( icons.sheet )

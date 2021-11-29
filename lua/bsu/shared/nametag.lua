@@ -71,7 +71,7 @@ else
         nametags = { panels = {}, avatars = {} }
 
         for k,v in ipairs( player.GetAll() ) do
-            if v != LocalPlayer() then
+            if v ~= LocalPlayer() then
                 createPanel(v)
             end
         end
@@ -85,6 +85,9 @@ else
 
     function drawNameTag(self, w, h)
         local ply = self.Player
+        if not ply:IsValid() then
+            return
+        end
         local data2D = (ply:GetPos() + Vector(0,0,100)):ToScreen()
         local isInRange = ((LocalPlayer():GetPos():Distance(ply:GetPos()) <= maxDistance) and (data2D.visible))
 
@@ -111,7 +114,7 @@ else
                     local icoX, icoY = w - ((20 * k) - 4 + v.offset.x), (h/2) + v.offset.y
 
                     if materialData[v.type] then
-                        if materialData[v.type].path != v.image then
+                        if materialData[v.type].path ~= v.image then
                             materialData[v.type].path = v.image
                             materialData[v.type].mat = Material(v.image)
                         end

@@ -56,7 +56,7 @@ else
                 table.insert(msgContent, v)
             end
 
-            if k != #targets then
+            if k ~= #targets then
                 table.insert(msgContent, bsuChat._color(Color(151, 211, 255)))
                 table.insert(msgContent, k < #targets - 1 and bsuChat._text(", ") or bsuChat._text(" and "))
             end

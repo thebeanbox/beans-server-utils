@@ -1,5 +1,5 @@
-// this is less resource intensive and less annoying to make work because networking is not necessary
-/*
+-- this is less resource intensive and less annoying to make work because networking is not necessary
+
 surface.CreateFont("BSU_NameTagText",
   {
     font = "Arial",
@@ -56,7 +56,7 @@ hook.Add("HUDPaint", "BSU_DrawNameTag", function()
       local icoX, icoY = (20 * k) - 4 + v.offset.x, v.offset.y
 
       if materialData[v.type] then
-        if materialData[v.type].path != v.image then
+        if materialData[v.type].path ~= v.image then
           materialData[v.type].path = v.image
           materialData[v.type].mat = Material(v.image)
         end
