@@ -8,7 +8,10 @@ else
   html:Dock(FILL)
   html.ConsoleMessage = function() end -- stops html console messages from appearing in the client's console
 
-  html:AddFunction("glua", "guiOpenURL", function(url) bsuMenu.hide() gui.OpenURL(url) end) -- opening links from within javascript to gmod
+  html:AddFunction("glua", "guiOpenURL", function(url) -- opening links from within javascript to gmod
+    bsuMenu.hide()
+    gui.OpenURL(url)
+  end)
 
   html:OpenURL("http://beanbox.site.nfoservers.com/motd.html")
 
