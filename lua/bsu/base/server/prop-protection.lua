@@ -31,15 +31,15 @@ end
 hook.Add("PlayerDisconnected", "PP_PlayerDisconnected", PP_PlayerDisconnected)
 
 if cleanup then
-	local Clean = cleanup.Add
-	function cleanup.Add(ply, Type, ent)
-		if ent then
-			if ply:IsPlayer() and IsValid(ent) then
-				PP.SetOwner(ent, ply)
-			end
-		end
-		Clean(ply, Type, ent)
-	end
+  local Clean = cleanup.Add
+  function cleanup.Add(ply, Type, ent)
+    if ent then
+      if ply:IsPlayer() and IsValid(ent) then
+        PP.SetOwner(ent, ply)
+      end
+    end
+    Clean(ply, Type, ent)
+  end
 end
 
 local metaply = FindMetaTable("Player")
