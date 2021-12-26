@@ -25,7 +25,7 @@ function CPPI:GetNameFromUID(uid)
   return CPPI_NOTIMPLEMENTED
 end
 
-plymeta = FindMetaTable("Player")
+local plymeta = FindMetaTable("Player")
 if not plymeta then error("Unable to get player metatable") end
 
 function plymeta:CPPIGetFriends()
@@ -41,7 +41,7 @@ function plymeta:CPPIGetFriends()
   return players
 end
 
-entmeta = FindMetaTable("Entity")
+local entmeta = FindMetaTable("Entity")
 if not entmeta then error("Unable to get entity metatable") end
 
 function entmeta:CPPIGetOwner()
