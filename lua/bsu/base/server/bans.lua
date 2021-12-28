@@ -30,3 +30,19 @@ local function banCheck(steamid, ip)
 end
 
 hook.Add("CheckPassword", "BSU_BanCheck", banCheck)
+
+local function familyShareCheck(ply)
+  local steam64 = ply:OwnerSteamID64()
+  local ban = BSU.GetBanStatus(steam64)
+
+  if ban then
+    local steamID = util.SteamIDFrom64(steam64)
+    BSU.BanSteamID(
+      ply:SteamID64(),
+      string.format("Family Share With Banned Account (%s) (%s)", steamID, ban.reason),
+      ban.duration==0 and 0 or (ban.duration - math.ceil((BSU.UTCTime() - ban.time) / 60))
+    )
+  end
+end
+
+hook.Add("PlayerAuthed", "BSU_FamilyShareCheck", familyShareCheck)
