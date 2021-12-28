@@ -1,3 +1,28 @@
+BSU.PropProtection = {
+  Permissions = {
+    ["Physgun"] = {
+      realName = "physgun",
+      index = 1,
+    },
+    ["Gravgun"] = {
+      realName = "gravgun",
+      index = 2,
+    },
+    ["Toolgun"] = {
+      realName = "toolgun",
+      index = 3,
+    },
+    ["Use"] = {
+      realName = "use",
+      index = 4,
+    },
+    ["Player Pickup"] = {
+      realName = "playerpickup",
+      index = 5,
+    }
+  }
+}
+
 local PP = BSU.PropProtection
 
 function PP.GetOwner(ent)
@@ -13,6 +38,9 @@ function PP.GetOwner(ent)
 end
 
 if SERVER then
+  PP.Players = {}
+  PP.Props = {}
+  
   function PP.InitPlayer(ply)
     PP.Players[ply:SteamID()] = {}
     for _,v in pairs(PP.Permissions) do

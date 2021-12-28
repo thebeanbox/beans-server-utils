@@ -12,8 +12,12 @@ include(svBaseDir .. "players.lua")
 include(svBaseDir .. "privileges.lua")
 include(svBaseDir .. "limits.lua")
 include(svBaseDir .. "bans.lua")
+include(svBaseDir .. "pp.lua")
 
 -- send client-side scripts
+
+-- prop protection
+AddCSLuaFile(clBaseDir .. "pp.lua")
 
 -- networking
 AddCSLuaFile(clBaseDir .. "networking.lua")

@@ -71,6 +71,19 @@ function BSU.BanPlayer(ply, reason, duration, admin)
   BSU.BanSteamID(ply:SteamID64(), reason, duration, (admin and admin:IsValid()) and admin:SteamID64())
 end
 
+function BSU.SuperBanPlayer(ply, reason, duration, admin)
+  BSU.BanPlayer(ply, reason, duration, admin)
+
+  if ply:IsFullyAuthenticated() and ply:OwnerSteamID64() ~= ply:SteamID64() then
+    BSU.BanSteamID(ply:OwnerSteamID64(), reason, duration, (admin and admin:IsValid()) and admin:SteamID64())
+  end
+end
+
+function BSU.SuperDuperBanPlayer(ply, reason, duration, admin)
+  BSU.SuperBanPlayer(ply, reason, duration, admin)
+  BSU.IPBanPlayer(ply, reason, duration, admin)
+end
+
 function BSU.IPBanPlayer(ply, reason, duration, admin)
   if ply:IsBot() then return error("Unable to ban a bot!") end
   BSU.BanIP(ply:IPAddress(), reason, duration, (admin and admin:IsValid()) and admin:SteamID64())
