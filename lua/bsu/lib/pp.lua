@@ -56,8 +56,6 @@ if SERVER then
   end
 
   function PP.SetOwner(ent, ply)
-    print(ent, ply)
-    print(debug.Trace())
     if ent:IsPlayer() then
       return false
     end
