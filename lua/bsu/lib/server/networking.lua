@@ -9,7 +9,7 @@ function BSU.ClientRPC(plys, func, ...)
   net.WriteString(func)
 
   local tableToWrite = {...}
-  net.WriteInt(table.Count(tableToWrite), 16) -- Only 32766 args :)
+  net.WriteInt(#tableToWrite, 16) -- Only 32766 args :)
   for k, v in pairs(tableToWrite) do
     net.WriteType(v) -- Still not the best but the args can be any value so there's no other option
   end
