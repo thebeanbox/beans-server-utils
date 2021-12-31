@@ -1,179 +1,72 @@
---[[
-  Prop Protection script for The BeanBox
+-- base/server/pp.lua
 
-  Most of this is based on SimplePropProtection by Spacetech, which is currently being maintained by Donkie.
-  https://github.com/Donkie/SimplePropProtection
-]]
-
-local PP = BSU.PropProtection
-
---Setup World Props
+-- sets the owner of map entities to the world (PLEASE FIND A METHOD THAT DOESN'T USE A TIMER)
 timer.Simple(10, function()
   for _, ent in pairs(ents.FindByClass("*")) do
-    if not ent:IsPlayer() and not ent:GetNWString("Owner", false) then
-      PP.Props[ent:EntIndex()] = {
-        Ent = ent,
-        Owner = game.GetWorld(),
-      }
-
-      ent:SetNWString("Owner", "World")
-      ent:SetNWEntity("OwnerEnt", game.GetWorld())
+    if not ent:IsPlayer() and not BSU.GetEntityOwner(ent) then
+      BSU.SetEntityOwner(ent, game.GetWorld())
     end
   end
 end)
 
-hook.Add("PlayerInitialSpawn", "PP_InitPlayer", PP.InitPlayer)
-
-local function PP_PlayerDisconnected(ply)
-  PP.Players[ply:SteamID()] = nil
+-- sets the owner of the entity when it spawns
+local oldCleanupAdd = cleanup.Add
+function cleanup.Add(ply, type, ent)
+  BSU.SetEntityOwner(ent, ply)
+  oldCleanupAdd(ply, type, ent)
 end
 
-hook.Add("PlayerDisconnected", "PP_PlayerDisconnected", PP_PlayerDisconnected)
-
-if cleanup then
-  local Clean = cleanup.Add
-  function cleanup.Add(ply, Type, ent)
-    if ent then
-      if ply:IsPlayer() and IsValid(ent) then
-        PP.SetOwner(ent, ply)
-      end
-    end
-    Clean(ply, Type, ent)
-  end
+local function notifyOwnership(ply, ent)
+  BSU.ClientRPC(ply, "notification.AddLegacy", "You are now the owner of " .. tostring(ent), NOTIFY_GENERIC, 5)
 end
 
-local metaply = FindMetaTable("Player")
-hook.Add("Initialize","BSU_AddCount_Iinit",function()
-  if metaply.AddCount then
-    local backupAddCount = metaply.AddCount
-    function metaply:AddCount(enttype, ent)
-      PP.SetOwner(ent, self)
-      backupAddCount(self, enttype, ent)
-    end
-  end
-end)
-
-hook.Add("EntityRemoved", "PP_EntityRemoved", function(ent)
-  PP.Props[ent:EntIndex()] = nil
-end)
-
-local function PP_Physgun(ply, ent)
-  if not IsValid(ent) then return end
-
-  if ply:IsSuperAdmin() then return true end
-
-  local owner = PP.GetOwner(ent)
-  if owner == game.GetWorld() then return false end
-
-  if not owner then
-    if ent:IsPlayer() then
-      if PP.HasPerm(ply, ent, "playerpickup") then
-        return true
+local function checkPermission(ply, ent, perm)
+  local owner = BSU.GetEntityOwner(ent)
+  
+  if not IsValid(owner) and owner ~= game.GetWorld() and not ent:IsPlayer() then
+    local ownerID = BSU.GetEntityOwnerID(ent)
+    
+    if ownerID then
+      if ply:SteamID() == ownerID then
+        BSU.SetEntityOwner(ent, ply)
       end
     else
-      PP.SetOwner(ent, ply)
-      return true
+      BSU.SetEntityOwner(ent, ply)
+      notifyOwnership(ply, ent)
     end
+  end
 
+  if ply:IsSuperAdmin() then return true end
+  
+  if not IsValid(owner) or owner == game.GetWorld() or (ply ~= owner and not BSU.PlayerIsGranted(ply, owner, perm)) then
     return false
   end
-
-  if not PP.Players[owner:SteamID()] then
-    PP.InitPlayer(owner)
-  end
-
-  if owner == ply or PP.HasPerm(ply, owner, "physgun") then
-    return true
-  end
-
-  return false
 end
 
-hook.Add("PhysgunPickup", "BSU_PropProtectPhysgun", PP_Physgun)
-
-local function PP_GravGun(ply, ent)
-  if not IsValid(ent) or ent:IsPlayer() then return end
-
-  if ply:IsSuperAdmin() then return true end
-
-  local owner = PP.GetOwner(ent)
-  if owner == game.GetWorld() then return true end
-
-  if not owner then
-    PP.SetOwner(ent, ply)
-    return true
-  end
-
-  if not PP.Players[owner:SteamID()] then
-    PP.InitPlayer(owner)
-  end
-
-  if owner == ply or PP.HasPerm(ply, owner, "gravgun") then
-    return true
-  end
-
-  return false
+local function checkPhysgunPermission(ply, ent)
+  return checkPermission(ply, ent, BSU.PP_PHYSGUN)
 end
 
-hook.Add("GravGunPunt", "BSU_PropProtectGravgun", PP_GravGun)
-hook.Add("GravGunPickupAllowed", "BSU_PropProtectGravgun", PP_GravGun)
-
-local function PP_CanTool(ply, tr, tool)
-  local ent = tr.Entity
-
-  if not IsValid(ent) or ent:IsPlayer() then return end
-
-  if ply:IsSuperAdmin() then return true end
-
-  local owner = PP.GetOwner(ent)
-  if owner == game.GetWorld() then return false end
-
-  if not owner then
-    PP.SetOwner(ent, ply)
-    return true
-  end
-
-  if not PP.Players[owner:SteamID()] then
-    PP.InitPlayer(owner)
-  end
-
-  if owner == ply or PP.HasPerm(ply, owner, "toolgun") then
-    return true
-  end
-
-  return false
+local function checkGravgunPermission(ply, ent)
+  return checkPermission(ply, ent, BSU.PP_GRAVGUN)
 end
 
-hook.Add("CanTool", "BSU_PropProtectTool", PP_CanTool)
-hook.Add("CanProperty", "BSU_PropProtectTool", PP_CanTool)
-
-local function PP_Use(ply, ent)
-  if not IsValid(ent) or ent:IsPlayer() then return end
-
-  if ply:IsSuperAdmin() then return true end
-
-  local owner = PP.GetOwner(ent)
-  if owner == game.GetWorld() then return true end
-
-  if not owner then
-    PP.SetOwner(ent, ply)
-    return true
-  end
-
-  if not PP.Players[owner:SteamID()] then
-    PP.InitPlayer(owner)
-  end
-
-  if owner == ply or PP.HasPerm(ply, owner, "use") then
-    return true
-  end
-
-  return false
+local function checkToolgunPermission(ply, ent)
+  return checkPermission(ply, ent, BSU.PP_TOOLGUN)
 end
 
-hook.Add("PlayerUse", "BSU_PropProtectUse", PP_Use)
+local function checkUsePermission(ply, ent)
+  return checkPermission(ply, ent, BSU.PP_USE)
+end
 
---Should probably move this somewhere else since it's not really related to prop protection
+hook.Add("PhysgunPickup", "BSU_CheckPhysgunPermission", checkPhysgunPermission)
+hook.Add("GravGunPunt", "BSU_CheckGravgunPermission", checkGravgunPermission)
+hook.Add("GravGunPickupAllowed", "BSU_CheckGravgunPermission", checkGravgunPermission)
+hook.Add("CanTool", "BSU_CheckToolgunPermission", function(ply, trace) return IsValid(trace.Entity) and checkToolgunPermission(ply, trace.Entity) end)
+hook.Add("CanProperty", "BSU_CheckToolgunPermission", function(ply, _, ent) return checkToolgunPermission(ply, ent) end)
+hook.Add("PlayerUse", "BSU_CheckUsePermission", checkUsePermission)
+
+-- this fixes glitchy movement when grabbing players
 hook.Add("OnPhysgunPickup", "BSU_PlayerPhysgunPickup", function(ply, ent)
   if ent:IsPlayer() then
     ent:SetMoveType(MOVETYPE_NONE)
