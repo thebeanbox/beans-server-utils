@@ -20,15 +20,13 @@ hook.Add("HUDPaint", "BSU_DrawPPHUD", function()
     if IsValid(ent) and not ent:IsPlayer() then
       local owner = BSU.GetEntityOwner(ent)
       
-      local text = string.format("Owner: %s\n%s\n%s",
-        owner and BSU.GetEntityOwnerName(ent) .. (BSU.GetEntityOwnerID(ent) and "<" .. BSU.GetEntityOwnerID(ent) .. ">" or "") or "N/A",
-        ent:GetModel(),
+      local text = "Owner: " .. (owner and BSU.GetEntityOwnerName(ent) .. (BSU.GetEntityOwnerID(ent) and "<" .. BSU.GetEntityOwnerID(ent) .. ">" or "") or "N/A") .. "\n" ..
+        ent:GetModel() .. "\n" ..
         tostring(ent)
-      )
 
       surface.SetFont(font)
       local w, h = surface.GetTextSize(text)
-      draw.RoundedBox(5, ScrW() - w - 8, ScrH() / 2 - h / 2 - 4, w + 16, h + 8, Color(0, 0, 0, 175))
+      draw.RoundedBox(4, ScrW() - w - 8, ScrH() / 2 - h / 2 - 4, w + 8, h + 8, Color(0, 0, 0, 175))
       draw.DrawText(text, font, ScrW() - 4, ScrH() / 2 - h / 2, Color(255, 255, 255, 255), TEXT_ALIGN_RIGHT)
     end
   end
