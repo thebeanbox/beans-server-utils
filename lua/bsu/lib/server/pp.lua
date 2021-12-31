@@ -74,7 +74,5 @@ function BSU.SetEntityOwner(ent, owner)
 
   -- this is so we can still get the name and id of the player after they leave the server
   ent:SetNW2String("BSU_OwnerName", owner ~= game.GetWorld() and owner:Nick() or "World") -- this is used for the hud
-  if owner ~= game.GetWorld() then
-    ent:SetNW2String("BSU_OwnerID", owner:SteamID()) -- this is used so we can identify the owner and give back ownership if they disconnect and then reconnect
-  end
+  ent:SetNW2String("BSU_OwnerID", owner ~= game.GetWorld() and owner:SteamID()) -- this is used so we can identify the owner and give back ownership if they disconnect and then reconnect
 end
