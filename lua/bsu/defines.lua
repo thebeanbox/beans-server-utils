@@ -36,11 +36,11 @@ if SERVER then
   BSU.PP_GRAVGUN = 1
   BSU.PP_TOOLGUN = 2
   BSU.PP_USE     = 3
-  BSU.PP_PICKUP  = 4
+  BSU.PP_DAMAGE  = 4
 
   -- id of the group that players are automatically set to (like when they join for the first time)
   BSU.DEFAULT_GROUP = 1
-  
+
   -- id of the group that bots should be assigned to
   BSU.BOT_GROUP = 2 --BSU.DEFAULT_GROUP
 

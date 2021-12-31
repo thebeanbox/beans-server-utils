@@ -59,12 +59,14 @@ function BSU.DenyPlayerPermission(ply, target, perm)
 end
 
 function BSU.SetEntityOwnerless(ent)
+  if not IsValid(ent) then return error("Entity is not valid") end
   ent:SetNW2Entity("BSU_Owner", nil)
   ent:SetNW2Entity("BSU_OwnerName", nil)
   ent:SetNW2Entity("BSU_OwnerID", nil)
 end
 
 function BSU.SetEntityOwner(ent, owner)
+  if not IsValid(ent) then return error("Entity is not valid") end
   if ent:IsPlayer() then return error("Entity cannot be a player") end
   if not owner or (not owner:IsPlayer() and not owner == game.GetWorld()) then return error("Entity owner must be the world or a player") end
 

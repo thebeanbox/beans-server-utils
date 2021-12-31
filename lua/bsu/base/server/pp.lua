@@ -43,37 +43,52 @@ local function checkPermission(ply, ent, perm)
   end
 end
 
-local function checkPhysgunPermission(ply, ent)
-  return checkPermission(ply, ent, BSU.PP_PHYSGUN)
-end
+-- physgun checking
+hook.Add("PhysgunPickup", "BSU_CheckPhysgunPermission", function(ply, ent) return checkPermission(ply, ent, BSU.PP_PHYSGUN) end)
 
+-- gravgun checking
 local function checkGravgunPermission(ply, ent)
   return checkPermission(ply, ent, BSU.PP_GRAVGUN)
 end
 
-local function checkToolgunPermission(ply, ent)
-  return checkPermission(ply, ent, BSU.PP_TOOLGUN)
-end
+hook.Add("GravGunPunt", "BSU_CheckGravgunPermission", checkGravgunPermission)
+hook.Add("GravGunPickupAllowed", "BSU_CheckGravgunPermission", checkGravgunPermission)
 
+-- toolgun checking
+hook.Add("CanTool", "BSU_CheckToolgunPermission", function(ply, trace) if IsValid(trace.Entity) then return checkPermission(ply, trace.Entity, BSU.PP_TOOLGUN) end end)
+hook.Add("CanProperty", "BSU_CheckToolgunPermission", function(ply, _, ent) return checkPermission(ply, ent, BSU.PP_TOOLGUN) end)
+
+-- use checking
 local function checkUsePermission(ply, ent)
   return checkPermission(ply, ent, BSU.PP_USE)
 end
 
-hook.Add("PhysgunPickup", "BSU_CheckPhysgunPermission", checkPhysgunPermission)
-hook.Add("GravGunPunt", "BSU_CheckGravgunPermission", checkGravgunPermission)
-hook.Add("GravGunPickupAllowed", "BSU_CheckGravgunPermission", checkGravgunPermission)
-hook.Add("CanTool", "BSU_CheckToolgunPermission", function(ply, trace) return IsValid(trace.Entity) and checkToolgunPermission(ply, trace.Entity) end)
-hook.Add("CanProperty", "BSU_CheckToolgunPermission", function(ply, _, ent) return checkToolgunPermission(ply, ent) end)
 hook.Add("PlayerUse", "BSU_CheckUsePermission", checkUsePermission)
+hook.Add("OnPlayerPhysicsPickup", "BSU_CheckUsePermission", checkUsePermission)
 
--- this fixes glitchy movement when grabbing players
-hook.Add("OnPhysgunPickup", "BSU_PlayerPhysgunPickup", function(ply, ent)
-  if ent:IsPlayer() then
-    ent:SetMoveType(MOVETYPE_NONE)
+-- damage checking
+hook.Add("EntityTakeDamage", "BSU_CheckDamagePermission", function(ent, dmg)
+  local ply
+
+  local attacker = dmg:GetAttacker()
+  if not IsValid(attacker) then
+    return
+  elseif attacker:IsPlayer() then -- set ply to the attacker
+    ply = attacker
+  else
+    ply = BSU.GetEntityOwner(attacker) -- set ply to the attacker's owner
+  end
+  
+  if (IsValid(ply) or ply == game.GetWorld()) and checkPermission(ply, ent, BSU.PP_DAMAGE) == false then
+    return true -- true to block damage
   end
 end)
+
+-- these hooks fix glitchy movement when grabbing players
+hook.Add("OnPhysgunPickup", "BSU_PlayerPhysgunPickup", function(ply, ent)
+  if ent:IsPlayer() then ent:SetMoveType(MOVETYPE_NONE) end
+end)
+
 hook.Add("PhysgunDrop", "BSU_PlayerPhysgunDrop", function(ply, ent)
-  if ent:IsPlayer() then
-    ent:SetMoveType(MOVETYPE_WALK)
-  end
+  if ent:IsPlayer() then ent:SetMoveType(MOVETYPE_WALK) end
 end)
