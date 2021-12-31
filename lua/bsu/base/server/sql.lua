@@ -12,8 +12,8 @@ end
   id        - (int)          numeric id of the group (automatically set and incremented) (also used for the team index of the group)
   name      - (text)         display name of the group
   color     - (text)         display color of the group
-  usergroup - (text)         the usergroup players under this group should be given (ex: "admin", "superadmin") (default: "user")
-  inherit   - (int or NULL)  the id of the group this group should inherit the properties of
+  usergroup - (text)         usergroup players under this group should be given (ex: "admin", "superadmin") (default: "user")
+  inherit   - (int or NULL)  id of the group this group should inherit the properties of
 ]]
 
 BSU.SQLCreateTable(BSU.SQL_GROUPS, string.format(
@@ -30,8 +30,8 @@ BSU.SQLCreateTable(BSU.SQL_GROUPS, string.format(
 --[[
   Player SQL Tbl Info
 
-  steamid   - (text)        the steam 64 bit id of the player
-  groupid   - (int)         the id of the group the player is currently in
+  steamid   - (text)        steam 64 bit id of the player
+  groupid   - (int)         id of the group the player is currently in
   totaltime - (int)         (in seconds) how long the player has been on the server
   lastvisit - (int or NULL) (in seconds) utc unix timestamp when the player last connected to the server (NULL if first time joining)
   name      - (text)        steam name of the player
@@ -51,13 +51,13 @@ BSU.SQLCreateTable(BSU.SQL_PLAYERS, string.format(
 --[[
   Ban SQL Tbl Info
 
-  identity   - (text)         the steam 64 bit id or ip address of the banned/kicked player
-  reason     - (text or NULL) the reason for the ban/kick (NULL if no reason given)
+  identity   - (text)         steam 64 bit id or ip address of the banned/kicked player
+  reason     - (text or NULL) reason for the ban/kick (NULL if no reason given)
   duration   - (int or NULL)  (in minutes) how long the ban will last (0 for perma, NULL for kick)
   time       - (int)          utc unix timestamp when the ban/kick was done
-  admin      - (text or NULL) the steam 64 bit id of the admin who did the ban (NULL if done through rcon)
+  admin      - (text or NULL) steam 64 bit id of the admin who did the ban (NULL if done through rcon)
   unbanTime  - (int or NULL)  utc unix timestamp when the ban was manually resolved
-  unbanAdmin - (text or NULL) the steam 64 bit id of the admin who resolved the ban (NULL if done through rcon)
+  unbanAdmin - (text or NULL) steam 64 bit id of the admin who resolved the ban (NULL if done through rcon)
 
   (use the latest entry of a steamid or ip when checking ban status)
 ]]
@@ -84,7 +84,7 @@ BSU.SQLCreateTable(BSU.SQL_BANS, string.format(
   value   - (text) privilege value
 ]]
 
-BSU.SQLCreateTable(BSU.SQL_GROUP_PRIVILEGES, string.format(
+BSU.SQLCreateTable(BSU.SQL_GROUP_PRIVS, string.format(
   [[
     groupid INTEGER NOT NULL REFERENCES %s(id),
     type INTEGER NOT NULL,
@@ -102,7 +102,7 @@ BSU.SQLCreateTable(BSU.SQL_GROUP_PRIVILEGES, string.format(
   value   - (text) privilege value
 ]]
 
-BSU.SQLCreateTable(BSU.SQL_PLAYER_PRIVILEGES, string.format(
+BSU.SQLCreateTable(BSU.SQL_PLAYER_PRIVS, string.format(
   [[
     steamid TEXT NOT NULL REFERENCES %s(steamid),
     type INTEGER NOT NULL,
@@ -143,5 +143,24 @@ BSU.SQLCreateTable(BSU.SQL_PLAYER_LIMITS, string.format(
     name TEXT NOT NULL UNIQUE,
     amount INTEGER NOT NULL
   ]],
+    BSU.EscOrNULL(BSU.SQL_PLAYERS, true)
+))
+
+--[[
+  Prop Protection Grants SQL Tbl Info
+
+  granter    - (text) steam 64 bit id of the player granting the permission
+  receiver   - (text) steam 64 bit id of the player receiving the permission
+  permission - (int)  the permission being granted
+]]
+
+BSU.SQLCreateTable(BSU.SQL_PP_GRANTS, string.format(
+  [[
+    granter TEXT NOT NULL REFERENCES %s(steamid),
+    receiver TEXT NOT NULL REFERENCES %s(steamid),
+    permission INTEGER NOT NULL,
+    CHECK (granter <> receiver)
+  ]],
+    BSU.EscOrNULL(BSU.SQL_PLAYERS, true),
     BSU.EscOrNULL(BSU.SQL_PLAYERS, true)
 ))

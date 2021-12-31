@@ -99,7 +99,7 @@ function BSU.GetPlayerLimit(steamid, name)
       name = name
     }
   ) or {})[1]
-
+  
   if limit then
     return limit.amount
   else

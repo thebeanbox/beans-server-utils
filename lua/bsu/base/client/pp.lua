@@ -2,7 +2,7 @@
   Simple info display to view the owner of the prop and ect.
 ]]
 
-local font = "PropProtection_Font"
+local font = "BSU_PP_HUD"
 surface.CreateFont(font, {
   font = "Verdana",
   size = 16,
@@ -11,24 +11,23 @@ surface.CreateFont(font, {
   shadow = true
 })
 
-hook.Add("HUDPaint", "BSU_PropProtectHUD", function()
+hook.Add("HUDPaint", "BSU_DrawPPHUD", function()
   if not IsValid(LocalPlayer()) then return end
 
-  local tr = util.TraceLine(util.GetPlayerTrace(LocalPlayer()))
-  if tr.HitNonWorld then
-    if IsValid(tr.Entity) and not tr.Entity:IsPlayer() and not LocalPlayer():InVehicle() then
-      local Owner = tr.Entity:GetNWEntity("OwnerEnt")
-      local Nick = "Owner:" .. (IsValid(Owner) and Owner:Nick() .. "[" .. Owner:EntIndex() .. "]" .. "\n[" .. Owner:SteamID() .. "]" or tr.Entity:GetNWString("Owner", "N/A"))
-
-      local Info = Nick .. "\n[" .. tr.Entity:EntIndex() .. "]" .. tr.Entity:GetModel() .. "\n<" .. tr.Entity:GetClass() .. ">"
-
+  local trace = util.TraceLine(util.GetPlayerTrace(LocalPlayer()))
+  if trace.HitNonWorld then
+    local ent = trace.Entity
+    if IsValid(ent) and not ent:IsPlayer() then
+      local owner = BSU.GetEntityOwner(ent)
       
+      local text = "Owner: " .. (owner and BSU.GetEntityOwnerName(ent) .. (BSU.GetEntityOwnerID(ent) and "<" .. BSU.GetEntityOwnerID(ent) .. ">" or "") or "N/A") .. "\n" ..
+        ent:GetModel() .. "\n" ..
+        tostring(ent)
+
       surface.SetFont(font)
-      local w, h = surface.GetTextSize(Info)
-      w = w + 6
-      surface.SetDrawColor(0, 0, 0, 150)
-      surface.DrawRect(ScrW() - w, ScrH() / 2 - h / 2, w + 8, h + 8)
-      draw.DrawText(Info, font, ScrW() - w / 2, ScrH() / 2 - h / 2, Color(255, 255, 255, 255), 1, 1)
+      local w, h = surface.GetTextSize(text)
+      draw.RoundedBox(4, ScrW() - w - 8, ScrH() / 2 - h / 2 - 4, w + 8, h + 8, Color(0, 0, 0, 175))
+      draw.DrawText(text, font, ScrW() - 4, ScrH() / 2 - h / 2, Color(255, 255, 255, 255), TEXT_ALIGN_RIGHT)
     end
   end
 end)

@@ -11,7 +11,7 @@ local function handleRPC()
   end
 
   local func = BSU.FindVar(funcStr)
-  if not func or type(func) ~= "function" then return error("Received bad RPC, invalid function (" .. funcStr .. ")!") end
+  if not func or type(func) ~= "function" then return error("Received bad RPC, invalid function (" .. funcStr .. ")") end
   
   func(unpack(args))
 end

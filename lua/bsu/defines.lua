@@ -14,21 +14,29 @@ BSU.DIR_LIB = BSU.DIR .. "lib/"
 BSU.DIR_MODULES = BSU.DIR .. "modules/"
 
 if SERVER then
-  -- SQL database table names (bad idea to modify these if there's already existing tables with data)
-  BSU.SQL_GROUPS            = "bsu_groups"
-  BSU.SQL_PLAYERS           = "bsu_players"
-  BSU.SQL_BANS              = "bsu_bans"
-  BSU.SQL_GROUP_PRIVILEGES  = "bsu_grp_privileges"
-  BSU.SQL_PLAYER_PRIVILEGES = "bsu_ply_privileges"
-  BSU.SQL_GROUP_LIMITS      = "bsu_grp_limits"
-  BSU.SQL_PLAYER_LIMITS     = "bsu_ply_limits"
+  -- SQL database table names
+  BSU.SQL_GROUPS        = "bsu_groups"
+  BSU.SQL_PLAYERS       = "bsu_players"
+  BSU.SQL_BANS          = "bsu_bans"
+  BSU.SQL_GROUP_PRIVS   = "bsu_grp_privs"
+  BSU.SQL_PLAYER_PRIVS  = "bsu_ply_privs"
+  BSU.SQL_GROUP_LIMITS  = "bsu_grp_limits"
+  BSU.SQL_PLAYER_LIMITS = "bsu_ply_limits"
+  BSU.SQL_PP_GRANTS     = "bsu_pp_grants"
 
   -- SQL privilege consts
-  BSU.PRIVILEGE_MODEL = 0
-  BSU.PRIVILEGE_NPC   = 1
-  BSU.PRIVILEGE_SENT  = 2
-  BSU.PRIVILEGE_SWEP  = 3
-  BSU.PRIVILEGE_TOOL  = 4
+  BSU.PRIV_MODEL = 0
+  BSU.PRIV_NPC   = 1
+  BSU.PRIV_SENT  = 2
+  BSU.PRIV_SWEP  = 3
+  BSU.PRIV_TOOL  = 4
+
+  -- prop protection values
+  BSU.PP_PHYSGUN = 0
+  BSU.PP_GRAVGUN = 1
+  BSU.PP_TOOLGUN = 2
+  BSU.PP_USE     = 3
+  BSU.PP_DAMAGE  = 4
 
   -- id of the group that players are automatically set to (like when they join for the first time)
   BSU.DEFAULT_GROUP = 1
