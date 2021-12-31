@@ -24,12 +24,30 @@ function BSU.GetPlayerPermissions(granter, receiver)
   return perms
 end
 
-function BSU.CheckPlayerHasPermission(granter, receiver, permission)
-  return BSU.SQLSelectByValues(BSU.SQL_PP_GRANTS, { granter = BSU.ID64(granter), receiver = BSU.ID64(receiver), permission = permission }) ~= nil
+-- returns a list of steam 64 bit ids this player has granted a specific permission
+function BSU.GetPlayerPermissionGrants(granter, permission)
+  local query = BSU.SQLSelectByValues(BSU.SQL_PP_GRANTS, { granter = BSU.ID64(steamid), permission = permission }) or {}
+
+  local ids = {}
+  for _, v in ipairs(query) do
+    table.insert(ids, v)
+  end
+
+  return ids
 end
 
+-- returns if this player has been given a specific permission from the target player
+function BSU.CheckPlayerHasPermission(ply, target, permission)
+  return BSU.SQLSelectByValues(BSU.SQL_PP_GRANTS, { granter = BSU.ID64(target), receiver = BSU.ID64(ply), permission = permission }) ~= nil
+end
+
+-- same thing as BSU.CheckPlayerHasPermission but takes Player objects
 function BSU.PlayerIsGranted(ply, target, perm)
-  return BSU.CheckPlayerHasPermission(ply:SteamID64(), target:SteamID64(), perm)
+  if not IsValid(target) then -- this also includes stuff owned by the world because IsValid(game.GetWorld()) returns false
+    return false
+  else
+    return BSU.CheckPlayerHasPermission(ply:SteamID64(), target:SteamID64(), perm)
+  end
 end
 
 function BSU.GrantPlayerPermission(ply, target, perm)
