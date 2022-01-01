@@ -46,17 +46,17 @@ if SERVER then
 
   BSU.BAN_MSG = [[============ You've Been Banned! ===========
 
-[Ban Date]:
-%time%
-
-[ Reason ]:
+[ Ban Reason ]:
 %reason%
 
-[ Length ]:
+[ Time Length ]:
 %duration%
 
-[ Remaining ]:
+[ Time Remaining ]:
 %remaining%
+
+[ Ban Date ]:
+%time%
 
 =====================================]]
 end

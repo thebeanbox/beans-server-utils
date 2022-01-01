@@ -31,17 +31,14 @@ end
 
 hook.Add("CheckPassword", "BSU_CheckBan", checkBan)
 
+-- kicks players who try to use family share to ban evade
 local function checkFamilyShare(ply)
-  local steam64 = ply:OwnerSteamID64()
-  local ban = BSU.GetBanStatus(steam64)
-
-  if ban then
-    local steamID = util.SteamIDFrom64(steam64)
-    BSU.BanPlayer(
-      ply,
-      string.format("Family share with banned account (%s) (%s)", steamID, ban.reason or "None given"),
-      ban.duration == 0 and 0 or ban.duration - math.ceil((BSU.UTCTime() - ban.time) / 60)
-    )
+  local ownerID = ply:OwnerSteamID64()
+  if ply:SteamID64() ~= ownerID then -- this player doesn't own the Garry's Mod license they're using
+    local ban = BSU.GetBanStatus(ownerID)
+    if ban then -- if the owner of the license is banned, kick this person
+      BSU.KickPlayer(ply, string.format("%s\n(Family share with banned account: %s)", ban.reason or "None given", util.SteamIDFrom64(ownerID)))
+    end
   end
 end
 
