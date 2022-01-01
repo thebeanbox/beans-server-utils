@@ -33,31 +33,32 @@ function BSU.GetBanStatus(identity)
 
     local latestBan = bans[1]
     
-    if latestBan.duration == 0 or (latestBan.time + latestBan.duration * 60) > BSU.UTCTime() then -- this guy is perma'd or still banned
+    if not latestBan.unbanTime and (latestBan.duration == 0 or (latestBan.time + latestBan.duration * 60) > BSU.UTCTime()) then -- this guy is perma'd or still banned
       return latestBan
     end
   end
 end
 
-function BSU.BanSteamID(id, reason, duration, adminID)
-  id = BSU.ID64(id)
+-- ban a player by steam id (this adds a new ban entry so it will be the new ban status for this player)
+function BSU.BanSteamID(steamid, reason, duration, adminID)
+  steamid = BSU.ID64(steamid)
   if adminID then adminID = BSU.ID64(adminID) end
 
-  BSU.RegisterBan(id, reason, duration or 0, adminID)
+  BSU.RegisterBan(steamid, reason, duration or 0, adminID and BSU.ID64(adminID))
 
   for k, v in ipairs(player.GetHumans()) do -- try to kick the player
-    if v:SteamID64() == id then
+    if v:SteamID64() == steamid then
       v:Kick("(Banned) " .. reason)
       break
     end
   end
 end
 
+-- ban a player by ip (this adds a new ban entry so it will be the new ban status for this player)
 function BSU.BanIP(ip, reason, duration, adminID)
   ip = BSU.RemovePort(ip)
-  if adminID then adminID = BSU.ID64(adminID) end
 
-  BSU.RegisterBan(ip, reason, duration or 0, adminID)
+  BSU.RegisterBan(ip, reason, duration or 0, adminID and BSU.ID64(adminID))
 
   for k, v in ipairs(player.GetHumans()) do -- try to kick all players with this ip
     if BSU.RemovePort(v:IPAddress()) == ip then
@@ -66,11 +67,28 @@ function BSU.BanIP(ip, reason, duration, adminID)
   end
 end
 
+-- unban a player by steam id
+function BSU.RevokeSteamIDBan(steamid, adminID)
+  local lastBan = BSU.GetBanStatus(steamid)
+  if not lastBan then return error("Steam ID is not currently banned") end
+
+  BSU.SQLUpdateByValues(BSU.SQL_BANS, lastBan, { unbanTime = BSU.UTCTime(), unbanAdmin = adminID and BSU.ID64(adminID) })
+end
+
+-- unban a player by ip
+function BSU.RevokeIPBan(ip, adminID)
+  local lastBan = BSU.GetBanStatus(ip)
+  if not lastBan then return error("IP is not currently banned") end
+  
+  BSU.SQLUpdateByValues(BSU.SQL_BANS, lastBan, { unbanTime = BSU.UTCTime(), unbanAdmin = adminID and BSU.ID64(adminID) })
+end
+
 function BSU.BanPlayer(ply, reason, duration, admin)
-  if ply:IsBot() then return error("Unable to ban a bot!") end
+  if ply:IsBot() then return error("Unable to ban a bot") end
   BSU.BanSteamID(ply:SteamID64(), reason, duration, (admin and admin:IsValid()) and admin:SteamID64())
 end
 
+-- turn superban and superduperban to commands and remove these functions
 function BSU.SuperBanPlayer(ply, reason, duration, admin)
   BSU.BanPlayer(ply, reason, duration, admin)
 
