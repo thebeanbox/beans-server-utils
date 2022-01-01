@@ -63,12 +63,3 @@ hook.Add("EntityTakeDamage", "BSU_CheckDamagePermission", function(ent, dmg)
     return true
   end
 end)
-
--- these hooks fix glitchy movement when grabbing players
-hook.Add("OnPhysgunPickup", "BSU_PlayerPhysgunPickup", function(ply, ent)
-  if ent:IsPlayer() then ent:SetMoveType(MOVETYPE_NONE) end
-end)
-
-hook.Add("PhysgunDrop", "BSU_PlayerPhysgunDrop", function(ply, ent)
-  if ent:IsPlayer() then ent:SetMoveType(MOVETYPE_WALK) end
-end)
