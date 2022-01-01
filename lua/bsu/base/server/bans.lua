@@ -2,7 +2,7 @@
 -- handles player bans
 
 -- check if player is banned when attempting to connect
-local function checkBan(steamid, ip)
+local function passwordBanCheck(steamid, ip)
   local success, callback, reason = xpcall(
     function()
       local ban = BSU.GetBanStatus(steamid) -- check for any bans on the steam id
@@ -29,17 +29,24 @@ local function checkBan(steamid, ip)
   end
 end
 
-hook.Add("CheckPassword", "BSU_CheckBan", checkBan)
+hook.Add("CheckPassword", "BSU_PasswordBanCheck", passwordBanCheck)
 
--- kicks players who try to use family share to ban evade
-local function checkFamilyShare(ply)
-  local ownerID = ply:OwnerSteamID64()
-  if ply:SteamID64() ~= ownerID then -- this player doesn't own the Garry's Mod license they're using
-    local ban = BSU.GetBanStatus(ownerID)
-    if ban then -- if the owner of the license is banned, kick this person
-      BSU.KickPlayer(ply, string.format("%s\n(Family share with banned account: %s)", ban.reason or "None given", util.SteamIDFrom64(ownerID)))
+-- kicks players who are banned but somehow got into the server and players using family share to ban evade
+local function authedBanCheck(ply)
+  local plyID = ply:SteamID64()
+
+  local plyBan = BSU.GetBanStatus(plyID)
+  if plyBan then -- if player is banned
+    game.KickID(ply:UserID(), "(Banned) " .. (plyBan.reason or "No reason given"))
+  else
+    local ownerID = ply:OwnerSteamID64()
+    if plyID ~= ownerID then -- this player doesn't own the Garry's Mod license they're using
+      local ownerBan = BSU.GetBanStatus(ownerID)
+      if ownerBan then -- if the owner of the license is banned
+        game.KickID(ply:UserID(), string.format("(Banned) %s\n(Family share with banned account: %s)", ownerBan.reason or "No reason given", util.SteamIDFrom64(ownerID)))
+      end
     end
   end
 end
 
-hook.Add("PlayerAuthed", "BSU_CheckFamilyShare", checkFamilyShare)
+hook.Add("PlayerAuthed", "BSU_AuthedBanCheck", authedBanCheck)
