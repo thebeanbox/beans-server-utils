@@ -5,7 +5,7 @@ BSU = BSU or {}
 
 -- some info
 BSU.TITLE = "Beans Server Utilities"
-BSU.VERSION = "0.0.1"
+BSU.VERSION = "0.0.1-dev"
 
 -- directory paths
 BSU.DIR = "bsu/"
