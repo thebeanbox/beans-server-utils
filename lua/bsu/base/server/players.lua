@@ -83,3 +83,12 @@ net.Receive("BSU_ClientInfo", function(_, ply)
   ply:SetNW2String("BSU_Country", country)
   ply:SetNW2Int("BSU_TimeOffset", timeOffset)
 end)
+
+-- fix glitchy movement when grabbing players
+hook.Add("OnPhysgunPickup", "BSU_PlayerPhysgunPickup", function(ply, ent)
+  if ent:IsPlayer() then ent:SetMoveType(MOVETYPE_NONE) end
+end)
+
+hook.Add("PhysgunDrop", "BSU_PlayerPhysgunDrop", function(ply, ent)
+  if ent:IsPlayer() then ent:SetMoveType(MOVETYPE_WALK) end
+end)

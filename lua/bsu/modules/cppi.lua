@@ -36,15 +36,21 @@ if SERVER then
     
     local players = player.GetAll()
     local friends = {}
-    for _, id in ipairs(steamids) do
-      for k, ply in ipairs(players) do
-        if ply:SteamID64() == id then
-          table.insert(friends, ply)
-          table.remove(players, k)
+    for _, ply in ipairs(players) do
+      if ply:IsSuperAdmin() then
+        table.insert(friends, ply)
+        table.remove(steamids, k)
+      else
+        for k, id in ipairs(steamids) do
+          if ply:SteamID64() == id then
+            table.insert(friends, ply)
+            table.remove(steamids, k)
+            break
+          end
         end
       end
     end
-  
+    
     return friends
   end
 
@@ -62,24 +68,15 @@ if SERVER then
   end
 
   function entMeta:CPPICanTool(ply, mode)
-    local owner = BSU.GetEntityOwner(self)
-    if not owner or owner == ply then return true end
-
-    return BSU.PlayerIsGranted(ply, owner, BSU.PP_TOOLGUN)
+    return BSU.CheckEntityPermission(ply, self, BSU.PP_TOOLGUN) ~= false
   end
 
   function entMeta:CPPICanPhysgun(ply)
-    local owner = BSU.GetEntityOwner(self)
-    if not owner or owner == ply then return true end
-
-    return BSU.PlayerIsGranted(ply, owner, BSU.PP_PHYSGUN)
+    return BSU.CheckEntityPermission(ply, self, BSU.PP_PHYSGUN) ~= false
   end
 
   function entMeta:CPPICanPickup(ply)
-    local owner = BSU.GetEntityOwner(self)
-    if not owner or owner == ply then return true end
-
-    return BSU.PlayerIsGranted(ply, owner, BSU.PP_GRAVGUN)
+    return BSU.CheckEntityPermission(ply, self, BSU.PP_PICKUP) ~= false
   end
 
   function entMeta:CPPICanPunt(ply)
@@ -87,17 +84,11 @@ if SERVER then
   end
 
   function entMeta:CPPICanUse(ply)
-    local owner = BSU.GetEntityOwner(self)
-    if not owner or owner == ply then return true end
-
-    return BSU.PlayerIsGranted(ply, owner, BSU.PP_USE)
+    return BSU.CheckEntityPermission(ply, self, BSU.PP_USE) ~= false
   end
   
   function entMeta:CPPICanDamage(ply)
-    local owner = BSU.GetEntityOwner(self)
-    if not owner or owner == ply then return true end
-
-    return BSU.PlayerIsGranted(ply, owner, BSU.PP_DAMAGE)
+    return BSU.CheckEntityPermission(ply, self, BSU.PP_DAMAGE) ~= false
   end
 
   function entMeta:CPPICanDrive(ply)
