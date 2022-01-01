@@ -59,20 +59,20 @@ function BSU.DenyPlayerPermission(ply, target, perm)
 end
 
 function BSU.SetEntityOwnerless(ent)
-  if not IsValid(ent) then return error("Entity is not valid") end
+  if not IsValid(ent) then return error("Entity is invalid") end
   ent:SetNW2Entity("BSU_Owner", nil)
   ent:SetNW2Entity("BSU_OwnerName", nil)
   ent:SetNW2Entity("BSU_OwnerID", nil)
 end
 
 function BSU.SetEntityOwner(ent, owner)
-  if not IsValid(ent) then return error("Entity is not valid") end
+  if not IsValid(ent) then return error("Entity is invalid") end
+  if not IsValid(ent) and owner ~= game.GetWorld() then return error("Owner entity is invalid") end
   if ent:IsPlayer() then return error("Entity cannot be a player") end
-  if not owner or (not owner:IsPlayer() and not owner == game.GetWorld()) then return error("Entity owner must be the world or a player") end
+  if not owner:IsPlayer() and owner ~= game.GetWorld() then return error("Owner entity must be a player or the world") end
 
   ent:SetNW2Entity("BSU_Owner", owner)
-
   -- this is so we can still get the name and id of the player after they leave the server
   ent:SetNW2String("BSU_OwnerName", owner ~= game.GetWorld() and owner:Nick() or "World") -- this is used for the hud
-  ent:SetNW2String("BSU_OwnerID", owner ~= game.GetWorld() and owner:SteamID()) -- this is used so we can identify the owner and give back ownership if they disconnect and then reconnect
+  ent:SetNW2String("BSU_OwnerID", owner ~= game.GetWorld() and owner:SteamID() or nil) -- this is used so we can identify the owner and give back ownership if they disconnect and then reconnect
 end

@@ -1,12 +1,14 @@
 -- base/server/pp.lua
 
--- sets the owner of map entities to the world (PLEASE FIND A METHOD THAT DOESN'T USE A TIMER)
-timer.Simple(10, function()
-  for _, ent in pairs(ents.FindByClass("*")) do
-    if not ent:IsPlayer() and not BSU.GetEntityOwner(ent) then
-      BSU.SetEntityOwner(ent, game.GetWorld())
+-- sets the owner of map entities to the world
+hook.Add("Initialize", "BSU_SetOwnerMapEntities", function()
+  timer.Simple(10, function()
+    for _, ent in pairs(ents.FindByClass("*")) do
+      if not ent:IsPlayer() and ent ~= game.GetWorld() and not BSU.GetEntityOwner(ent) then
+        BSU.SetEntityOwner(ent, game.GetWorld())
+      end
     end
-  end
+  end)
 end)
 
 -- sets the owner of the entity when it spawns
@@ -16,30 +18,32 @@ function cleanup.Add(ply, type, ent)
   oldCleanupAdd(ply, type, ent)
 end
 
-local function notifyOwnership(ply, ent)
-  BSU.ClientRPC(ply, "notification.AddLegacy", "You are now the owner of " .. tostring(ent), NOTIFY_GENERIC, 5)
+local function checkWorldPermission(perm)
+  return perm == BSU.PP_GRAVGUN or perm == BSU.PP_USE or perm == BSU.PP_DAMAGE
 end
 
 local function checkPermission(ply, ent, perm)
   local owner = BSU.GetEntityOwner(ent)
-  
-  if not IsValid(owner) and owner ~= game.GetWorld() and not ent:IsPlayer() then
-    local ownerID = BSU.GetEntityOwnerID(ent)
-    
-    if ownerID then
-      if ply:SteamID() == ownerID then
-        BSU.SetEntityOwner(ent, ply)
-      end
-    else
+  local ownerID = BSU.GetEntityOwnerID(ent)
+
+  if not owner then -- owner is N/A
+    return
+  elseif not IsValid(owner) and owner ~= game.GetWorld() then -- owner is a disconnected player
+    if ply:SteamID() == ownerID then -- give back ownership
       BSU.SetEntityOwner(ent, ply)
-      notifyOwnership(ply, ent)
     end
   end
-
-  if ply:IsSuperAdmin() then return true end
   
-  if not IsValid(owner) or owner == game.GetWorld() or (ply ~= owner and not BSU.PlayerIsGranted(ply, owner, perm)) then
-    return false
+  if ply:IsSuperAdmin() then return true end
+
+  if owner == game.GetWorld() then
+    if not checkWorldPermission(perm) then
+      return false
+    end
+  elseif owner:IsPlayer() then
+    if ply:SteamID() ~= ownerID and not BSU.CheckPlayerHasPermission(ply:SteamID64(), BSU.ID64(ownerID), perm) then
+      return false
+    end
   end
 end
 
@@ -69,8 +73,8 @@ hook.Add("OnPlayerPhysicsPickup", "BSU_CheckUsePermission", checkUsePermission)
 -- damage checking
 hook.Add("EntityTakeDamage", "BSU_CheckDamagePermission", function(ent, dmg)
   local ply
-
   local attacker = dmg:GetAttacker()
+
   if not IsValid(attacker) then
     return
   elseif attacker:IsPlayer() then -- set ply to the attacker
@@ -79,8 +83,8 @@ hook.Add("EntityTakeDamage", "BSU_CheckDamagePermission", function(ent, dmg)
     ply = BSU.GetEntityOwner(attacker) -- set ply to the attacker's owner
   end
   
-  if (IsValid(ply) or ply == game.GetWorld()) and checkPermission(ply, ent, BSU.PP_DAMAGE) == false then
-    return true -- true to block damage
+  if (ply == game.GetWorld() and not checkWorldPermission(BSU.PP_DAMAGE)) or (not IsValid(ply) or checkPermission(ply, ent, BSU.PP_DAMAGE) == false) then
+    return true
   end
 end)
 
