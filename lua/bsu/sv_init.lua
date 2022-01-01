@@ -16,8 +16,8 @@ include(svBaseDir .. "pp.lua")
 
 -- send client-side scripts
 
-AddCSLuaFile(clBaseDir .. "pp.lua")
 AddCSLuaFile(clBaseDir .. "networking.lua")
+AddCSLuaFile(clBaseDir .. "pp.lua")
 
 
 -- Module loading

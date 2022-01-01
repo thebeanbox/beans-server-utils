@@ -3,8 +3,8 @@
 
 local clBaseDir = BSU.DIR_BASE .. "client/"
 
-include(clBaseDir .. "pp.lua")
 include(clBaseDir .. "networking.lua")
+include(clBaseDir .. "pp.lua")
 
 -- Module loading
 local clModulesDir = BSU.DIR_MODULES .. "client/"
