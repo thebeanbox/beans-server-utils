@@ -21,7 +21,7 @@ hook.Add("HUDPaint", "BSU_DrawPPHUD", function()
       local id = BSU.GetEntityOwnerID(ent)
       local name = BSU.GetEntityOwnerName(ent)
       
-      local text = "Owner: " .. (owner and name .. (owner ~= game.GetWorld() and not owner:IsBot() and id and "<" .. util.SteamIDFrom64(id) .. ">" or "") or "N/A") .. "\n" ..
+      local text = "Owner: " .. (owner and name .. (owner ~= game.GetWorld() and (not IsValid(owner) or not owner:IsBot()) and id and "<" .. util.SteamIDFrom64(id) .. ">" or "") or "N/A") .. "\n" ..
         ent:GetModel() .. "\n" ..
         tostring(ent)
 
