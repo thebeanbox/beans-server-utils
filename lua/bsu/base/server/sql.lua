@@ -1,10 +1,4 @@
--- base/sql.lua (SHARED)
--- sets up sql stuff
-
--- make sure foreign keys are enabled (this is needed for referencing which is used to avoid bad deletions (ex: deleting a group which players are still in))
-if BSU.SQLQueryValue("PRAGMA foreign_keys") == "0" then
-  BSU.SQLQuery("PRAGMA foreign_keys = ON")
-end
+-- base/server/sql.lua
 
 --[[
   Group SQL Tbl Info
@@ -143,24 +137,5 @@ BSU.SQLCreateTable(BSU.SQL_PLAYER_LIMITS, string.format(
     name TEXT NOT NULL UNIQUE,
     amount INTEGER NOT NULL
   ]],
-    BSU.EscOrNULL(BSU.SQL_PLAYERS, true)
-))
-
---[[
-  Prop Protection Grants SQL Tbl Info
-
-  granter    - (text) steam 64 bit id of the player granting the permission
-  receiver   - (text) steam 64 bit id of the player receiving the permission
-  permission - (int)  the permission being granted
-]]
-
-BSU.SQLCreateTable(BSU.SQL_PP_GRANTS, string.format(
-  [[
-    granter TEXT NOT NULL REFERENCES %s(steamid),
-    receiver TEXT NOT NULL REFERENCES %s(steamid),
-    permission INTEGER NOT NULL,
-    CHECK (granter <> receiver)
-  ]],
-    BSU.EscOrNULL(BSU.SQL_PLAYERS, true),
     BSU.EscOrNULL(BSU.SQL_PLAYERS, true)
 ))

@@ -74,7 +74,7 @@ end
 timer.Create("BSU_UpdatePlayerData", 1, 0, updatePlayerData) -- update player data every 60 secs
 
 -- receive some client data and register networked values (see BSU.RequestClientInfo)
-net.Receive("BSU_ClientInfo", function(_, ply)
+local function setupClientInfo(_, ply)
   local os = net.ReadString()
   local country = net.ReadString()
   local timeOffset = net.ReadInt(5)
@@ -82,7 +82,9 @@ net.Receive("BSU_ClientInfo", function(_, ply)
   ply:SetNW2String("BSU_OS", os)
   ply:SetNW2String("BSU_Country", country)
   ply:SetNW2Int("BSU_TimeOffset", timeOffset)
-end)
+end
+
+net.Receive("BSU_ClientInfo", setupClientInfo)
 
 -- fix glitchy movement when grabbing players
 hook.Add("OnPhysgunPickup", "BSU_PlayerPhysgunPickup", function(ply, ent)

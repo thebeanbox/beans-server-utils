@@ -32,7 +32,7 @@ end
 
 if SERVER then
   function plyMeta:CPPIGetFriends()
-    local steamids = BSU.GetPlayerPermissionGrants(self:SteamID64(), BSU.PP_TOOLGUN)
+    local steamids = BSU.GetPlayerPermissionList(self:SteamID64(), BSU.PP_TOOLGUN)
     
     local players = player.GetAll()
     local friends = {}
