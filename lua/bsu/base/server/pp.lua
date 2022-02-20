@@ -15,6 +15,8 @@ local function initializePPClientData(_, ply)
     if not BSU.PPClientData[plyID][steamid] then BSU.PPClientData[plyID][steamid] = {} end
     BSU.PPClientData[plyID][steamid][permission] = true
   end
+
+  hook.Run("BSU_InitPPClData", plyID, steamid, permission)
 end
 
 net.Receive("BSU_PPClientData_Init", initializePPClientData)
@@ -27,6 +29,8 @@ local function updatePPClientData(_, ply)
   if not BSU.PPClientData[plyID][steamid] then BSU.PPClientData[plyID][steamid] = {} end
 
   BSU.PPClientData[plyID][steamid][permission] = method or nil
+
+  hook.Run("BSU_UpdatePPClData", plyID, steamid, permission)
 end
 
 net.Receive("BSU_PPClientData_Update", updatePPClientData)

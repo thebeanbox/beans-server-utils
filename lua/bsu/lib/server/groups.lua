@@ -2,19 +2,25 @@
 -- functions for managing the player groups
 
 function BSU.RegisterGroup(id, name, color, usergroup, inherit)
+  color = type(color) == "table" and BSU.ColorToHex(color) or string.gsub(color, "#", "")
+
   BSU.SQLInsert(BSU.SQL_GROUPS,
     {
       id = id,
       name = name,
-      color = type(color) == "table" and BSU.ColorToHex(color) or string.gsub(color, "#", ""),
+      color = color,
       usergroup = usergroup,
       inherit = inherit
     }
   )
+  
+  hook.Run("BSU_RegisterGroup", id, name, BSU.HexToColor(color), usergroup, inherit)
 end
 
 function BSU.RemoveGroup(id)
   BSU.SQLDeleteByValues(BSU.SQL_GROUPS, { id = id })
+
+  hook.Run("BSU_RemoveGroup", id)
 end
 
 function BSU.GetAllGroups()

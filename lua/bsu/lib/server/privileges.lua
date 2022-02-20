@@ -13,6 +13,8 @@ function BSU.RegisterGroupPrivilege(groupid, type, value, granted)
       granted = granted and 1 or 0
     }
   )
+
+  hook.Run("BSU_RegisterGroupPrivilege", groupid, type, value, granted)
 end
 
 function BSU.RegisterPlayerPrivilege(steamid, type, value, granted)
@@ -29,6 +31,8 @@ function BSU.RegisterPlayerPrivilege(steamid, type, value, granted)
       granted = granted and 1 or 0
     }
   )
+
+  hook.Run("BSU_RegisterPlayerPrivilege", steamid, type, value, granted)
 end
 
 function BSU.RemoveGroupPrivilege(groupid, type, value)
@@ -39,16 +43,22 @@ function BSU.RemoveGroupPrivilege(groupid, type, value)
       value = value
     }
   )
+
+  hook.Run("BSU_RemoveGroupPrivilege", groupid, type, value)
 end
 
 function BSU.RemovePlayerPrivilege(steamid, type, value)
+  steamid = BSU.ID64(steamid)
+
   BSU.SQLDeleteByValues(BSU.SQL_PLAYER_PRIVS,
     {
-      steamid = BSU.ID64(steamid),
+      steamid = steamid,
       type = type,
       value = value
     }
   )
+
+  hook.Run("BSU_RemovePlayerPrivilege", steamid, type, value)
 end
 
 function BSU.GetGroupWildcardPrivileges(groupid, type)

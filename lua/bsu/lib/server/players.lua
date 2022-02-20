@@ -2,12 +2,16 @@
 -- functions for handling player data
 
 function BSU.RegisterPlayer(steamid, groupid)
+  steamid = BSU.ID64(steamid)
+  
   BSU.SQLInsert(BSU.SQL_PLAYERS,
     {
-      steamid = BSU.ID64(steamid),
+      steamid = steamid,
       groupid = groupid
     }
   )
+
+  hook.Run("BSU_RegisterPlayer", steamid, groupid)
 end
 
 -- gets the data of all players in a group
