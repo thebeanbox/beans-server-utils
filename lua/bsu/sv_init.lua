@@ -45,3 +45,5 @@ end
 for _, module in ipairs(clModules) do
   AddCSLuaFile(clModulesDir .. module)
 end
+
+hook.Run("BSU_Init")

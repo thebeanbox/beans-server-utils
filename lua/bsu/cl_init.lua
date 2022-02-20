@@ -26,3 +26,5 @@ end
 for _, module in ipairs(clModules) do
   include(clModulesDir .. module)
 end
+
+hook.Run("BSU_Init")

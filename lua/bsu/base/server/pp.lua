@@ -95,7 +95,7 @@ hook.Add("EntityTakeDamage", "BSU_CheckDamagePermission", function(ent, dmg)
 end)
 
 -- no collision checking (ignores superadmin override for prop-to-prop collision)
-hook.Add("ShouldCollide", "BSU_CheckNoCollidePermission", function(ent1, ent2)
+--[[hook.Add("ShouldCollide", "BSU_CheckNoCollidePermission", function(ent1, ent2)
   if (not IsValid(ent1) or not IsValid(ent2)) or (ent1:IsPlayer() and ent2:IsPlayer()) then return end -- ignore if both are not valid or both are players
 
   local ply = ent1:IsPlayer() and ent1 or ent2:IsPlayer() and ent2
@@ -123,4 +123,4 @@ hook.Add("ShouldCollide", "BSU_CheckNoCollidePermission", function(ent1, ent2)
       end
     end
   end
-end)
+end)]]

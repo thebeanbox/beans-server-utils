@@ -26,7 +26,7 @@ BSU.PP_GRAVGUN   = 1
 BSU.PP_TOOLGUN   = 2
 BSU.PP_USE       = 3
 BSU.PP_DAMAGE    = 4
-BSU.PP_NOCOLLIDE = 5
+--BSU.PP_NOCOLLIDE = 5
 
 if SERVER then
   -- server SQL database table names
