@@ -40,6 +40,8 @@ end
 
 function BSU.SetGroupData(id, values)
   BSU.SQLUpdateByValues(BSU.SQL_GROUPS, { id = id }, values)
+
+  hook.Run("BSU_SetGroupData", id, values)
 end
 
 -- setup teams

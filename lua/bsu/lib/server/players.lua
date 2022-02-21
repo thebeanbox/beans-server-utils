@@ -22,6 +22,8 @@ end
 -- sets a value of a player's data in the sql
 function BSU.SetPlayerData(steamid, values)
   BSU.SQLUpdateByValues(BSU.SQL_PLAYERS, { steamid = BSU.ID64(steamid) }, values)
+
+  hook.Run("BSU_SetPlayerData", steamid, values)
 end
 
 -- get player data using their steam id
