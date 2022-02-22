@@ -9,14 +9,12 @@ local function initializePPClientData(_, ply)
   BSU.PPClientData[plyID] = BSU.PPClientData[plyID] or {}
 
   local len = net.ReadUInt(16)
-  local data = {}
+  
   for i = 1, len do
-    local steamid, permission = net.ReadString(), net.ReadUInt(3)
+    local steamid, permission = BSU.ID64(net.ReadString()), net.ReadUInt(3)
     if not BSU.PPClientData[plyID][steamid] then BSU.PPClientData[plyID][steamid] = {} end
     BSU.PPClientData[plyID][steamid][permission] = true
   end
-
-  hook.Run("BSU_InitPPClData", plyID, steamid, permission)
 end
 
 net.Receive("BSU_PPClientData_Init", initializePPClientData)
@@ -25,12 +23,16 @@ local function updatePPClientData(_, ply)
   local plyID = ply:SteamID64()
   BSU.PPClientData[plyID] = BSU.PPClientData[plyID] or {}
 
-  local method, steamid, permission = net.ReadBool(), net.ReadString(), net.ReadUInt(3)
+  local method, steamid, permission = net.ReadBool(), BSU.ID64(net.ReadString()), net.ReadUInt(3)
   if not BSU.PPClientData[plyID][steamid] then BSU.PPClientData[plyID][steamid] = {} end
 
   BSU.PPClientData[plyID][steamid][permission] = method or nil
-
-  hook.Run("BSU_UpdatePPClData", plyID, steamid, permission)
+  if table.Count(BSU.PPClientData[plyID][steamid]) == 0 then
+    BSU.PPClientData[plyID][steamid] = nil
+    if table.Count(BSU.PPClientData[plyID]) == 0 then
+      BSU.PPClientData[plyID] = nil
+    end
+  end
 end
 
 net.Receive("BSU_PPClientData_Update", updatePPClientData)

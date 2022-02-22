@@ -2,20 +2,17 @@
 -- functions for managing bans
 
 function BSU.RegisterBan(identity, reason, duration, admin) -- this is also used for logging kicks (when duration = null)
-  local time = BSU.UTCTime()
-  admin = admin and BSU.ID64(admin)
+  BSU.SQLInsert(BSU.SQL_BANS, {
+    identity = identity,
+    reason = reason,
+    duration = duration,
+    time = BSU.UTCTime(),
+    admin = admin and BSU.ID64(admin)
+  })
+end
 
-  BSU.SQLInsert(BSU.SQL_BANS,
-    {
-      identity = identity,
-      reason = reason,
-      duration = duration,
-      time = time,
-      admin = admin
-    }
-  )
-  
-  hook.Run("BSU_RegisterBan", identity, reason, duration, time, admin)
+function BSU.GetAllBans()
+  return BSU.SQLSelectAll(BSU.SQL_BANS) or {}
 end
 
 function BSU.GetBansByValues(values)

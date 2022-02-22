@@ -14,15 +14,11 @@ function BSU.RegisterGroupLimit(groupid, name, amount)
     amount = math.floor(amount)
   end
 
-  BSU.SQLInsert(BSU.SQL_GROUP_LIMITS,
-    {
-      groupid = groupid,
-      name = name,
-      amount = amount
-    }
-  )
-
-  hook.Run("BSU_RegisterGroupLimit", groupid, name, amount)
+  BSU.SQLInsert(BSU.SQL_GROUP_LIMITS, {
+    groupid = groupid,
+    name = name,
+    amount = amount
+  })
 end
 
 function BSU.RegisterPlayerLimit(steamid, name, amount)
@@ -40,42 +36,38 @@ function BSU.RegisterPlayerLimit(steamid, name, amount)
     amount = math.floor(amount)
   end
 
-  BSU.SQLInsert(BSU.SQL_PLAYER_LIMITS,
-    {
-      steamid = steamid,
-      name = name,
-      amount = amount
-    }
-  )
-
-  hook.Run("BSU_RegisterPlayerLimit", steamid, name, amount)
+  BSU.SQLInsert(BSU.SQL_PLAYER_LIMITS, {
+    steamid = steamid,
+    name = name,
+    amount = amount
+  })
 end
 
 function BSU.RemoveGroupLimit(groupid, name)
   name = string.lower(name)
 
-  BSU.SQLDeleteByValues(BSU.SQL_GROUP_LIMITS,
-    {
-      groupid = groupid,
-      name = name
-    }
-  )
-
-  hook.Run("BSU_RemoveGroupLimit", groupid, name)
+  BSU.SQLDeleteByValues(BSU.SQL_GROUP_LIMITS, {
+    groupid = groupid,
+    name = name
+  })
 end
 
 function BSU.RemovePlayerLimit(steamid, name)
   steamid = BSU.ID64(steamid)
   name = string.lower(name)
 
-  BSU.SQLDeleteByValues(BSU.SQL_PLAYER_LIMITS,
-    {
-      steamid = steamid,
-      name = name
-    }
-  )
+  BSU.SQLDeleteByValues(BSU.SQL_PLAYER_LIMITS, {
+    steamid = steamid,
+    name = name
+  })
+end
 
-  hook.Run("BSU_RemovePlayerLimit", steamid, name)
+function BSU.GetAllGroupLimits()
+  return BSU.SQLSelectAll(BSU.SQL_GROUP_LIMITS) or {}
+end
+
+function BSU.GetAllPlayerLimits()
+  return BSU.SQLSelectAll(BSU.SQL_PLAYER_LIMITS) or {}
 end
 
 -- returns the amount a group can spawn for a specific limit (or nothing if the limit is not registered) (this excludes the cvar 'sbox_max<limit name>')

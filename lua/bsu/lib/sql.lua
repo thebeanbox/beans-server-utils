@@ -6,17 +6,6 @@ function BSU.EscOrNULL(i, quotes)
   return not i and "NULL" or sql.SQLStr("" .. i, quotes or type(i) == "number")
 end
 
--- tries to create a new db table if it does not exist already
-function BSU.SQLCreateTable(name, values)
-  local query = sql.Query(
-    string.format("CREATE TABLE IF NOT EXISTS '%s' (%s)",
-      BSU.EscOrNULL(name, true),
-      BSU.EscOrNULL(values, true)
-    )
-  )
-  if query == false then error(sql.LastError()) end
-end
-
 -- checks if query errored or not
 local function safeQuery(query)
   if query == false then
@@ -71,7 +60,7 @@ function BSU.SQLInsert(tbl, data)
     table.insert(values, BSU.EscOrNULL(v))
   end
   
-  BSU.SQLQuery("INSERT INTO '%s' (%s) VALUES(%s)",
+  return BSU.SQLQuery("INSERT INTO '%s' (%s) VALUES(%s)",
     BSU.EscOrNULL(tbl, true),
     table.concat(keys, ","),
     table.concat(values, ",")
@@ -111,7 +100,7 @@ function BSU.SQLDeleteByValues(tbl, values)
     table.insert(conditions, BSU.EscOrNULL(k, true) .. "=" .. BSU.EscOrNULL(v))
   end
 
-  BSU.SQLQuery("DELETE FROM '%s' WHERE %s",
+  return BSU.SQLQuery("DELETE FROM '%s' WHERE %s",
     BSU.EscOrNULL(tbl, true),
     table.concat(conditions, " AND ")
   )
@@ -129,9 +118,17 @@ function BSU.SQLUpdateByValues(tbl, values, updatedValues)
     table.insert(updates, BSU.EscOrNULL(k, true) .. "=" .. BSU.EscOrNULL(v))
   end
 
-  BSU.SQLQuery("UPDATE '%s' SET %s WHERE %s",
+  return BSU.SQLQuery("UPDATE '%s' SET %s WHERE %s",
     BSU.EscOrNULL(tbl, true),
     table.concat(updates, ","),
     table.concat(conditions, " AND ")
+  )
+end
+
+-- tries to create a new db table if it does not exist already
+function BSU.SQLCreateTable(name, values)
+  return BSU.SQLQuery("CREATE TABLE IF NOT EXISTS '%s' (%s)",
+    BSU.EscOrNULL(name, true),
+    BSU.EscOrNULL(values, true)
   )
 end

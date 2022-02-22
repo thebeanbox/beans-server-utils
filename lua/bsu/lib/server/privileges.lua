@@ -2,63 +2,64 @@
 -- functions for managing group and player privileges
 
 function BSU.RegisterGroupPrivilege(groupid, type, value, granted)
+  granted = granted and 1 or 0
+
   -- incase this privilege is already registered, remove the old one
   BSU.RemoveGroupPrivilege(groupid, type, value)
 
-  BSU.SQLInsert(BSU.SQL_GROUP_PRIVS,
-    {
-      groupid = groupid,
-      type = type,
-      value = value,
-      granted = granted and 1 or 0
-    }
-  )
+  local data = {
+    groupid = groupid,
+    type = type,
+    value = value,
+    granted = granted
+  }
 
-  hook.Run("BSU_RegisterGroupPrivilege", groupid, type, value, granted)
+  BSU.SQLInsert(BSU.SQL_GROUP_PRIVS, data)
+
+  hook.Run("BSU_RegisterGroupPrivilege", data)
 end
 
 function BSU.RegisterPlayerPrivilege(steamid, type, value, granted)
   steamid = BSU.ID64(steamid)
+  granted = granted and 1 or 0
 
   -- incase this privilege is already registered, remove the old one
   BSU.RemovePlayerPrivilege(steamid, type, value)
 
-  BSU.SQLInsert(BSU.SQL_PLAYER_PRIVS,
-    {
-      steamid = steamid,
-      type = type,
-      value = value,
-      granted = granted and 1 or 0
-    }
-  )
+  local data = {
+    steamid = steamid,
+    type = type,
+    value = value,
+    granted = granted
+  }
 
-  hook.Run("BSU_RegisterPlayerPrivilege", steamid, type, value, granted)
+  BSU.SQLInsert(BSU.SQL_PLAYER_PRIVS, data)
+
+  hook.Run("BSU_RegisterPlayerPrivilege", data)
 end
 
 function BSU.RemoveGroupPrivilege(groupid, type, value)
-  BSU.SQLDeleteByValues(BSU.SQL_GROUP_PRIVS,
-    {
-      groupid = groupid,
-      type = type,
-      value = value
-    }
-  )
-
-  hook.Run("BSU_RemoveGroupPrivilege", groupid, type, value)
+  BSU.SQLDeleteByValues(BSU.SQL_GROUP_PRIVS, {
+    groupid = groupid,
+    type = type,
+    value = value
+  })
 end
 
 function BSU.RemovePlayerPrivilege(steamid, type, value)
-  steamid = BSU.ID64(steamid)
+  BSU.SQLDeleteByValues(BSU.SQL_PLAYER_PRIVS, {
+    steamid = BSU.ID64(steamid),
+    type = type,
+    value = value
+  })
+end
 
-  BSU.SQLDeleteByValues(BSU.SQL_PLAYER_PRIVS,
-    {
-      steamid = steamid,
-      type = type,
-      value = value
-    }
-  )
+function BSU.GetAllGroupPrivileges()
+  return BSU.SQLSelectAll(BSU.SQL_GROUP_PRIVS) or {}
+end
 
-  hook.Run("BSU_RemovePlayerPrivilege", steamid, type, value)
+function BSU.GetAllPlayerPrivileges()
+  return BSU.SQLSelectAll(BSU.SQL_PLAYER_PRIVS) or {}
 end
 
 function BSU.GetGroupWildcardPrivileges(groupid, type)

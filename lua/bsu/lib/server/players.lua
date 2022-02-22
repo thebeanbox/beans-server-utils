@@ -2,16 +2,14 @@
 -- functions for handling player data
 
 function BSU.RegisterPlayer(steamid, groupid)
-  steamid = BSU.ID64(steamid)
-  
-  BSU.SQLInsert(BSU.SQL_PLAYERS,
-    {
-      steamid = steamid,
-      groupid = groupid
-    }
-  )
+  BSU.SQLInsert(BSU.SQL_PLAYERS, {
+    steamid = BSU.ID64(steamid),
+    groupid = groupid
+  })
+end
 
-  hook.Run("BSU_RegisterPlayer", steamid, groupid)
+function BSU.GetAllPlayers()
+  return BSU.SQLSelectAll(BSU.SQL_PLAYERS) or {}
 end
 
 -- gets the data of all players in a group
@@ -22,8 +20,6 @@ end
 -- sets a value of a player's data in the sql
 function BSU.SetPlayerData(steamid, values)
   BSU.SQLUpdateByValues(BSU.SQL_PLAYERS, { steamid = BSU.ID64(steamid) }, values)
-
-  hook.Run("BSU_SetPlayerData", steamid, values)
 end
 
 -- get player data using their steam id
