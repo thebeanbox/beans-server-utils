@@ -5,7 +5,7 @@ function BSU.RegisterGroup(id, name, color, usergroup, inherit)
   BSU.SQLInsert(BSU.SQL_GROUPS, {
     id = id,
     name = name,
-    color = IsColor(color) and BSU.ColorToHex(color) or BSU.HexToColor(color) and string.gsub(color, "#", "")) or "ffffff",
+    color = IsColor(color) and BSU.ColorToHex(color) or isstring(color) and string.gsub(color, "#", "") or "ffffff",
     usergroup = usergroup,
     inherit = inherit
   })
