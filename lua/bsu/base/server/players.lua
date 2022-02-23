@@ -75,11 +75,11 @@ timer.Create("BSU_UpdatePlayerData", 1, 0, updatePlayerData) -- update player da
 
 -- receive some client data and register networked values (see BSU.RequestClientInfo)
 local function setupClientInfo(_, ply)
-  local os = net.ReadString()
+  local os = net.ReadUInt(2)
   local country = net.ReadString()
   local timeOffset = net.ReadInt(5)
 
-  ply:SetNW2String("BSU_OS", os)
+  ply:SetNW2String("BSU_OS", os == 0 and "Windows" or os == 1 and "Linux" or os == 2 and "macOS" or "N/A") -- if this is N/A something fishy is happening clientside
   ply:SetNW2String("BSU_Country", country)
   ply:SetNW2Int("BSU_TimeOffset", timeOffset)
 end
