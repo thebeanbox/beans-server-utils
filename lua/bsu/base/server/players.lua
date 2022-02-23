@@ -79,7 +79,7 @@ local function setupClientInfo(_, ply)
   local country = net.ReadString()
   local timeOffset = net.ReadInt(5)
 
-  ply:SetNW2String("BSU_OS", os == 0 and "Windows" or os == 1 and "Linux" or os == 2 and "macOS" or "N/A") -- if this is N/A something fishy is happening clientside
+  ply:SetNW2String("BSU_OS", os == 0 and "Windows" or os == 1 and "Linux" or os == 2 and "macOS" or "N/A") -- if this is N/A something fucky is happening clientside
   ply:SetNW2String("BSU_Country", country)
   ply:SetNW2Int("BSU_TimeOffset", timeOffset)
 end
