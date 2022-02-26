@@ -1,4 +1,23 @@
 # Beans Server Utils
-### A utilities and moderation addon for a dedicated Garry's Mod server
+#### A utilities and moderation addon for a dedicated Garry's Mod server
 
 (Under active development)
+
+# Documentation
+
+## Defines
+All defined vars can be found in [lua/bsu/defines.lua](https://github.com/Bonyoze/BSU/blob/main/lua/bsu/defines.lua)
+
+## SQL Tables
+
+| Realm  | Name                                                                                                | Description                                              |
+|--------|-----------------------------------------------------------------------------------------------------|----------------------------------------------------------|
+| SERVER | [SQL_GROUPS](https://github.com/Bonyoze/BSU/blob/main/lua/bsu/base/server/sql.lua#L3-L22)           | Stores group data                                        |
+| SERVER | [SQL_PLAYERS](https://github.com/Bonyoze/BSU/blob/main/lua/bsu/base/server/sql.lua#L24-L43)         | Stores important player data                             |
+| SERVER | [SQL_BANS](https://github.com/Bonyoze/BSU/blob/main/lua/bsu/base/server/sql.lua#L45-L71)            | Stores and logs data for player bans/kicks               |
+| SERVER | [SQL_GROUP_PRIVS](https://github.com/Bonyoze/BSU/blob/main/lua/bsu/base/server/sql.lua#L73-L89)     | Stores privilege data for groups                         |
+| SERVER | [SQL_PLAYER_PRIVS](https://github.com/Bonyoze/BSU/blob/main/lua/bsu/base/server/sql.lua#L91-L107)   | Stores privilege data for individual players             |
+| SERVER | [SQL_GROUP_LIMITS](https://github.com/Bonyoze/BSU/blob/main/lua/bsu/base/server/sql.lua#L109-L124)  | Stores limits data for groups                            |
+| SERVER | [SQL_PLAYER_LIMITS](https://github.com/Bonyoze/BSU/blob/main/lua/bsu/base/server/sql.lua#L109-L124) | Stores limits data for individual players                |
+| SERVER | SQL_PDATA                                                                                           | Stores misc player data **(currently not implemented)**  |
+| CLIENT | [SQL_PP](https://github.com/Bonyoze/BSU/blob/main/lua/bsu/base/client/sql.lua#L3-L15)               | Stores prop protection settings                          |
