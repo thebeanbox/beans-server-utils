@@ -55,11 +55,11 @@ function BSU.RemovePlayerPrivilege(steamid, type, value)
 end
 
 function BSU.GetAllGroupPrivileges()
-  return BSU.SQLSelectAll(BSU.SQL_GROUP_PRIVS) or {}
+  return BSU.SQLSelectAll(BSU.SQL_GROUP_PRIVS)
 end
 
 function BSU.GetAllPlayerPrivileges()
-  return BSU.SQLSelectAll(BSU.SQL_PLAYER_PRIVS) or {}
+  return BSU.SQLSelectAll(BSU.SQL_PLAYER_PRIVS)
 end
 
 function BSU.GetGroupWildcardPrivileges(groupid, type)
@@ -89,13 +89,7 @@ end
 -- returns bool if a group is granted the privilege (or nothing if the privilege is not registered)
 function BSU.CheckGroupPrivilege(groupid, type, value)
   -- check for group privilege
-  local priv = (BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS,
-    {
-      groupid = groupid,
-      type = type,
-      value = value
-    }
-  ) or {})[1]
+  local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = type, value = value })[1]
 
   if priv then
     return priv.granted == 1
@@ -111,10 +105,9 @@ function BSU.CheckGroupPrivilege(groupid, type, value)
     end
 
     -- check for privilege in inherited group
-    local inherit = BSU.SQLSelectByValues(BSU.SQL_GROUPS, { id = groupid })[1].inherit
-    
-    if inherit then
-      return BSU.CheckGroupPrivilege(inherit, type, value)
+    local query = BSU.SQLSelectByValues(BSU.SQL_GROUPS, { id = groupid })[1]
+    if query then
+      return BSU.CheckGroupPrivilege(query.inherit, type, value)
     end
   end
 end
@@ -124,13 +117,7 @@ function BSU.CheckPlayerPrivilege(steamid, type, value)
   steamid = BSU.ID64(steamid)
 
   -- check for player privilege
-  local priv = (BSU.SQLSelectByValues(BSU.SQL_PLAYER_PRIVS,
-    {
-      steamid = steamid,
-      type = type,
-      value = value
-    }
-  ) or {})[1]
+  local priv = BSU.SQLSelectByValues(BSU.SQL_PLAYER_PRIVS, { steamid = steamid, type = type, value = value })[1]
 
   if priv then
     return priv.granted == 1
@@ -146,8 +133,10 @@ function BSU.CheckPlayerPrivilege(steamid, type, value)
     end
 
     -- check for privilege in player's group
-    local groupid = BSU.SQLSelectByValues(BSU.SQL_PLAYERS, { steamid = steamid })[1].groupid
-    return BSU.CheckGroupPrivilege(groupid, type, value)
+    local query = BSU.SQLSelectByValues(BSU.SQL_PLAYERS, { steamid = steamid })[1]
+    if query then
+      return BSU.CheckGroupPrivilege(groupid, type, value)
+    end
   end
 end
 

@@ -12,11 +12,11 @@ function BSU.RegisterBan(identity, reason, duration, admin) -- this is also used
 end
 
 function BSU.GetAllBans()
-  return BSU.SQLSelectAll(BSU.SQL_BANS) or {}
+  return BSU.SQLSelectAll(BSU.SQL_BANS)
 end
 
 function BSU.GetBansByValues(values)
-  return BSU.SQLSelectByValues(BSU.SQL_BANS, values) or {}
+  return BSU.SQLSelectByValues(BSU.SQL_BANS, values)
 end
 
 -- returns data of the latest ban if they are still banned, otherwise nothing if they aren't currently banned (can take a steam id or ip address)

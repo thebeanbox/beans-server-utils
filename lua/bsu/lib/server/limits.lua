@@ -63,32 +63,26 @@ function BSU.RemovePlayerLimit(steamid, name)
 end
 
 function BSU.GetAllGroupLimits()
-  return BSU.SQLSelectAll(BSU.SQL_GROUP_LIMITS) or {}
+  return BSU.SQLSelectAll(BSU.SQL_GROUP_LIMITS)
 end
 
 function BSU.GetAllPlayerLimits()
-  return BSU.SQLSelectAll(BSU.SQL_PLAYER_LIMITS) or {}
+  return BSU.SQLSelectAll(BSU.SQL_PLAYER_LIMITS)
 end
 
 -- returns the amount a group can spawn for a specific limit (or nothing if the limit is not registered) (this excludes the cvar 'sbox_max<limit name>')
 function BSU.GetGroupLimit(groupid, name)
   name = string.lower(name)
 
-  local limit = (BSU.SQLSelectByValues(BSU.SQL_GROUP_LIMITS,
-    {
-      groupid = groupid,
-      name = name
-    }
-  ) or {})[1]
+  local limit = BSU.SQLSelectByValues(BSU.SQL_GROUP_LIMITS, { groupid = groupid, name = name })[1]
 
   if limit then
     return limit.amount
   else
     -- check for limit in inherited group
-    local inherit = BSU.SQLSelectByValues(BSU.SQL_GROUPS, { id = groupid })[1].inherit
-    
-    if inherit then
-      return BSU.GetGroupLimit(inherit, name)
+    local query = BSU.SQLSelectByValues(BSU.SQL_GROUPS, { id = groupid })[1]
+    if query then
+      return BSU.GetGroupLimit(query.inherit, name)
     end
   end
 end
@@ -98,18 +92,15 @@ function BSU.GetPlayerLimit(steamid, name)
   steamid = BSU.ID64(steamid)
   name = string.lower(name)
 
-  local limit = (BSU.SQLSelectByValues(BSU.SQL_PLAYER_LIMITS,
-    {
-      steamid = steamid,
-      name = name
-    }
-  ) or {})[1]
+  local limit = BSU.SQLSelectByValues(BSU.SQL_PLAYER_LIMITS, { steamid = steamid, name = name })[1]
   
   if limit then
     return limit.amount
   else
     -- check for limit in player's group
-    local groupid = BSU.SQLSelectByValues(BSU.SQL_PLAYERS, { steamid = steamid })[1].groupid
-    return BSU.GetGroupLimit(groupid, name)
+    local query = BSU.SQLSelectByValues(BSU.SQL_PLAYERS, { steamid = steamid })[1]
+    if query then
+      return BSU.GetGroupLimit(query.groupid, name)
+    end
   end
 end

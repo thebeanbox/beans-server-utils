@@ -16,7 +16,7 @@ function BSU.RemovePropPermission(steamid, permission)
 end
 
 function BSU.GetPropPermissions(steamid)
-  local query = BSU.SQLSelectByValues(BSU.SQL_PP, { steamid = BSU.ID64(steamid) }) or {}
+  local query = BSU.SQLSelectByValues(BSU.SQL_PP, { steamid = BSU.ID64(steamid) })
 
   local perms = {}
   for _, v in ipairs(query) do
@@ -27,7 +27,7 @@ end
 
 -- returns a list of steam 64 bit ids the client has set a specific permission
 function BSU.GetPropPermissionPlayers(permission)
-  local query = BSU.SQLSelectByValues(BSU.SQL_PP, { permission = permission }) or {}
+  local query = BSU.SQLSelectByValues(BSU.SQL_PP, { permission = permission })
 
   local ids = {}
   for _, v in ipairs(query) do
@@ -63,7 +63,7 @@ function BSU.SendPPClientData(steamids)
   local data = {}
 
   for _, v in ipairs(steamids) do
-    local query = BSU.SQLSelectByValues(BSU.SQL_PP, { steamid = BSU.ID64(v) })
+    local query = BSU.SQLSelectByValues(BSU.SQL_PP, { steamid = BSU.ID64(v) })[1]
     if query then
       table.insert(data, query)
     end

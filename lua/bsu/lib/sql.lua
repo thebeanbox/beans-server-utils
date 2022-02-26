@@ -67,16 +67,17 @@ function BSU.SQLInsert(tbl, data)
   )
 end
 
--- returns everything in a sql table (or nothing if it's empty)
+-- returns every entry in a sql table
 function BSU.SQLSelectAll(tbl)
   local query = BSU.SQLQuery("SELECT * FROM '%s'", BSU.EscOrNULL(tbl, true))
 
   if query then
     return BSU.SQLParse(query, tbl)
   end
+  return {}
 end
 
--- returns every entry in a sql table where a column equals the values (or nothing if there are none)
+-- returns every entry in a sql table where a column equals the values
 function BSU.SQLSelectByValues(tbl, values)
   if table.IsEmpty(values) then return end
 
@@ -93,6 +94,7 @@ function BSU.SQLSelectByValues(tbl, values)
   if query then
     return BSU.SQLParse(query, tbl)
   end
+  return {}
 end
 
 -- deletes every entry in a sql table where a column equals the values

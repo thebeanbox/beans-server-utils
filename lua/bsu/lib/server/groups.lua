@@ -16,18 +16,17 @@ function BSU.RemoveGroup(id)
 end
 
 function BSU.GetAllGroups()
-  return BSU.SQLSelectAll(BSU.SQL_GROUPS) or {}
+  return BSU.SQLSelectAll(BSU.SQL_GROUPS)
 end
 
 -- get group by its numeric id
 function BSU.GetGroupByID(id)
-  local query = BSU.SQLSelectByValues(BSU.SQL_GROUPS, { id = id })
-  return query and query[1]
+  return BSU.SQLSelectByValues(BSU.SQL_GROUPS, { id = id })[1]
 end
 
--- get all groups with the
+-- get all groups with the same name (yes, groups can have the same name but it is bad practice)
 function BSU.GetGroupsByName(name)
-  return BSU.SQLSelectByValues(BSU.SQL_GROUPS, { name = name }) or {}
+  return BSU.SQLSelectByValues(BSU.SQL_GROUPS, { name = name })
 end
 
 function BSU.SetGroupData(id, values)

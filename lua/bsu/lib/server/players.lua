@@ -9,12 +9,12 @@ function BSU.RegisterPlayer(steamid, groupid)
 end
 
 function BSU.GetAllPlayers()
-  return BSU.SQLSelectAll(BSU.SQL_PLAYERS) or {}
+  return BSU.SQLSelectAll(BSU.SQL_PLAYERS)
 end
 
 -- gets the data of all players in a group
 function BSU.GetPlayerDataByGroup(groupid)
-  return BSU.SQLSelectByValues(BSU.SQL_PLAYERS, { groupid = groupid }) or {}
+  return BSU.SQLSelectByValues(BSU.SQL_PLAYERS, { groupid = groupid })
 end
 
 -- sets a value of a player's data in the sql
@@ -24,8 +24,7 @@ end
 
 -- get player data using their steam id
 function BSU.GetPlayerDataBySteamID(steamid)
-  local query = BSU.SQLSelectByValues(BSU.SQL_PLAYERS, { steamid = BSU.ID64(steamid) })
-  return query and query[1]
+  return BSU.SQLSelectByValues(BSU.SQL_PLAYERS, { steamid = BSU.ID64(steamid) })[1]
 end
 
 -- get player data using their player entity
