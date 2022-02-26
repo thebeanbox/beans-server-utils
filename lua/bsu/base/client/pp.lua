@@ -10,7 +10,7 @@ surface.CreateFont(font, {
   shadow = true
 })
 
-hook.Add("HUDPaint", "BSU_DrawPPHUD", function()
+local function drawPPHUD()
   if not IsValid(LocalPlayer()) then return end
 
   local trace = util.TraceLine(util.GetPlayerTrace(LocalPlayer()))
@@ -31,4 +31,6 @@ hook.Add("HUDPaint", "BSU_DrawPPHUD", function()
       draw.DrawText(text, font, ScrW() - 4, ScrH() / 2 - h / 2, color_white, TEXT_ALIGN_RIGHT)
     end
   end
-end)
+end
+
+hook.Add("HUDPaint", "BSU_DrawPPHUD", drawPPHUD)

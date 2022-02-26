@@ -1,35 +1,54 @@
 -- base/server/pp.lua
 
+-- holds prop protection data from the clients
 BSU.PPClientData = BSU.PPClientData or {}
 
+-- request a client's prop protection data after they authenticate
 hook.Add("PlayerAuthed", "BSU_RequestPPClientData", function(ply) BSU.RequestPPClientData(ply) end)
 
+-- initialize a client's prop protection data
 local function initializePPClientData(_, ply)
   local plyID = ply:SteamID64()
-  BSU.PPClientData[plyID] = BSU.PPClientData[plyID] or {}
 
-  local len = net.ReadUInt(16)
+  -- initialize an empty table for their data
+  BSU.PPClientData[plyID] = {}
   
+  -- add the prop protection data
+  -- structured like: PLAYER STEAM ID -> TARGET STEAM ID -> PERMISSION ID
+  local len = net.ReadUInt(16)
   for i = 1, len do
     local steamid, permission = BSU.ID64(net.ReadString()), net.ReadUInt(3)
+
+    -- make sure a table for the target exists
     if not BSU.PPClientData[plyID][steamid] then BSU.PPClientData[plyID][steamid] = {} end
+
+    -- add the permission
     BSU.PPClientData[plyID][steamid][permission] = true
   end
 end
 
 net.Receive("BSU_PPClientData_Init", initializePPClientData)
 
+-- update a client's prop protection data (by adding/removing an entry)
 local function updatePPClientData(_, ply)
   local plyID = ply:SteamID64()
+
+  -- make sure a table for the player exists to avoid errors
+  -- (table is possible to not exist if the client didn't have any prop protection data to send to the server)
   BSU.PPClientData[plyID] = BSU.PPClientData[plyID] or {}
 
   local method, steamid, permission = net.ReadBool(), BSU.ID64(net.ReadString()), net.ReadUInt(3)
+
+  -- make sure a table for the target exists
   if not BSU.PPClientData[plyID][steamid] then BSU.PPClientData[plyID][steamid] = {} end
 
+  -- either adds or removes the permission
   BSU.PPClientData[plyID][steamid][permission] = method or nil
-  if table.Count(BSU.PPClientData[plyID][steamid]) == 0 then
+
+  -- remove these tables if they are empty
+  if table.IsEmpty(BSU.PPClientData[plyID][steamid]) then
     BSU.PPClientData[plyID][steamid] = nil
-    if table.Count(BSU.PPClientData[plyID]) == 0 then
+    if table.IsEmpty(BSU.PPClientData[plyID]) then
       BSU.PPClientData[plyID] = nil
     end
   end
@@ -99,6 +118,8 @@ hook.Add("EntityTakeDamage", "BSU_CheckDamagePermission", function(ent, dmg)
     return true
   end
 end)
+
+-- "disabled this because it's buggy" -Bonyoze
 
 -- no collision checking (ignores superadmin override for prop-to-prop collision)
 --[[hook.Add("ShouldCollide", "BSU_CheckNoCollidePermission", function(ent1, ent2)

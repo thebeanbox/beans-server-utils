@@ -4,7 +4,7 @@ function BSU.RegisterGroupLimit(groupid, name, amount)
   name = string.lower(name)
 
   -- incase this limit is already registered, remove the old one
-  BSU.RemoveGroupLimit(groupid, name)
+  BSU.RemoveGroupLimit(groupid, name) -- sqlite's REPLACE INTO could've been implemented but removing and inserting is practically the same
 
   -- fix amount
   if not amount then
@@ -26,7 +26,7 @@ function BSU.RegisterPlayerLimit(steamid, name, amount)
   name = string.lower(name)
 
   -- incase this limit is already registered, remove the old one
-  BSU.RemovePlayerLimit(steamid, name)
+  BSU.RemovePlayerLimit(steamid, name) -- sqlite's REPLACE INTO could've been implemented but removing and inserting is practically the same
 
   -- fix amount
   if not amount then

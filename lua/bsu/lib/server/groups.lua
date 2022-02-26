@@ -34,10 +34,26 @@ function BSU.SetGroupData(id, values)
   BSU.SQLUpdateByValues(BSU.SQL_GROUPS, { id = id }, values)
 end
 
--- setup teams
-function BSU.PopulateTeams()
+-- setup teams server-side
+function BSU.SetupTeams()
   local groups = BSU.GetAllGroups()
   for k, v in ipairs(groups) do
     team.SetUp(v.id, v.name, BSU.HexToColor(v.color))
   end
+end
+
+-- setup teams on a client (nil to send data to all clients)
+function BSU.ClientSetupTeams(ply)
+  local groups = BSU.GetAllGroups()
+  local teamData = {}
+  for _, v in ipairs(groups) do
+    teamData[v.id] = { name = v.name, color = BSU.HexToColor(v.color) }
+  end
+
+  BSU.ClientRPC(ply, "BSU.SetupTeams", teamData)
+end
+
+function BSU.PopulateTeams()
+  BSU.SetupTeams()
+  BSU.ClientSetupTeams()
 end

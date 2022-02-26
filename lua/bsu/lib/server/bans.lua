@@ -84,7 +84,6 @@ function BSU.BanPlayer(ply, reason, duration, admin)
   BSU.BanSteamID(ply:SteamID64(), reason, duration, (admin and admin:IsValid()) and admin:SteamID64())
 end
 
--- turn superban and superduperban to commands and remove these functions
 function BSU.SuperBanPlayer(ply, reason, duration, admin)
   BSU.BanPlayer(ply, reason, duration, admin)
 

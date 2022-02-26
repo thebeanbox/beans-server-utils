@@ -37,6 +37,7 @@ if SERVER then
   BSU.SQL_PLAYER_PRIVS  = "bsu_ply_privs"
   BSU.SQL_GROUP_LIMITS  = "bsu_grp_limits"
   BSU.SQL_PLAYER_LIMITS = "bsu_ply_limits"
+  BSU.SQL_PDATA         = "bsu_pdata"
 
   -- id of the group that players are automatically set to (like when they join for the first time)
   BSU.DEFAULT_GROUP = 1
@@ -46,16 +47,16 @@ if SERVER then
 
   BSU.BAN_MSG = [[============ You've Been Banned! ===========
 
-[ Ban Reason ]:
+Ban Reason:
 %reason%
 
-[ Time Length ]:
+Time Length:
 %duration%
 
-[ Time Remaining ]:
+Time Remaining:
 %remaining%
 
-[ Ban Date ]:
+Ban Date:
 %time%
 
 =====================================]]

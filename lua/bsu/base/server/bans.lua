@@ -1,7 +1,7 @@
 -- base/server/bans.lua
 -- handles player bans
 
--- check if player is banned when attempting to connect
+-- check if player is banned and prevent them from joining when attempting to connect
 local function passwordBanCheck(steamid, ip)
   local success, callback, reason = xpcall(
     function()
@@ -31,19 +31,20 @@ end
 
 hook.Add("CheckPassword", "BSU_PasswordBanCheck", passwordBanCheck)
 
--- kicks players who are banned but somehow got into the server and players using family share to ban evade
+-- permaban players using family share to ban evade (also kicks players who are banned but somehow joined the server)
 local function authedBanCheck(ply)
   local plyID = ply:SteamID64()
 
   local plyBan = BSU.GetBanStatus(plyID)
   if plyBan then -- if player is banned
-    game.KickID(ply:UserID(), "(Banned) " .. (plyBan.reason or "No reason given"))
+    game.KickID(ply:UserID(), "(Banned) " .. (plyBan.reason or "No reason given")) -- silently kick (don't need this added to the db)
   else
     local ownerID = ply:OwnerSteamID64()
     if plyID ~= ownerID then -- this player doesn't own the Garry's Mod license they're using
       local ownerBan = BSU.GetBanStatus(ownerID)
       if ownerBan then -- if the owner of the license is banned
-        game.KickID(ply:UserID(), string.format("(Banned) %s\n(Family share with banned account: %s)", ownerBan.reason or "No reason given", util.SteamIDFrom64(ownerID)))
+        -- "if you have the audacity to try and ban evade you can enjoy a permaban" -Bonyoze
+        BSU.BanPlayer(ply, string.format("%s (Family share with banned account: %s)", ownerBan.reason or "No reason given", util.SteamIDFrom64(ownerID)), 0, ownerBan.reason)
       end
     end
   end

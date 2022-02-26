@@ -1,13 +1,18 @@
 -- lib/server/pp.lua
 
-function BSU.RequestPPClientData(plys)
-  BSU.ClientRPC(plys, "BSU.SendPPClientData")
+function BSU.RequestPPClientData(plys, steamids)
+  if not istable(steamids) and isstring(steamids) then steamids = { steamids } end
+  BSU.ClientRPC(plys, "BSU.SendPPClientData", steamids)
 end
 
 -- returns a list of steam 64 bit ids this player has enabled this permission to
 function BSU.GetPlayerPermissionList(steamid, perm)
+  steamid = BSU.ID64(steamid)
+
+  if not BSU.PPClientData[steamid] then return {} end
+
   local ids = {}
-  for k, v in pairs(BSU.PPClientData[BSU.ID64(steamid)]) do
+  for k, v in pairs(BSU.PPClientData[steamid]) do
     if v[perm] then
       table.insert(ids, k)
     end

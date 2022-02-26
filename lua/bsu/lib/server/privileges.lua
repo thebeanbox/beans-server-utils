@@ -5,7 +5,7 @@ function BSU.RegisterGroupPrivilege(groupid, type, value, granted)
   granted = granted and 1 or 0
 
   -- incase this privilege is already registered, remove the old one
-  BSU.RemoveGroupPrivilege(groupid, type, value)
+  BSU.RemoveGroupPrivilege(groupid, type, value) -- sqlite's REPLACE INTO could've been implemented but removing and inserting is practically the same
 
   local data = {
     groupid = groupid,
@@ -24,7 +24,7 @@ function BSU.RegisterPlayerPrivilege(steamid, type, value, granted)
   granted = granted and 1 or 0
 
   -- incase this privilege is already registered, remove the old one
-  BSU.RemovePlayerPrivilege(steamid, type, value)
+  BSU.RemovePlayerPrivilege(steamid, type, value) -- sqlite's REPLACE INTO could've been implemented but removing and inserting is practically the same
 
   local data = {
     steamid = steamid,

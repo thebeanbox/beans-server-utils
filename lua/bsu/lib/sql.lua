@@ -78,6 +78,8 @@ end
 
 -- returns every entry in a sql table where a column equals the values (or nothing if there are none)
 function BSU.SQLSelectByValues(tbl, values)
+  if table.IsEmpty(values) then return end
+
   local conditions = {}
   for k, v in pairs(values) do
     table.insert(conditions, BSU.EscOrNULL(k, true) .. "=" .. BSU.EscOrNULL(v))
@@ -95,6 +97,8 @@ end
 
 -- deletes every entry in a sql table where a column equals the values
 function BSU.SQLDeleteByValues(tbl, values)
+  if table.IsEmpty(values) then return end
+
   local conditions = {}
   for k, v in pairs(values) do
     table.insert(conditions, BSU.EscOrNULL(k, true) .. "=" .. BSU.EscOrNULL(v))
@@ -108,6 +112,8 @@ end
 
 -- updates a column in every entry in a sql table where a column equals the values
 function BSU.SQLUpdateByValues(tbl, values, updatedValues)
+  if table.IsEmpty(values) or table.IsEmpty(updatedValues) then return end
+
   local conditions = {}
   for k, v in pairs(values) do
     table.insert(conditions, BSU.EscOrNULL(k, true) .. "=" .. BSU.EscOrNULL(v))

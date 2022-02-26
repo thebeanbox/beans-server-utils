@@ -10,18 +10,8 @@ if not BSU.GetGroupByID(BSU.BOT_GROUP) then
   BSU.RegisterGroup(BSU.BOT_GROUP, "Bot", Color(0, 128, 255))
 end
 
--- populate server-side teams
-BSU.PopulateTeams()
+-- setup server-side teams
+BSU.SetupTeams()
 
--- send team data to clients
-local function clientTeamSetup(ply)
-  local groups = BSU.GetAllGroups()
-  local teamData = {}
-  for _, v in ipairs(groups) do
-    teamData[v.id] = { name = v.name, color = BSU.HexToColor(v.color) }
-  end
-
-  BSU.ClientRPC(ply, "BSU.PopulateTeams", teamData)
-end
-
-hook.Add("PlayerAuthed", "BSU_ClientTeamSetup", clientTeamSetup)
+-- setup client-side teams on authed
+hook.Add("PlayerAuthed", "BSU_ClientSetupTeams", BSU.ClientSetupTeams)

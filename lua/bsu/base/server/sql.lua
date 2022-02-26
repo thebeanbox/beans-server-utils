@@ -3,11 +3,11 @@
 --[[
   Group SQL Tbl Info
 
-  id        - (int)          numeric id of the group (automatically set and incremented) (also used for the team index of the group)
-  name      - (text)         display name of the group
-  color     - (text)         display color of the group
-  usergroup - (text)         usergroup players under this group should be given (ex: "admin", "superadmin") (default: "user")
-  inherit   - (int or NULL)  id of the group this group should inherit the properties of
+  id        - (int)         numeric id of the group (automatically set and incremented) (also used for the team index of the group)
+  name      - (text)        display name of the group
+  color     - (text)        display color of the group
+  usergroup - (text)        usergroup players under this group should be given (ex: "admin", "superadmin") (default: "user")
+  inherit   - (int or NULL) id of the group this group should inherit the properties of
 ]]
 
 BSU.SQLCreateTable(BSU.SQL_GROUPS, string.format(

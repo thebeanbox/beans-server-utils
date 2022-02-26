@@ -42,7 +42,7 @@ function BSU.SetPlayerGroup(ply, groupid)
   ply:SetUserGroup(BSU.GetGroupByID(groupid).usergroup) -- update usergroup
 end
 
--- requests the client to send some system info (os, country, timezone diff)
+-- request the client to send some system info (os, country, timezone diff)
 function BSU.RequestClientInfo(plys)
   BSU.ClientRPC(plys, "BSU.SendClientInfo")
 end

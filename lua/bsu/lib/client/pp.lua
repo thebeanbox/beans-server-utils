@@ -47,12 +47,32 @@ function BSU.RevokePropPermission(ply, perm)
   BSU.RemovePropPermission(ply:SteamID64(), perm)
 end
 
--- send prop protection data to the server
-function BSU.SendPPClientData()
-  local data = BSU.SQLSelectAll(BSU.SQL_PP) or {}
+-- send prop protection data to the server (takes a table of steamids or nil for all current players)
+function BSU.SendPPClientData(steamids)
+  if steamids and table.IsEmpty(steamids) then return end
+
+  if not steamids then
+    steamids = {}
+    for _, v in ipairs(player.GetHumans()) do
+      if v ~= LocalPlayer() and not v:IsBot() then
+        table.insert(steamids, v:SteamID64())
+      end
+    end
+  end
+
+  local data = {}
+
+  for _, v in ipairs(steamids) do
+    local query = BSU.SQLSelectByValues(BSU.SQL_PP, { steamid = BSU.ID64(v) })
+    if query then
+      table.insert(data, query)
+    end
+  end
+
+  if table.IsEmpty(data) then return end
 
   net.Start("BSU_PPClientData_Init")
-    net.WriteUInt(#data, 16)
+    net.WriteUInt(#data, 7) -- max of 127 entries (perfect because this is the max player limit excluding the local player)
     for _, v in ipairs(data) do
       net.WriteString(v.steamid)
       net.WriteUInt(v.permission, 3)
