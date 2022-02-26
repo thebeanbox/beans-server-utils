@@ -21,3 +21,13 @@ All defined vars can be found in [lua/bsu/defines.lua](https://github.com/Bonyoz
 | SERVER | [SQL_PLAYER_LIMITS](https://github.com/Bonyoze/BSU/blob/main/lua/bsu/base/server/sql.lua#L109-L124) | Stores limits data for individual players                |
 | SERVER | SQL_PDATA                                                                                           | Stores misc player data **(currently not implemented)**  |
 | CLIENT | [SQL_PP](https://github.com/Bonyoze/BSU/blob/main/lua/bsu/base/client/sql.lua#L3-L15)               | Stores prop protection settings                          |
+
+### Privileges
+
+| Name       | Description                                                           |
+|------------|-----------------------------------------------------------------------|
+| PRIV_MODEL | Used for restricting spawning certain models                          |
+| PRIV_NPC   | Used for restricting spawning certain npcs                            |
+| PRIV_SENT  | Used for restricting spawning certain scripted entities               |
+| PRIV_SWEP  | Used for restricting spawning and picking up certain scripted weapons |
+| PRIV_TOOL  | Used for restricting using certain tools                              |
