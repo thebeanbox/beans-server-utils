@@ -3,10 +3,26 @@
 
 (Under active development)
 
-# Documentation
+## Documentation
 
 ## Defines
 All defined vars can be found in [lua/bsu/defines.lua](https://github.com/Bonyoze/BSU/blob/main/lua/bsu/defines.lua)
+
+## Convars
+
+**(currently not implemented)**
+
+| Realm | Name | Default Value | Description |
+|-|-|-|-|
+|-|-|-|-|
+
+## Concommands
+
+**(currently not implemented)**
+
+| Realm | Name | Description |
+|-|-|-|
+|-|-|-|
 
 ## SQL Tables
 
