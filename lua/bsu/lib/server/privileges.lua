@@ -2,40 +2,29 @@
 -- functions for managing group and player privileges
 
 function BSU.RegisterGroupPrivilege(groupid, type, value, granted)
-  granted = granted and 1 or 0
-
   -- incase this privilege is already registered, remove the old one
   BSU.RemoveGroupPrivilege(groupid, type, value) -- sqlite's REPLACE INTO could've been implemented but removing and inserting is practically the same
 
-  local data = {
+  BSU.SQLInsert(BSU.SQL_GROUP_PRIVS, {
     groupid = groupid,
     type = type,
     value = value,
-    granted = granted
-  }
-
-  BSU.SQLInsert(BSU.SQL_GROUP_PRIVS, data)
-
-  hook.Run("BSU_RegisterGroupPrivilege", data)
+    granted = granted and 1 or 0
+  })
 end
 
 function BSU.RegisterPlayerPrivilege(steamid, type, value, granted)
   steamid = BSU.ID64(steamid)
-  granted = granted and 1 or 0
 
   -- incase this privilege is already registered, remove the old one
   BSU.RemovePlayerPrivilege(steamid, type, value) -- sqlite's REPLACE INTO could've been implemented but removing and inserting is practically the same
 
-  local data = {
+  BSU.SQLInsert(BSU.SQL_PLAYER_PRIVS, {
     steamid = steamid,
     type = type,
     value = value,
-    granted = granted
-  }
-
-  BSU.SQLInsert(BSU.SQL_PLAYER_PRIVS, data)
-
-  hook.Run("BSU_RegisterPlayerPrivilege", data)
+    granted = granted and 1 or 0
+  })
 end
 
 function BSU.RemoveGroupPrivilege(groupid, type, value)
