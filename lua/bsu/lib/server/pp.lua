@@ -49,17 +49,22 @@ function BSU.SetEntityOwner(ent, owner)
 end
 
 -- allow gravgun, use and damage for world props
-local function checkWorldPermission(perm)
+function BSU.CheckWorldPermission(ply, perm, ignoreSuperAdmin)
+  if not ignoreSuperAdmin and ply:IsSuperAdmin() then return true end
   return perm == BSU.PP_GRAVGUN or perm == BSU.PP_USE or perm == BSU.PP_DAMAGE
 end
 
--- check if player has been set a permission by the target player (true or nil if player has permission, false if no permission) (returns nil incase another hook or addon wants to check)
+-- check if player has been set a permission by the target player
+-- Returns:
+-- true  - player must have permission (if ignoreSuperAdmin is false and player is superadmin)
+-- nil   - player has permission (nil incase another addon wants to check when used in a hook)
+-- false - player doesn't have permission
 function BSU.CheckPlayerPermission(ply, target, perm, ignoreSuperAdmin)
   if not ignoreSuperAdmin and ply:IsSuperAdmin() then return true end
 
   if target then
     if target == game.GetWorld() then
-      if not checkWorldPermission(perm) then
+      if not BSU.CheckWorldPermission(ply, perm, ignoreSuperAdmin) then
         return false
       end
     elseif target:IsPlayer() then
@@ -70,7 +75,16 @@ function BSU.CheckPlayerPermission(ply, target, perm, ignoreSuperAdmin)
   end
 end
 
--- check if player has permission over an entity (true or nil if player has permission, false if no permission) (returns nil incase another hook or addon wants to check)
+-- returns true or false if player has permission from the target player
+function BSU.PlayerHasPermission(ply, target, perm, ignoreSuperAdmin)
+  return BSU.CheckPlayerPermission(ply, target, perm, ignoreSuperAdmin) ~= false
+end
+
+-- check if player has permission over an entity
+-- Returns:
+-- true  - player must have permission (if ignoreSuperAdmin is false and player is superadmin)
+-- nil   - player has permission (nil incase another addon wants to check when used in a hook)
+-- false - player doesn't have permission
 function BSU.CheckEntityPermission(ply, ent, perm, ignoreSuperAdmin)
   local owner = BSU.GetEntityOwner(ent)
   local ownerID = BSU.GetEntityOwnerID(ent)
@@ -86,4 +100,9 @@ function BSU.CheckEntityPermission(ply, ent, perm, ignoreSuperAdmin)
   end
 
   return BSU.CheckPlayerPermission(ply, owner, perm, ignoreSuperAdmin)
+end
+
+-- returns true or false if player has permission over an entity
+function BSU.PlayerHasEntityPermission(ply, ent, perm, ignoreSuperAdmin)
+  return BSU.CheckEntityPermission(ply, ent, perm, ignoreSuperAdmin) ~= false
 end

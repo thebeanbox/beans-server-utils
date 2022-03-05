@@ -7,7 +7,7 @@ end
 local function checkModelPrivilege(ply, model)
   local allowed = BSU.PlayerIsAllowed(ply, BSU.PRIV_MODEL, model)
   if not allowed then
-    notifyRestricted(ply, BSU.TrimModelPath(model))
+    notifyRestricted(ply, string.match(model, "models/(.-).mdl"))
     return false
   end
 end

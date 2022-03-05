@@ -10,6 +10,15 @@ if not BSU.GetGroupByID(BSU.BOT_GROUP) then
   BSU.RegisterGroup(BSU.BOT_GROUP, "Bot", Color(0, 128, 255))
 end
 
+-- make sure there is atleast 1 admin and superadmin group
+if table.IsEmpty(BSU.GetGroupsByUsergroup("admin")) then
+  BSU.RegisterGroup(nil, "Admin", Color(0, 100, 0), "admin")
+end
+
+if table.IsEmpty(BSU.GetGroupsByUsergroup("superadmin")) then
+  BSU.RegisterGroup(nil, "Super Admin", Color(255, 0, 0), "superadmin")
+end
+
 -- setup server-side teams
 BSU.SetupTeams()
 

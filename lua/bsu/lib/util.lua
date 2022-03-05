@@ -1,6 +1,10 @@
 -- lib/util.lua (SHARED)
 -- useful functions for both server and client
 
+function BSU.Log(msg)
+  MsgC(SERVER and Color(0, 100, 255) or Color(255, 100, 0), "[BSU] ", color_white, msg .. "\n")
+end
+
 function BSU.ColorToHex(color)
   return string.format("%.2x%.2x%.2x", color.r, color.g, color.b)
 end
@@ -27,13 +31,14 @@ function BSU.IsValidIP(ip)
   return string.find(address, "^%d%d?%d?%.%d%d?%d?%.%d%d?%d?%.%d%d?%d?$") ~= nil and not port or string.find(port, "^%d%d?%d?%d?%d?$")
 end
 
--- tries to convert a steamid to 64 bit
+-- tries to convert a steamid to 64 bit if it's valid
 function BSU.ID64(steamid)
-  if not steamid or BSU.IsValidSteamID(steamid) then return error("Received invalid Steam ID (" .. steamid .. ")!") end
+  if not BSU.IsValidSteamID(steamid) then return error("Received invalid Steam ID (" .. steamid .. ")!") end
   local id64 = util.SteamIDTo64(steamid)
   return id64 ~= "0" and id64 or steamid
 end
 
+-- removes port from ip if it's valid
 function BSU.Address(ip)
   if not BSU.IsValidIP(ip) then return error("Received invalid IP address (" .. ip .. ")!") end
   return string.Split(ip, ":")[1]
@@ -80,8 +85,4 @@ function BSU.FindVar(location, root)
   end
 
   return root[tableCrumbs[#tableCrumbs]]
-end
-
-function BSU.TrimModelPath(model)
-  return string.match(model, "models/(.-).mdl") or model
 end

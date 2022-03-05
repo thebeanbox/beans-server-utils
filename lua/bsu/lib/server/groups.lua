@@ -24,9 +24,14 @@ function BSU.GetGroupByID(id)
   return BSU.SQLSelectByValues(BSU.SQL_GROUPS, { id = id })[1]
 end
 
--- get all groups with the same name (yes, groups can have the same name but it is bad practice)
+-- get all groups with the same name (yes, groups can be given the same name)
 function BSU.GetGroupsByName(name)
   return BSU.SQLSelectByValues(BSU.SQL_GROUPS, { name = name })
+end
+
+-- get all groups with the same usergroup
+function BSU.GetGroupsByUsergroup(usergroup)
+  return BSU.SQLSelectByValues(BSU.SQL_GROUPS, { usergroup = usergroup })
 end
 
 function BSU.SetGroupData(id, values)

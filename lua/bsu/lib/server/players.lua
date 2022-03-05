@@ -32,7 +32,7 @@ function BSU.GetPlayerData(ply)
   return BSU.GetPlayerDataBySteamID(ply:SteamID64())
 end
 
--- set the group of a player (also updates some other values)
+-- set the group of a player (also updates team and usergroup)
 function BSU.SetPlayerGroup(ply, groupid)
   BSU.SetPlayerData(ply:SteamID64(), { groupid = groupid })
 

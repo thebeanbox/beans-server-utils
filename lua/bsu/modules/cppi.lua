@@ -68,15 +68,15 @@ if SERVER then
   end
 
   function entMeta:CPPICanTool(ply, mode)
-    return BSU.CheckEntityPermission(ply, self, BSU.PP_TOOLGUN) ~= false
+    return BSU.PlayerHasEntityPermission(ply, self, BSU.PP_TOOLGUN)
   end
 
   function entMeta:CPPICanPhysgun(ply)
-    return BSU.CheckEntityPermission(ply, self, BSU.PP_PHYSGUN) ~= false
+    return BSU.PlayerHasEntityPermission(ply, self, BSU.PP_PHYSGUN)
   end
 
   function entMeta:CPPICanPickup(ply)
-    return BSU.CheckEntityPermission(ply, self, BSU.PP_PICKUP) ~= false
+    return BSU.PlayerHasEntityPermission(ply, self, BSU.PP_PICKUP)
   end
 
   function entMeta:CPPICanPunt(ply)
@@ -84,11 +84,11 @@ if SERVER then
   end
 
   function entMeta:CPPICanUse(ply)
-    return BSU.CheckEntityPermission(ply, self, BSU.PP_USE) ~= false
+    return BSU.PlayerHasEntityPermission(ply, self, BSU.PP_USE)
   end
   
   function entMeta:CPPICanDamage(ply)
-    return BSU.CheckEntityPermission(ply, self, BSU.PP_DAMAGE) ~= false
+    return BSU.PlayerHasEntityPermission(ply, self, BSU.PP_DAMAGE)
   end
 
   function entMeta:CPPICanDrive(ply)

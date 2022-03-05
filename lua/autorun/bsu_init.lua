@@ -1,3 +1,15 @@
+--[[
+    ____ _____ __  __
+   / __ ) ___// / / /
+  / __  \__ \/ / / / 
+ / /_/ /__/ / /_/ /  
+/_____/____/\____/   
+
+A utilities and moderation addon for a dedicated Garry's Mod server
+--]]
+
+if BSU then return end
+
 include("bsu/defines.lua")
 if SERVER then AddCSLuaFile(BSU.DIR .. "defines.lua") end
 

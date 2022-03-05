@@ -22,7 +22,7 @@ end
 -- returns data of the latest ban if they are still banned, otherwise nothing if they aren't currently banned (can take a steam id or ip address)
 function BSU.GetBanStatus(identity)
   -- correct the argument (steam id to 64 bit) (removing port from ip address)
-  identity = BSU.IsValidSteamID(identity) and BSU.ID64(identity) or BSU.IsValidIP(identity) and BSU.RemovePort(identity)
+  identity = BSU.IsValidSteamID(identity) and BSU.ID64(identity) or BSU.IsValidIP(identity) and BSU.Address(identity)
 
   local bans = {}
   for k, v in ipairs(BSU.GetBansByValues({ identity = identity })) do -- exclude kicks since they're also logged
@@ -52,12 +52,12 @@ end
 
 -- ban a player by ip (this adds a new ban entry so it will be the new ban status for this player)
 function BSU.BanIP(ip, reason, duration, adminID)
-  ip = BSU.RemovePort(ip)
+  ip = BSU.Address(ip)
 
   BSU.RegisterBan(ip, reason, duration or 0, adminID and BSU.ID64(adminID))
 
   for k, v in ipairs(player.GetHumans()) do -- try to kick all players with this ip
-    if BSU.RemovePort(v:IPAddress()) == ip then
+    if BSU.Address(v:IPAddress()) == ip then
       game.KickID(v:UserID(), "(Banned) " .. (reason or "No reason given"))
     end
   end
