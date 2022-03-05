@@ -1,7 +1,7 @@
 -- base/server/_groups.lua
 -- handles the player groups
 
--- try to setup default and bot groups (if they don't exist)
+-- try to setup default and bot groups if they don't exist
 if not BSU.GetGroupByID(BSU.DEFAULT_GROUP) then
   BSU.RegisterGroup(BSU.DEFAULT_GROUP, "User", Color(255, 255, 255))
 end
