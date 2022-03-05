@@ -16,22 +16,26 @@ end
 
 -- checks if a string is in either the STEAM_0 or 64 bit format
 function BSU.IsValidSteamID(steamid)
+  if not steamid then return false end
   return util.SteamIDTo64(steamid) ~= "0" or util.SteamIDFrom64(steamid) ~= "0"
 end
 
 -- checks if a string is a valid ip address (valid excluding the port)
 function BSU.IsValidIP(ip)
-  return string.find(ip, "^%d%d?%d?%.%d%d?%d?%.%d%d?%d?%.%d%d?%d?$") ~= nil
+  if not ip then return false end
+  local address, port = unpack(string.Split(":"))
+  return string.find(address, "^%d%d?%d?%.%d%d?%d?%.%d%d?%d?%.%d%d?%d?$") ~= nil and not port or string.find(port, "^%d%d?%d?%d?%d?$")
 end
 
 -- tries to convert a steamid to 64 bit
 function BSU.ID64(steamid)
-  if not BSU.IsValidSteamID(steamid) then return error("Received invalid Steam ID (" .. steamid .. ")!") end
+  if not steamid or BSU.IsValidSteamID(steamid) then return error("Received invalid Steam ID (" .. steamid .. ")!") end
   local id64 = util.SteamIDTo64(steamid)
   return id64 ~= "0" and id64 or steamid
 end
 
-function BSU.RemovePort(ip)
+function BSU.Address(ip)
+  if not BSU.IsValidIP(ip) then return error("Received invalid IP address (" .. ip .. ")!") end
   return string.Split(ip, ":")[1]
 end
 

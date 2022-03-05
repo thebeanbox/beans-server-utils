@@ -52,27 +52,23 @@ function BSU.GetAllPlayerPrivileges()
 end
 
 function BSU.GetGroupWildcardPrivileges(groupid, type)
-  return BSU.SQLParse(
-    BSU.SQLQuery("SELECT * FROM '%s' WHERE groupid = %s AND type = %s AND value LIKE '%s'",
-      BSU.EscOrNULL(BSU.SQL_GROUP_PRIVS, true),
-      BSU.EscOrNULL(groupid),
-      BSU.EscOrNULL(type),
-      "%*%"
-    ) or {},
-    BSU.SQL_GROUP_PRIVS
+  local query = BSU.SQLQuery("SELECT * FROM '%s' WHERE groupid = %s AND type = %s AND value LIKE '%s'",
+    BSU.EscOrNULL(BSU.SQL_GROUP_PRIVS, true),
+    BSU.EscOrNULL(groupid),
+    BSU.EscOrNULL(type),
+    "%*%"
   )
+  return query and BSU.SQLParse(query, BSU.SQL_GROUP_PRIVS) or {}
 end
 
 function BSU.GetPlayerWildcardPrivileges(steamid, type)
-  return BSU.SQLParse(
-    BSU.SQLQuery("SELECT * FROM '%s' WHERE steamid = %s AND type = %s AND value LIKE '%s'",
-      BSU.EscOrNULL(BSU.SQL_PLAYER_PRIVS, true),
-      BSU.EscOrNULL(BSU.ID64(steamid)),
-      BSU.EscOrNULL(type),
-      "%*%"
-    ) or {},
-    BSU.SQL_PLAYER_PRIVS
+  local query = BSU.SQLQuery("SELECT * FROM '%s' WHERE steamid = %s AND type = %s AND value LIKE '%s'",
+    BSU.EscOrNULL(BSU.SQL_PLAYER_PRIVS, true),
+    BSU.EscOrNULL(BSU.ID64(steamid)),
+    BSU.EscOrNULL(type),
+    "%*%"
   )
+  return query and BSU.SQLParse(query, BSU.SQL_PLAYER_PRIVS) or {}
 end
 
 -- returns bool if a group is granted the privilege (or nothing if the privilege is not registered)
@@ -132,9 +128,5 @@ end
 -- returns bool if the player is allowed to spawn/tool something
 function BSU.PlayerIsAllowed(ply, type, privilege)
   local check = BSU.CheckPlayerPrivilege(ply:SteamID64(), type, privilege)
-  if check == nil or check == true then
-    return true
-  else
-    return false
-  end
+  return check == nil or check == true
 end
