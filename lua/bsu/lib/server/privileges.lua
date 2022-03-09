@@ -91,7 +91,7 @@ function BSU.CheckGroupPrivilege(groupid, type, value)
 
     -- check for privilege in inherited group
     local query = BSU.SQLSelectByValues(BSU.SQL_GROUPS, { id = groupid })[1]
-    if query then
+    if query and query.inherit then
       return BSU.CheckGroupPrivilege(query.inherit, type, value)
     end
   end
@@ -120,7 +120,7 @@ function BSU.CheckPlayerPrivilege(steamid, type, value)
     -- check for privilege in player's group
     local query = BSU.SQLSelectByValues(BSU.SQL_PLAYERS, { steamid = steamid })[1]
     if query then
-      return BSU.CheckGroupPrivilege(groupid, type, value)
+      return BSU.CheckGroupPrivilege(query.groupid, type, value)
     end
   end
 end

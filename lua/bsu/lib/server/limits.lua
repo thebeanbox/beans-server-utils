@@ -81,7 +81,7 @@ function BSU.GetGroupLimit(groupid, name)
   else
     -- check for limit in inherited group
     local query = BSU.SQLSelectByValues(BSU.SQL_GROUPS, { id = groupid })[1]
-    if query then
+    if query and query.inherit then
       return BSU.GetGroupLimit(query.inherit, name)
     end
   end
