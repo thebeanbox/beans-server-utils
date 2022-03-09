@@ -41,14 +41,14 @@ end
 
 -- tries to convert a steamid to 64 bit if it's valid
 function BSU.ID64(steamid)
-  if not BSU.IsValidSteamID(steamid) then return error("Received invalid Steam ID '" .. steamid .. "'") end
+  if not BSU.IsValidSteamID(steamid) then return error("Received bad Steam ID") end
   local id64 = util.SteamIDTo64(steamid)
   return id64 ~= "0" and id64 or steamid
 end
 
 -- removes port from ip if it's valid
 function BSU.Address(ip)
-  if not BSU.IsValidIP(ip) then return error("Received invalid IP address '" .. ip .. "'") end
+  if not BSU.IsValidIP(ip) then return error("Received bad IP address") end
   return string.Split(ip, ":")[1]
 end
 
