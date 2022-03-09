@@ -18,10 +18,18 @@ function BSU.UTCTime()
   return os.time(os.date("!*t"))
 end
 
--- checks if a string is in either the STEAM_0 or 64 bit format
+-- checks if a string is a valid STEAM_0 or 64 bit formatted steam id
 function BSU.IsValidSteamID(steamid)
   if not steamid then return false end
-  return util.SteamIDTo64(steamid) ~= "0" or util.SteamIDFrom64(steamid) ~= "STEAM_0:0:0"
+  if string.find(steamid, "STEAM_%d:%d:%d+") then
+    return true
+  else
+    local id = tonumber(steamid)
+    if id and id > 76561197960265728 then
+      return true
+    end
+  end
+  return false
 end
 
 -- checks if a string is a valid ip address (valid excluding the port)
