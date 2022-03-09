@@ -21,7 +21,7 @@ end
 -- checks if a string is a valid STEAM_0 or 64 bit formatted steam id
 function BSU.IsValidSteamID(steamid)
   if not steamid then return false end
-  if string.find(steamid, "STEAM_%d:%d:%d+") then
+  if string.match(steamid, "STEAM_%d:%d:%d+") then
     return true
   else
     local id = tonumber(steamid)
@@ -35,8 +35,8 @@ end
 -- checks if a string is a valid ip address (valid excluding the port)
 function BSU.IsValidIP(ip)
   if not ip then return false end
-  local address, port = unpack(string.Split(":"))
-  return string.find(address, "^%d%d?%d?%.%d%d?%d?%.%d%d?%d?%.%d%d?%d?$") ~= nil and not port or string.find(port, "^%d%d?%d?%d?%d?$")
+  local address, port = unpack(string.Split(ip, ":"))
+  return string.match(address, "^%d%d?%d?%.%d%d?%d?%.%d%d?%d?%.%d%d?%d?$") ~= nil and (not port or string.match(port, "^%d%d?%d?%d?%d?$") ~= nil)
 end
 
 -- tries to convert a steamid to 64 bit if it's valid
