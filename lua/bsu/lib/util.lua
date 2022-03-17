@@ -1,6 +1,7 @@
 -- lib/util.lua (SHARED)
 -- useful functions for both server and client
 
+-- prints a message into console formatted like "[BSU] bla bla bla" (color depends on realm)
 function BSU.Log(msg)
   MsgC(SERVER and Color(0, 100, 255) or Color(255, 100, 0), "[BSU] ", color_white, msg .. "\n")
 end
@@ -41,7 +42,7 @@ end
 
 -- tries to convert a steamid to 64 bit if it's valid
 function BSU.ID64(steamid)
-  if not BSU.IsValidSteamID(steamid) then return error("Received bad Steam ID") end
+  if not BSU.IsValidSteamID(steamid) then return error("Received bad steam ID") end
   local id64 = util.SteamIDTo64(steamid)
   return id64 ~= "0" and id64 or steamid
 end

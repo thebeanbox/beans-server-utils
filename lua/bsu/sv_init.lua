@@ -4,6 +4,10 @@
 local svBaseDir = BSU.DIR_BASE .. "server/"
 local clBaseDir = BSU.DIR_BASE .. "client/"
 
+-- setup/send shared scripts
+include(BSU.DIR_BASE .. "sql.lua")
+AddCSLuaFile(BSU.DIR_BASE .. "sql.lua")
+
 -- setup server-side scripts
 include(svBaseDir .. "sql.lua")
 include(svBaseDir .. "groups.lua")

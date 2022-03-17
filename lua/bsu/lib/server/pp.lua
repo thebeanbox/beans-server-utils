@@ -86,16 +86,18 @@ end
 -- nil   - player has permission (nil incase another addon wants to check when used in a hook)
 -- false - player doesn't have permission
 function BSU.CheckEntityPermission(ply, ent, perm, ignoreSuperAdmin)
+  if ent:IsPlayer() then
+    return BSU.CheckPlayerPermission(ply, ent, perm, ignoreSuperAdmin)
+  end
+
   local owner = BSU.GetEntityOwner(ent)
   local ownerID = BSU.GetEntityOwnerID(ent)
 
-  if not ent:IsPlayer() then
-    if not owner then -- owner is N/A
-      return
-    elseif not IsValid(owner) and owner ~= game.GetWorld() then -- owner is a disconnected player
-      if ply:SteamID64() == ownerID then -- give back ownership
-        BSU.SetEntityOwner(ent, ply)
-      end
+  if not owner then return end -- owner is N/A
+  
+  if not IsValid(owner) and owner ~= game.GetWorld() then -- owner is a disconnected player
+    if ply:SteamID64() == ownerID then -- give back ownership
+      BSU.SetEntityOwner(ent, ply)
     end
   end
 
