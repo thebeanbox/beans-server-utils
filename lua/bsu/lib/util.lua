@@ -53,8 +53,10 @@ function BSU.Address(ip)
   return string.Split(ip, ":")[1]
 end
 
-function BSU.StringTime(secs)
-  local mins = math.ceil(secs / 60)
+-- convert minutes into a nice time format
+-- set ratio to the multiplier needed for the amt to stop being counted
+-- (ratio used for cases when the input is really big to the point where smaller times like hours or minutes don't really matter)
+function BSU.StringTime(mins, ratio)
   local strs = {}
   local timesInMins = {
     { "year", 525600 },
@@ -64,17 +66,19 @@ function BSU.StringTime(secs)
     { "minute", 1 }
   }
 
+  local max
   for i = 1, #timesInMins do
     local time, len = unpack(timesInMins[i])
-
     if mins >= len then
       local timeConvert = math.floor(mins / len)
+      if ratio and max and max / mins >= ratio then break end
+      if not max then max = mins end
       mins = mins % len
       table.insert(strs, string.format("%i %s%s", timeConvert, time, timeConvert > 1 and "s" or ""))
     end
   end
 
-  return #strs > 1 and (table.concat(strs, ", ", 1, #strs - 1) .. " and " .. strs[#strs]) or strs[1]
+  return #strs > 1 and (table.concat(strs, ", ", 1, #strs - 1) .. (#strs == 2 and " and " or ", and ") .. strs[#strs]) or strs[1]
 end
 
 -- given a string, finds a var from the global namespace (thanks ULib)

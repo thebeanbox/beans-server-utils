@@ -111,9 +111,9 @@ function BSU.FormatBanMsg(reason, duration, time)
   return string.gsub(BSU.BAN_MSG, "%%([%w_]+)%%",
     {
       reason = reason or "(None given)",
-      duration = duration == 0 and "(Permaban)" or BSU.StringTime(duration * 60),
-      remaining = duration == 0 and "(Permaban)" or BSU.StringTime(time + duration * 60 - BSU.UTCTime()),
-      time = os.date("%a, %b %d, %Y - %I:%M:%S %p (GMT)", time) .. " (" .. (BSU.UTCTime() - time < 60 and "A few seconds ago" or BSU.StringTime(BSU.UTCTime() - time - 60) .. " ago") .. ")"
+      duration = duration == 0 and "(Permaban)" or BSU.StringTime(duration),
+      remaining = duration == 0 and "(Permaban)" or BSU.StringTime(math.ceil(time / 60 + duration - BSU.UTCTime() / 60)),
+      time = os.date("%a, %b %d, %Y - %I:%M:%S %p (GMT)", time) .. " (" .. (BSU.UTCTime() - time < 60 and "A few seconds ago" or BSU.StringTime(math.ceil(BSU.UTCTime() / 60 - time / 60 - 1)) .. " ago") .. ")"
     }
   )
 end
