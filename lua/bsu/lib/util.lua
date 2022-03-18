@@ -3,7 +3,7 @@
 
 -- prints a message into console formatted like "[BSU] bla bla bla" (color depends on realm)
 function BSU.Log(msg)
-  MsgC(SERVER and Color(0, 100, 255) or Color(255, 100, 0), "[BSU] ", color_white, msg .. "\n")
+  MsgC(SERVER and Color(0, 100, 255) or Color(255, 100, 0), "[BSU] ", Color(255, 255, 255), msg .. "\n")
 end
 
 function BSU.ColorToHex(color)

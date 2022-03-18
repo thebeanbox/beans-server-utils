@@ -28,7 +28,7 @@ local function drawPPHUD()
       surface.SetFont(font)
       local w, h = surface.GetTextSize(text)
       draw.RoundedBox(4, ScrW() - w - 8, ScrH() / 2 - h / 2 - 4, w + 8, h + 8, Color(0, 0, 0, 175))
-      draw.DrawText(text, font, ScrW() - 4, ScrH() / 2 - h / 2, color_white, TEXT_ALIGN_RIGHT)
+      draw.DrawText(text, font, ScrW() - 4, ScrH() / 2 - h / 2, Color(255, 255, 255), TEXT_ALIGN_RIGHT)
     end
   end
 end
