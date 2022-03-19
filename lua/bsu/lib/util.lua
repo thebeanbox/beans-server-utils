@@ -71,6 +71,10 @@ function BSU.StringTime(mins, ratio)
     local time, len = unpack(timesInMins[i])
     if mins >= len then
       local timeConvert = math.floor(mins / len)
+      if timeConvert == math.huge then
+        table.insert(strs, "a really long time")
+        break
+      end
       if ratio and max and max / mins >= ratio then break end
       if not max then max = mins end
       mins = mins % len
