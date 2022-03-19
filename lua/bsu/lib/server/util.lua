@@ -46,7 +46,7 @@ function BSU.SendConMsg(plys, ...)
     MsgN()
     return
   end
-  BSU.ClientRPC(plys, "BSU.ConMsg", ...)
+  BSU.ClientRPC(plys, "BSU.SendConMsg", ...)
 end
 
 -- send a chat message to a player or list of players
