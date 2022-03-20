@@ -2,7 +2,6 @@
 
 function BSU.LoadModules(dir)
   dir = dir or BSU.DIR_MODULES
-  print(dir)
 
   local svDir = dir .. "server/"
   local clDir = dir .. "client/"
