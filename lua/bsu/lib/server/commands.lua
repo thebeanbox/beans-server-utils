@@ -1,5 +1,14 @@
 -- lib/server/commands.lua
 
+-- some color values
+local errorClr    = Color(255, 127, 0)   -- error messages                        (orange)
+local textClr     = Color(151, 211, 255) -- normal text                           (light blue)
+local paramClr    = Color(0, 255, 0)     -- when a parameter isn't an entity      (green)
+local selfClr     = Color(75, 0, 130)    -- when target is client                 (dark purple)
+local everyoneClr = Color(0, 130, 130)   -- when targeting all plys on the server (cyan)
+local consoleClr  = Color(0, 0, 0)       -- server console name                   (black)
+local miscClr     = Color(255, 255, 255) -- other (just used for non-player ents) (white)
+
 local groupChars = {
   '"',
   "'"
@@ -327,14 +336,6 @@ function objCommand.SendChatMsg(self, ...)
   end
 end
 
--- some color values
-local textClr = Color(151, 211, 255) -- normal text                             (light blue)
-local paramClr = Color(0, 255, 0) -- when a parameter isn't an entity           (green)
-local selfClr = Color(75, 0, 130) -- when target is client                      (dark purple)
-local everyoneClr = Color(0, 130, 130) -- when targeting all plys on the server (cyan)
-local consoleClr = Color(0, 0, 0) -- server console name                        (black)
-local miscClr = Color(255, 255, 255) -- other (just used for non-player ents)   (white)
-
 local function formatActionMsg(ply, target, msg, args)
   args = istable(args) and args or { args }
   local i, pos, vars = 1, 1, {}
@@ -489,13 +490,13 @@ function BSU.UnsafeRunCommand(name, ply, argStr)
 
   _tempUser = ply or NULL
   _tempArgs = argStr and parseArgs(argStr, true) or ""
-  xpcall(cmd.func, function(err) BSU.SendChatMsg(ply, Color(255, 127, 0), "Command errored with: " .. string.Split(err, ": ")[2]) end, cmd, ply, #_tempArgs, argStr)
+  xpcall(cmd.func, function(err) BSU.SendChatMsg(ply, errorClr, "Command errored with: " .. string.Split(err, ": ")[2]) end, cmd, ply, #_tempArgs, argStr)
 end
 
 -- make a player run a command (does nothing if they do not have access to the command)
 function BSU.RunCommand(name, ply, argStr)
   if not BSU.PlayerHasCommandAccess(ply, name) then
-    return BSU.SendChatMsg(ply, Color(255, 127, 0), "You don't have permission to use this command")
+    return BSU.SendChatMsg(ply, errorClr, "You don't have permission to use this command")
   end
   BSU.UnsafeRunCommand(name, ply, argStr)
 end
