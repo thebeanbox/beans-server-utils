@@ -9,6 +9,6 @@ hook.Add("PlayerSay", "BSU_RunChatCommand", function(ply, text)
   local argStr = table.concat(split, " ")
 
   if BSU.GetCommandByName(name) then
-    BSU.RunCommand(name, ply, argStr)
+    BSU.SafeRunCommand(name, ply, argStr)
   end
 end)
