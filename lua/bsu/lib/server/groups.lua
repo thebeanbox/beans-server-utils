@@ -34,6 +34,11 @@ function BSU.GetGroupsByUsergroup(usergroup)
   return BSU.SQLSelectByValues(BSU.SQL_GROUPS, { usergroup = usergroup })
 end
 
+-- get all groups which inherit from a certain group
+function BSU.GetGroupsByInherit(inherit)
+  return BSU.SQLSelectByValues(BSU.SQL_GROUPS, { inherit = inherit })
+end
+
 function BSU.SetGroupData(id, values)
   BSU.SQLUpdateByValues(BSU.SQL_GROUPS, { id = id }, values)
 end
