@@ -39,6 +39,11 @@ local function authedBanCheck(ply)
   if plyBan then -- if player is banned
     game.KickID(ply:UserID(), "(Banned) " .. (plyBan.reason or "No reason given")) -- silently kick (don't need this added to the db)
   else
+    local plyIPBan = BSU.GetBanStatus(ply:IPAddress())
+    if plyIPBan then -- if player is ip banned
+      game.KickID(ply:UserID(), "(Banned) " .. (plyIPBan.reason or "No reason given")) -- silently kick (don't need this added to the db)
+    end
+
     local ownerID = ply:OwnerSteamID64()
     if plyID ~= ownerID then -- this player doesn't own the Garry's Mod license they're using
       local ownerBan = BSU.GetBanStatus(ownerID)
