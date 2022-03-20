@@ -421,7 +421,7 @@ function BSU.Command(name, desc, access, func)
 end
 
 -- create a new command
--- (by default the command is accessible to nobody except the server console)
+-- (by default the command is accessible to anybody)
 -- (making a command with the same name as a previously created command will override it and case doesn't matter) 
 function BSU.CreateCommand(name, desc, access, func)
   if not isstring(name) then return error("Command must have a valid name") end
