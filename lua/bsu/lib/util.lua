@@ -26,7 +26,7 @@ function BSU.IsValidSteamID(steamid)
     return true
   else
     local id = tonumber(steamid)
-    if id and id > 76561197960265728 then
+    if id and id >= 76561197960265728 then
       return true
     end
   end
