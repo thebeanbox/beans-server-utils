@@ -18,10 +18,17 @@ local function drawPPHUD()
     local ent = trace.Entity
     if IsValid(ent) and not ent:IsPlayer() then
       local owner = BSU.GetEntityOwner(ent)
-      local id = BSU.GetEntityOwnerID(ent)
-      local name = BSU.GetEntityOwnerName(ent)
+      local id, name
+      if IsValid(owner) then
+        id = owner:SteamID()
+        name = owner:Nick()
+      else
+        id = BSU.GetEntityOwnerID(ent)
+        if id then id = util.SteamIDFrom64(id) end
+        name = BSU.GetEntityOwnerName(ent) or "N/A"
+      end
       
-      local text = "Owner: " .. (owner and name .. (owner ~= game.GetWorld() and (not IsValid(owner) or not owner:IsBot()) and id and "<" .. util.SteamIDFrom64(id) .. ">" or "") or "N/A") .. "\n" ..
+      local text = "Owner: " .. (owner and name .. (owner ~= game.GetWorld() and (not IsValid(owner) or not owner:IsBot()) and id and "<" .. id .. ">" or "") or "N/A") .. "\n" ..
         ent:GetModel() .. "\n" ..
         tostring(ent)
 
