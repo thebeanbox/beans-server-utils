@@ -23,6 +23,16 @@ function BSU.SQLQueryValue(syntax, ...)
   return safeQuery(sql.QueryValue(string.format(syntax, ...)))
 end
 
+function BSU.SQLGetColumnData(tbl)
+  local data = {}
+  for _, v in ipairs(BSU.SQLQuery(string.format("PRAGMA table_info(%s)", BSU.EscOrNULL(tbl, true)))) do
+    local name = v.name
+    v.name = nil
+    data[name] = v
+  end
+  return data
+end
+
 -- fixes up the output of sql queries
 function BSU.SQLParse(data, tbl)
   if not tbl then return error("Tried to parse but SQL table wasn't specified!") end
@@ -32,16 +42,14 @@ function BSU.SQLParse(data, tbl)
       data[k] = BSU.SQLParse(v, tbl)
     end
   else
+    local columnData = BSU.SQLGetColumnData(tbl)
+
     for k, v in pairs(data) do
       if v == "NULL" then
         data[k] = nil
       else
-        local typeof = BSU.SQLQueryValue("SELECT typeof(%s) FROM '%s'",
-          BSU.EscOrNULL(k, true),
-          BSU.EscOrNULL(tbl, true)
-        )
-        
-        if typeof == "integer" then
+        local type = columnData[k].type
+        if type == "INTEGER" or type == "REAL" or type == "NUMERIC" then
           data[k] = tonumber(v)
         end
       end
