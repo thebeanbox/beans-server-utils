@@ -462,7 +462,7 @@ function BSU.RemoveGroupCommandAccess(groupid, cmd, access)
   BSU.RemoveGroupPrivilege(groupid, BSU.PRIV_CMD, string.lower(cmd))
 end
 
-function BSU.RemoveGroupCommandAccess(steamid, cmd, access)
+function BSU.RemovePlayerCommandAccess(steamid, cmd, access)
   BSU.RemovePlayerPrivilege(steamid, BSU.PRIV_CMD, string.lower(cmd))
 end
 
