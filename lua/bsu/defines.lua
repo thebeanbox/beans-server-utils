@@ -29,8 +29,6 @@ BSU.PP_USE       = 3
 BSU.PP_DAMAGE    = 4
 --BSU.PP_NOCOLLIDE = 5
 
-BSU.CMD_PREFIX = "!"
-
 if SERVER then
   -- server SQL database table names
   BSU.SQL_GROUPS        = "bsu_groups"
@@ -41,6 +39,8 @@ if SERVER then
   BSU.SQL_GROUP_LIMITS  = "bsu_grp_limits"
   BSU.SQL_PLAYER_LIMITS = "bsu_ply_limits"
   BSU.SQL_PDATA         = "bsu_pdata"
+
+  BSU.CMD_PREFIX = "!"
 
   -- command access values
   BSU.CMD_NOONE           = 0 -- access only via the server console (this is useful if you want a command to only be player accessible using privileges)
