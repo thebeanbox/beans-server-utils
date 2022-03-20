@@ -43,10 +43,10 @@ if SERVER then
   BSU.CMD_PREFIX = "!"
 
   -- command access values
-  BSU.CMD_NOONE           = 0 -- access only via the server console (this is useful if you want a command to only be player accessible using privileges)
-  BSU.CMD_ADMIN_ONLY      = 1 -- access only for admins, superadmins and via the server console
-  BSU.CMD_SUPERADMIN_ONLY = 2 -- access only for superadmins and via the server console
-  BSU.CMD_ANYONE          = 3 -- access to any person
+  BSU.CMD_NOONE      = 0 -- access only via the server console (useful if you want a command to only be player accessible using privileges)
+  BSU.CMD_ADMIN      = 1 -- access only for admins, superadmins and via the server console
+  BSU.CMD_SUPERADMIN = 2 -- access only for superadmins and via the server console
+  BSU.CMD_ANYONE     = 3 -- access to any person
 
   -- id of the group that players are automatically set to (like when they join for the first time)
   BSU.DEFAULT_GROUP = 1

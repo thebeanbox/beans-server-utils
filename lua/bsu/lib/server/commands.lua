@@ -482,7 +482,7 @@ function BSU.PlayerHasCommandAccess(ply, name)
   if cmd.access == BSU.CMD_NOONE then return false end
   if cmd.access == BSU.CMD_ANYONE then return true end
   local usergroup = ply:GetUserGroup()
-  return usergroup == "superadmin" and true or (cmd.access == BSU.CMD_ADMIN_ONLY and usergroup == "admin" and true or false)
+  return usergroup == "superadmin" and true or (cmd.access == BSU.CMD_ADMIN and usergroup == "admin" and true or false)
 end
 
 -- make a player run a command (allows players who don't have access to the command to still run it)
