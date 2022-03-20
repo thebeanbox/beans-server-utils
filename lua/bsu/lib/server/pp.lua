@@ -1,18 +1,21 @@
 -- lib/server/pp.lua
 
-function BSU.RequestPPClientData(plys, steamids)
+-- holds prop protection data from the clients
+BSU._ppdata = BSU._ppdata or {}
+
+function BSU.RequestPPData(plys, steamids)
   if not istable(steamids) and isstring(steamids) then steamids = { steamids } end
-  BSU.ClientRPC(plys, "BSU.SendPPClientData", steamids)
+  BSU.ClientRPC(plys, "BSU.SendPPData", steamids)
 end
 
 -- returns a list of steam 64 bit ids this player has enabled this permission to
 function BSU.GetPlayerPermissionList(steamid, perm)
   steamid = BSU.ID64(steamid)
 
-  if not BSU.PPClientData[steamid] then return {} end
+  if not BSU._ppdata[steamid] then return {} end
 
   local ids = {}
-  for k, v in pairs(BSU.PPClientData[steamid]) do
+  for k, v in pairs(BSU._ppdata[steamid]) do
     if v[perm] then
       table.insert(ids, k)
     end
@@ -26,7 +29,7 @@ function BSU.CheckPlayerHasPropPermission(ply, target, perm)
   ply = BSU.ID64(ply)
   target = BSU.ID64(target)
 
-  return BSU.PPClientData[target] and BSU.PPClientData[target][ply] and BSU.PPClientData[target][ply][perm] ~= nil or false
+  return BSU._ppdata[target] and BSU._ppdata[target][ply] and BSU._ppdata[target][ply][perm] ~= nil or false
 end
 
 function BSU.SetEntityOwnerless(ent)

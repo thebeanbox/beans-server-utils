@@ -48,7 +48,7 @@ function BSU.RevokePropPermission(ply, perm)
 end
 
 -- send prop protection data to the server (takes a table of steamids or nil for all current players)
-function BSU.SendPPClientData(steamids)
+function BSU.SendPPData(steamids)
   if steamids and table.IsEmpty(steamids) then return end
 
   if not steamids then
@@ -71,7 +71,7 @@ function BSU.SendPPClientData(steamids)
 
   if table.IsEmpty(data) then return end
 
-  net.Start("BSU_PPClientData_Init")
+  net.Start("BSU_PPData_Init")
     net.WriteUInt(#data, 7) -- max of 127 entries (perfect because this is the max player limit excluding the local player)
     for _, v in ipairs(data) do
       net.WriteString(v.steamid)
@@ -81,8 +81,8 @@ function BSU.SendPPClientData(steamids)
 end
 
 -- update prop protection data on the server
-function BSU.SendPPClientDataUpdate(method, steamid, permission)
-  net.Start("BSU_PPClientData_Update")
+function BSU.SendPPDataUpdate(method, steamid, permission)
+  net.Start("BSU_PPData_Update")
     net.WriteBool(method) -- true to register data, false to remove data
     net.WriteString(steamid)
     net.WriteUInt(permission, 3)

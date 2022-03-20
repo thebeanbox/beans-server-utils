@@ -1,17 +1,14 @@
 -- base/server/pp.lua
 
--- holds prop protection data from the clients
-BSU.PPClientData = BSU.PPClientData or {}
-
 -- request a client's prop protection data after they authenticate
-hook.Add("PlayerAuthed", "BSU_RequestPPClientData", function(ply) BSU.RequestPPClientData(ply) end)
+hook.Add("PlayerAuthed", "BSU_RequestPPData", function(ply) BSU.RequestPPData(ply) end)
 
 -- initialize a client's prop protection data
-local function initializePPClientData(_, ply)
+local function initializePPData(_, ply)
   local plyID = ply:SteamID64()
 
   -- initialize an empty table for their data
-  BSU.PPClientData[plyID] = {}
+  BSU._ppdata[plyID] = {}
   
   -- add the prop protection data
   -- structured like: PLAYER STEAM ID -> TARGET STEAM ID -> PERMISSION ID
@@ -20,41 +17,41 @@ local function initializePPClientData(_, ply)
     local steamid, permission = BSU.ID64(net.ReadString()), net.ReadUInt(3)
 
     -- make sure a table for the target exists
-    if not BSU.PPClientData[plyID][steamid] then BSU.PPClientData[plyID][steamid] = {} end
+    if not BSU._ppdata[plyID][steamid] then BSU._ppdata[plyID][steamid] = {} end
 
     -- add the permission
-    BSU.PPClientData[plyID][steamid][permission] = true
+    BSU._ppdata[plyID][steamid][permission] = true
   end
 end
 
-net.Receive("BSU_PPClientData_Init", initializePPClientData)
+net.Receive("BSU_PPData_Init", initializePPData)
 
 -- update a client's prop protection data (by adding/removing an entry)
-local function updatePPClientData(_, ply)
+local function updatePPData(_, ply)
   local plyID = ply:SteamID64()
 
   -- make sure a table for the player exists to avoid errors
   -- (table is possible to not exist if the client didn't have any prop protection data to send to the server)
-  BSU.PPClientData[plyID] = BSU.PPClientData[plyID] or {}
+  BSU._ppdata[plyID] = BSU._ppdata[plyID] or {}
 
   local method, steamid, permission = net.ReadBool(), BSU.ID64(net.ReadString()), net.ReadUInt(3)
 
   -- make sure a table for the target exists
-  if not BSU.PPClientData[plyID][steamid] then BSU.PPClientData[plyID][steamid] = {} end
+  if not BSU._ppdata[plyID][steamid] then BSU._ppdata[plyID][steamid] = {} end
 
   -- either adds or removes the permission
-  BSU.PPClientData[plyID][steamid][permission] = method or nil
+  BSU._ppdata[plyID][steamid][permission] = method or nil
 
   -- remove these tables if they are empty
-  if table.IsEmpty(BSU.PPClientData[plyID][steamid]) then
-    BSU.PPClientData[plyID][steamid] = nil
-    if table.IsEmpty(BSU.PPClientData[plyID]) then
-      BSU.PPClientData[plyID] = nil
+  if table.IsEmpty(BSU._ppdata[plyID][steamid]) then
+    BSU._ppdata[plyID][steamid] = nil
+    if table.IsEmpty(BSU._ppdata[plyID]) then
+      BSU._ppdata[plyID] = nil
     end
   end
 end
 
-net.Receive("BSU_PPClientData_Update", updatePPClientData)
+net.Receive("BSU_PPData_Update", updatePPData)
 
 -- sets the owner of map entities to the world (internally just sets any entity with a N/A owner to World)
 local function setOwnerMapEntities()

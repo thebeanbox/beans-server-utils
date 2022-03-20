@@ -167,7 +167,9 @@ local function parsePlayerArg(user, str)
   return plys
 end
 
-local cmds = {}
+-- holds command objects
+BSU._cmds = BSU._cmds or {}
+local cmds = BSU._cmds
 local _tempUser, _tempArgs
 
 -- command object
