@@ -20,6 +20,12 @@ local function initializePlayer(ply)
   if not plyData then -- this is the first time this player has joined
     BSU.RegisterPlayer(id64, BSU.DEFAULT_GROUP)
   end
+
+  -- update some sql player data
+  BSU.SetPlayerData(id64, {
+    name = ply:Nick(),
+    ip = BSU.Address(ply:IPAddress())
+  })
 end
 
 hook.Add("PlayerAuthed", "BSU_InitializePlayer", initializePlayer)
@@ -72,6 +78,12 @@ local function updatePlayerData()
 end
 
 timer.Create("BSU_UpdatePlayerData", 1, 0, updatePlayerData) -- update player data every 60 secs
+
+-- updates the name value of sql player data whenever a player's steam name is changed
+gameevent.Listen("player_changename")
+hook.Add("player_changename", "BSU_UpdatePlayerDataName", function(userid, _, name)
+  BSU.SetPlayerData(Player(userid):SteamID64(), { name = name })
+end)
 
 -- receive some client data and register networked values (see BSU.RequestClientInfo)
 local function setupClientInfo(_, ply)

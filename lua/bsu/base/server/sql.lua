@@ -1,7 +1,7 @@
 -- base/server/sql.lua
 
 --[[
-  Group SQL Tbl Info
+  Groups
 
   id        - (int)         numeric id of the group (automatically set and incremented) (also used for the team index of the group)
   name      - (text)        display name of the group
@@ -22,13 +22,14 @@ BSU.SQLCreateTable(BSU.SQL_GROUPS, string.format(
 ))
 
 --[[
-  Player SQL Tbl Info
+  Players
 
   steamid   - (text)        steam 64 bit id of the player
   groupid   - (int)         id of the group the player is currently in
   totaltime - (int)         (in seconds) how long the player has been on the server
   lastvisit - (int or NULL) (in seconds) utc unix timestamp when the player last connected to the server (NULL if first time joining)
   name      - (text)        steam name of the player
+  ip        - (text)        ip address of the player
 ]]
 
 BSU.SQLCreateTable(BSU.SQL_PLAYERS, string.format(
@@ -37,13 +38,14 @@ BSU.SQLCreateTable(BSU.SQL_PLAYERS, string.format(
     groupid INTEGER NOT NULL REFERENCES %s(id),
     totaltime INTEGER DEFAULT 0,
     lastvisit INTEGER,
-    name TEXT
+    name TEXT,
+    ip TEXT
   ]],
     BSU.EscOrNULL(BSU.SQL_GROUPS, true)
 ))
 
 --[[
-  Ban SQL Tbl Info
+  Bans
 
   identity   - (text)         steam 64 bit id or ip address of the banned/kicked player
   reason     - (text or NULL) reason for the ban/kick (NULL if no reason given)
@@ -71,11 +73,12 @@ BSU.SQLCreateTable(BSU.SQL_BANS, string.format(
 ))
 
 --[[
-  Group Privileges SQL Tbl Info
+  Group Privileges
 
   groupid - (int)  id of the group
   type    - (text) privilege type
   value   - (text) privilege value
+  granted - (bool) grant or restrict the privilege
 ]]
 
 BSU.SQLCreateTable(BSU.SQL_GROUP_PRIVS, string.format(
@@ -89,11 +92,12 @@ BSU.SQLCreateTable(BSU.SQL_GROUP_PRIVS, string.format(
 ))
 
 --[[
-  Player Privileges SQL Tbl Info
+  Player Privileges
 
   steamid - (text) steam 64 bit id of the player
   type    - (text) privilege type
   value   - (text) privilege value
+  granted - (bool) grant or restrict the privilege
 ]]
 
 BSU.SQLCreateTable(BSU.SQL_PLAYER_PRIVS, string.format(
@@ -107,7 +111,7 @@ BSU.SQLCreateTable(BSU.SQL_PLAYER_PRIVS, string.format(
 ))
 
 --[[
-  Group Limits SQL Tbl Info
+  Group Limits
 
   groupid - (int)  id of the group
   name    - (text) name of the limit
@@ -124,7 +128,7 @@ BSU.SQLCreateTable(BSU.SQL_GROUP_LIMITS, string.format(
 ))
 
 --[[
-  Player Limits SQL Tbl Info
+  Player Limits
 
   steamid - (text) steam 64 bit id of the player
   name    - (text) name of the limit
