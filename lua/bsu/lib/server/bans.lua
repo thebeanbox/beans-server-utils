@@ -57,7 +57,7 @@ function BSU.BanIP(ip, reason, duration, adminID)
   BSU.RegisterBan(ip, reason, duration or 0, adminID and BSU.ID64(adminID))
 
   for k, v in ipairs(player.GetHumans()) do -- try to kick all players with this ip
-    if BSU.Address(BSU.Address(v:IPAddress())) == ip then
+    if BSU.Address(v:IPAddress()) == ip then
       game.KickID(v:UserID(), "(Banned) " .. (reason or "No reason given"))
     end
   end
