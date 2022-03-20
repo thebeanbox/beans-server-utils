@@ -482,8 +482,8 @@ function BSU.PlayerHasCommandAccess(ply, name)
   return usergroup == "superadmin" and true or (cmd.access == BSU.CMD_ADMIN_ONLY and usergroup == "admin" and true or false)
 end
 
--- make a player run a command (this allows players who don't have access to the command to still run it)
-function BSU.RunCommand(name, ply, argStr)
+-- make a player run a command (allows players who don't have access to the command to still run it)
+function BSU.UnsafeRunCommand(name, ply, argStr)
   local cmd = cmds[name]
   if not cmd then error("Command '" .. name .. "' does not exist") end
 
@@ -493,12 +493,11 @@ function BSU.RunCommand(name, ply, argStr)
 end
 
 -- make a player run a command (does nothing if they do not have access to the command)
-function BSU.SafeRunCommand(name, ply, argStr)
-  print(ply)
+function BSU.RunCommand(name, ply, argStr)
   if not BSU.PlayerHasCommandAccess(ply, name) then
     return BSU.SendChatMsg(ply, Color(255, 127, 0), "You don't have permission to use this command")
   end
-  BSU.RunCommand(name, ply, argStr)
+  BSU.UnsafeRunCommand(name, ply, argStr)
 end
 
 concommand.Add("bsu", function(ply, _, args, argStr)
@@ -508,5 +507,5 @@ concommand.Add("bsu", function(ply, _, args, argStr)
   if not cmd then return BSU.SendConMsg(ply, color_white, "Unknown BSU command: " .. name) end
 
   -- execute the command
-  BSU.SafeRunCommand(name, ply, string.sub(argStr, #name + 2))
+  BSU.RunCommand(name, ply, string.sub(argStr, #name + 2))
 end, nil, nil, FCVAR_CLIENTCMD_CAN_EXECUTE)
