@@ -19,6 +19,7 @@ BSU.PRIV_NPC   = 1
 BSU.PRIV_SENT  = 2
 BSU.PRIV_SWEP  = 3
 BSU.PRIV_TOOL  = 4
+BSU.PRIV_CMD   = 5
 
 -- prop protection values
 BSU.PP_PHYSGUN   = 0
@@ -27,6 +28,8 @@ BSU.PP_TOOLGUN   = 2
 BSU.PP_USE       = 3
 BSU.PP_DAMAGE    = 4
 --BSU.PP_NOCOLLIDE = 5
+
+BSU.CMD_PREFIX = "!"
 
 if SERVER then
   -- server SQL database table names
@@ -38,6 +41,12 @@ if SERVER then
   BSU.SQL_GROUP_LIMITS  = "bsu_grp_limits"
   BSU.SQL_PLAYER_LIMITS = "bsu_ply_limits"
   BSU.SQL_PDATA         = "bsu_pdata"
+
+  -- command access values
+  BSU.CMD_NOONE           = 0 -- access only via the server console (this is useful if you want a command to only be player accessible using privileges)
+  BSU.CMD_ADMIN_ONLY      = 1 -- access only for admins, superadmins and via the server console
+  BSU.CMD_SUPERADMIN_ONLY = 2 -- access only for superadmins and via the server console
+  BSU.CMD_ANYONE          = 3 -- access to any person
 
   -- id of the group that players are automatically set to (like when they join for the first time)
   BSU.DEFAULT_GROUP = 1

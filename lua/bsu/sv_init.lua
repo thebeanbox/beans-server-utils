@@ -16,10 +16,7 @@ include(svBaseDir .. "privileges.lua")
 include(svBaseDir .. "limits.lua")
 include(svBaseDir .. "bans.lua")
 include(svBaseDir .. "pp.lua")
-
--- setup/send shared scripts
-include(BSU.DIR_BASE .. "sql.lua")
-AddCSLuaFile(BSU.DIR_BASE .. "sql.lua")
+include(svBaseDir .. "commands.lua")
 
 -- send client-side scripts
 AddCSLuaFile(clBaseDir .. "sql.lua")
