@@ -3,4 +3,4 @@
 
 #### A utilities and moderation addon for a dedicated Garry's Mod server
 
-*Currently under active development (view the wiki)*
+*Currently under active development (check out the wiki)*
