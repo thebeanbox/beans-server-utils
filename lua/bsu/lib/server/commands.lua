@@ -170,7 +170,7 @@ end
 -- holds command objects
 BSU._cmds = BSU._cmds or {}
 local cmds = BSU._cmds
-local _tempUser, _tempArgs
+local _tempUser, _tempArgs, _tempSilent
 
 -- command object
 local objCommand = {}
@@ -190,7 +190,7 @@ function objCommand.GetCommandAccess(self)
 end
 
 local function errorBadArgument(num, reason)
-  error("bad argument #" .. num .. " (" .. reason .. ")")
+  error("Bad argument #" .. num .. " (" .. reason .. ")")
 end
 
 -- used for getting the original string of the argument
@@ -318,6 +318,50 @@ function objCommand.GetPlayers(self, n, check)
   end
 end
 
+function objCommand.CheckCanTarget(self, target, fail)
+  if not _tempUser:IsValid() or _tempUser:IsSuperAdmin() then return true end -- is server console
+  if _tempUser:Team() >= target:Team() then
+    return true
+  end
+  if fail then
+    error("You cannot select this target")
+  end
+  return false
+end
+
+function objCommand.CheckCanTargetID(self, targetID, fail)
+  if not _tempUser:IsValid() then return true end
+  local tarData = BSU.GetPlayerDataBySteamID(targetID)
+  if not tarData then return true end
+  if _tempUser:Team() >= tarData.groupid then
+    return true
+  elseif fail then
+    error("You cannot select this target")
+  end
+  return false
+end
+
+function objCommand.FilterTargets(self, targets, fail)
+  if #targets == 1 then
+    if self:CheckCanTarget(targets[1], fail) then
+      return targets
+    end
+    return {}
+  end
+
+  local tbl = {}
+  for i = 1, #targets do
+    local tar = targets[i]
+    if self:CheckCanTarget(tar) then
+      table.insert(tbl, tar)
+    end
+  end
+  if table.IsEmpty(tbl) and fail then
+    error("None of the targets could be selected")
+  end
+  return tbl
+end
+
 -- sends a message to a player in console (will print into the server console if the command was ran through it)
 function objCommand.SendConMsg(self, ...)
   if _tempUser:IsValid() then
@@ -330,6 +374,7 @@ end
 
 -- sends a message to a player in chat (will print into the server console if the command was ran through it)
 function objCommand.SendChatMsg(self, ...)
+  if _tempSilent then return end
   if _tempUser:IsValid() then -- cmd was ran through the server console
     BSU.SendChatMsg(_tempUser, ...)
   else -- cmd was ran through the server console
@@ -406,6 +451,7 @@ end
 
 -- sends a message in everyone's chat and formats player entities and tables of player entities
 function objCommand.BroadcastActionMsg(self, msg, ...)
+  if _tempSilent then return end
   local targets = player.GetHumans()
   table.insert(targets, 1, NULL)
   for k, v in ipairs(targets) do
@@ -477,28 +523,29 @@ function BSU.PlayerHasCommandAccess(ply, name)
   local cmd = cmds[name]
   if not cmd then error("Command '" .. name .. "' does not exist") end
 
+  if ply:IsSuperAdmin() then return true end
   local accessPriv = BSU.CheckPlayerPrivilege(ply:SteamID64(), BSU.PRIV_CMD, name)
   if accessPriv ~= nil then return accessPriv end
   if cmd.access == BSU.CMD_NOONE then return false end
   if cmd.access == BSU.CMD_ANYONE then return true end
-  local usergroup = ply:GetUserGroup()
-  return usergroup == "superadmin" and true or (cmd.access == BSU.CMD_ADMIN and usergroup == "admin" and true or false)
+  return cmd.access == BSU.CMD_ADMIN and ply:IsAdmin()
 end
 
 -- make a player run a command (allows players who don't have access to the command to still run it)
-function BSU.UnsafeRunCommand(name, ply, argStr)
+function BSU.UnsafeRunCommand(name, ply, argStr, silent)
   local cmd = cmds[name]
   if not cmd then error("Command '" .. name .. "' does not exist") end
 
   _tempUser = ply or NULL
   _tempArgs = argStr and parseArgs(argStr, true) or ""
+  _tempSilent = silent or false
   xpcall(cmd.func, function(err) BSU.SendChatMsg(ply, errorClr, "Command errored with: " .. string.Split(err, ": ")[2]) end, cmd, ply, #_tempArgs, argStr)
 end
 
 -- make a player run a command (does nothing if they do not have access to the command)
-function BSU.RunCommand(name, ply, argStr)
+function BSU.RunCommand(name, ply, argStr, silent)
   if not BSU.PlayerHasCommandAccess(ply, name) then
     return BSU.SendChatMsg(ply, errorClr, "You don't have permission to use this command")
   end
-  BSU.UnsafeRunCommand(name, ply, argStr)
+  BSU.UnsafeRunCommand(name, ply, argStr, silent)
 end
