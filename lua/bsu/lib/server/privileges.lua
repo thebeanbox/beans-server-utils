@@ -127,6 +127,7 @@ end
 
 -- returns bool if the player is allowed to spawn/tool something
 function BSU.PlayerIsAllowed(ply, type, privilege)
+  if ply:IsSuperAdmin() then return true end
   local check = BSU.CheckPlayerPrivilege(ply:SteamID64(), type, privilege)
   return check == nil or check == true
 end
