@@ -143,3 +143,22 @@ BSU.SQLCreateTable(BSU.SQL_PLAYER_LIMITS, string.format(
   ]],
     BSU.EscOrNULL(BSU.SQL_PLAYERS, true)
 ))
+
+--[[
+  PData
+
+  steamid - (text) steam 64 bit id of the player
+  key     - (text) key of the data
+  value   - (text) value of the data
+  network - (bool) should network this value to clients or not
+]]
+
+BSU.SQLCreateTable(BSU.SQL_PDATA, string.format(
+  [[
+    steamid TEXT NOT NULL REFERENCES %s(steamid),
+    key TEXT NOT NULL UNIQUE,
+    value TEXT NOT NULL,
+    network BOOLEAN NOT NULL CHECK (network in (0, 1))
+  ]],
+    BSU.EscOrNULL(BSU.SQL_PLAYERS, true)
+))
