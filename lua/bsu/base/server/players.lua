@@ -5,11 +5,8 @@
   Player NW2Var Info
 
   BSU_Init        - (bool)   the player has been initialized
-  BSU_TotalTime   - (int)    (see Player SQL totaltime)
+  BSU_TotalTime   - (int)    (in seconds) how long the player has been on the server (including other sessions)
   BSU_ConnectTime - (int)    (in seconds) utc unix timestamp when the player joined the server
-  BSU_OS          - (string) current OS the client is using (Windows, Linux or macOS)
-  BSU_Country     - (string) 2-letter country code of the client
-  BSU_TimeOffset  - (int)    utc time offset (-12 to 14)
 ]]
 
 -- initialize player data
@@ -35,7 +32,15 @@ local function initializePlayerValues(ply)
   if ply:GetNW2Bool("BSU_Init") then return end
   ply:SetNW2Bool("BSU_Init", true)
 
-  if not ply:IsBot() then
+  if ply:IsBot() then
+    local groupData = BSU.GetGroupByID(BSU.BOT_GROUP)
+
+    -- set group values
+    ply:SetTeam(BSU.BOT_GROUP)
+    ply:SetUserGroup(groupData.usergroup or "user")
+
+    ply:SetNW2Int("BSU_TotalTime", 0)
+  else
     local plyData = BSU.GetPlayerData(ply)
     local groupData = BSU.GetGroupByID(plyData.groupid)
 
@@ -43,20 +48,10 @@ local function initializePlayerValues(ply)
     ply:SetTeam(plyData.groupid)
     ply:SetUserGroup(groupData.usergroup or "user")
 
-    -- some other values
     ply:SetNW2Int("BSU_TotalTime", plyData.totaltime)
 
     -- request for client system info
     BSU.RequestClientInfo(ply)
-  else
-    local groupData = BSU.GetGroupByID(BSU.BOT_GROUP)
-
-    -- set group values
-    ply:SetTeam(BSU.BOT_GROUP)
-    ply:SetUserGroup(groupData.usergroup or "user")
-
-    -- some other values
-    ply:SetNW2Int("BSU_TotalTime", 0)
   end
 
   ply:SetNW2Int("BSU_ConnectTime", BSU.UTCTime())
@@ -85,18 +80,18 @@ hook.Add("player_changename", "BSU_UpdatePlayerDataName", function(userid, _, na
   BSU.SetPlayerData(Player(userid):SteamID64(), { name = name })
 end)
 
--- receive some client data and register networked values (see BSU.RequestClientInfo)
-local function setupClientInfo(_, ply)
+-- receive some client data and update pdata (see BSU.RequestClientInfo)
+local function updateClientInfo(_, ply)
   local os = net.ReadUInt(2)
   local country = net.ReadString()
-  local timeOffset = net.ReadFloat()
-
-  ply:SetNW2String("BSU_OS", os == 0 and "Windows" or os == 1 and "Linux" or os == 2 and "macOS" or "N/A") -- if this is N/A something fucky is happening clientside
-  ply:SetNW2String("BSU_Country", country)
-  ply:SetNW2Float("BSU_TimeOffset", timeOffset)
+  local timezone = net.ReadFloat()
+  
+  BSU.SetPData(ply, "os", os == 0 and "Windows" or os == 1 and "Linux" or os == 2 and "macOS" or "N/A", true)
+  BSU.SetPData(ply, "country", string.sub(country, 1, 2), true) -- incase if spoofed, remove everything after the first two characters
+  BSU.SetPData(ply, "timezone", math.Clamp(timezone, -12, 14), true) -- incase if spoofed, clamp the value
 end
 
-net.Receive("BSU_ClientInfo", setupClientInfo)
+net.Receive("BSU_ClientInfo", updateClientInfo)
 
 -- fix glitchy movement when grabbing players
 hook.Add("OnPhysgunPickup", "BSU_PlayerPhysgunPickup", function(ply, ent)
