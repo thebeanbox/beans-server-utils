@@ -140,10 +140,10 @@ BSU.CreateCommand("unban", "Unban a player", BSU.CMD_ADMIN, function(self, ply)
   BSU.RevokeSteamIDBan(steamid, ply:IsValid() and ply:SteamID64()) -- this also checks if the steam id is actually banned
 
   local name = BSU.GetPlayerDataBySteamID(steamid).name
-  self:BroadcastActionMsg("%user% unbanned %param%" .. (targetData.name and " (%param%)" or ""), {
+  self:BroadcastActionMsg("%user% unbanned %param%" .. (name and " (%param%)" or ""), {
     ply,
     util.SteamIDFrom64(steamid),
-    targetData.name
+    name
   })
 end)
 
