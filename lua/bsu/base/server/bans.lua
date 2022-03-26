@@ -10,7 +10,7 @@ local function passwordBanCheck(steamid, ip)
         ban = BSU.GetBanStatus(ip) -- check for any bans on the ip
       end
       if ban then
-        return false, BSU.FormatBanMsg(ban.reason, ban.duration, ban.time)
+        return false, BSU.FormatBanMsg(ban.reason, ban.duration, ban.time, BSU.GetPDataBySteamID(steamid, "timezone"))
       end
     end,
     function(err)
@@ -25,7 +25,7 @@ local function passwordBanCheck(steamid, ip)
   else
     steamid = util.SteamIDFrom64(steamid)
     MsgN("Error while ban checking client (" .. steamid .. "): " .. callback)
-    return false, "Oops! Something bad happened...\n\nWe encountered an error while authenticating you:\n\n" .. callback .. "\n\nKicking the client (" .. steamid .. ") just to be safe."
+    return false, "Oops! Something bad happened...\n\nAn error occurred while authenticating you:\n\n" .. callback .. "\n\nKicking the client (" .. steamid .. ") just to be safe."
   end
 end
 
