@@ -79,9 +79,7 @@ if SERVER then
     return BSU.PlayerHasEntityPermission(ply, self, BSU.PP_PICKUP)
   end
 
-  function entMeta:CPPICanPunt(ply)
-    return self:CPPICanPickup(ply)
-  end
+  entMeta.CPPICanPunt = entMeta.CPPICanPickup
 
   function entMeta:CPPICanUse(ply)
     return BSU.PlayerHasEntityPermission(ply, self, BSU.PP_USE)
@@ -91,17 +89,11 @@ if SERVER then
     return BSU.PlayerHasEntityPermission(ply, self, BSU.PP_DAMAGE)
   end
 
-  function entMeta:CPPICanDrive(ply)
-    return self:CPPICanUse(ply)
-  end
+  entMeta.CPPICanDrive = entMeta.CPPICanUse
 
-  function entMeta:CPPICanProperty(ply)
-    return self:CPPICanTool(ply)
-  end
+  entMeta.CPPICanProperty = entMeta.CPPICanTool
 
-  function entMeta:CPPICanEditVariable(ply)
-    return self:CPPICanTool(ply)
-  end
+  entMeta.CPPICanEditVariable = entMeta.CPPICanTool
 else
   function plyMeta:CPPIGetFriends()
     return CPPI_NOTIMPLEMENTED
