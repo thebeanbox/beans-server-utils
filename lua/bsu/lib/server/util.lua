@@ -6,34 +6,33 @@ function BSU.LoadModules(dir)
   local svDir = dir .. "server/"
   local clDir = dir .. "client/"
 
-  local shFiles = file.Find(dir .. "*.lua", "LUA")
-  local svFiles = file.Find(svDir .. "*.lua", "LUA")
-  local clFiles = file.Find(clDir .. "*.lua", "LUA")
-
+  local shFiles, folders = file.Find(dir .. "*", "LUA")
+  local svFiles = file.Find(svDir .. "*", "LUA")
+  local clFiles = file.Find(clDir .. "*", "LUA")
+  
   -- run server-side modules
-  for _, module in ipairs(svFiles) do
-    include(svDir .. module)
+  for _, file in ipairs(svFiles) do
+    if not string.EndsWith(file, ".lua") then continue end
+    include(svDir .. file)
   end
 
   -- run/include shared modules
-  for _, module in ipairs(shFiles) do
-    include(dir .. module)
-    AddCSLuaFile(dir .. module)
+  for _, file in ipairs(shFiles) do
+    if not string.EndsWith(file, ".lua") then continue end
+    include(dir .. file)
+    AddCSLuaFile(dir .. file)
   end
 
   -- include client-side modules
-  for _, module in ipairs(clFiles) do
-    AddCSLuaFile(clDir .. module)
+  for _, file in ipairs(clFiles) do
+    if not string.EndsWith(file, ".lua") then continue end
+    AddCSLuaFile(clDir .. file)
   end
-
-  -- load sub directories
-  local _, folders = file.Find(dir .. "*", "LUA")
 
   for _, folder in ipairs(folders) do
     folder = string.lower(folder)
-    if folder ~= "server" and folder ~= "client" then
-      BSU.LoadModules(dir .. folder .. "/")
-    end
+    if folder == "server" or folder == "client" then continue end
+    BSU.LoadModules(dir .. folder .. "/")
   end
 end
 

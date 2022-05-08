@@ -76,8 +76,8 @@ timer.Create("BSU_UpdatePlayerData", 1, 0, updatePlayerData) -- update player da
 
 -- updates the name value of sql player data whenever a player's steam name is changed
 gameevent.Listen("player_changename")
-hook.Add("player_changename", "BSU_UpdatePlayerDataName", function(userid, _, name)
-  BSU.SetPlayerData(Player(userid):SteamID64(), { name = name })
+hook.Add("player_changename", "BSU_UpdatePlayerDataName", function(data)
+  BSU.SetPlayerData(Player(data.userid):SteamID64(), { name = data.newname })
 end)
 
 -- receive some client data and update pdata (see BSU.RequestClientInfo)

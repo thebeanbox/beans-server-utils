@@ -22,8 +22,9 @@ include(svBaseDir .. "commands.lua")
 AddCSLuaFile(clBaseDir .. "sql.lua")
 AddCSLuaFile(clBaseDir .. "networking.lua")
 AddCSLuaFile(clBaseDir .. "pp.lua")
+AddCSLuaFile(clBaseDir .. "commands.lua")
 
 -- module loading
-BSU.LoadModules()
+--BSU.LoadModules()
 
 hook.Run("BSU_Init")

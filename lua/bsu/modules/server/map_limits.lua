@@ -1,2 +1,1 @@
--- modules/map_limits.lua
 -- handles group-specific limits for players on certain maps

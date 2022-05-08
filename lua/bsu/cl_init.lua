@@ -10,6 +10,7 @@ include(BSU.DIR_BASE .. "sql.lua")
 include(clBaseDir .. "sql.lua")
 include(clBaseDir .. "networking.lua")
 include(clBaseDir .. "pp.lua")
+include(clBaseDir .. "commands.lua")
 
 -- module loading
 BSU.LoadModules()
