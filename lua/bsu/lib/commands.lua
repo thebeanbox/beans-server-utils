@@ -1,14 +1,5 @@
 -- lib/commands.lua (SHARED)
 
--- some color values
-local errorClr    = Color(255, 127, 0)   -- error messages                        (orange)
-local textClr     = Color(151, 211, 255) -- normal text                           (light blue)
-local paramClr    = Color(0, 255, 0)     -- when a parameter isn't an entity      (green)
-local selfClr     = Color(75, 0, 130)    -- when target is client                 (dark purple)
-local everyoneClr = Color(0, 130, 130)   -- when targeting all plys on the server (cyan)
-local consoleClr  = Color(0, 0, 0)       -- server console name                   (black)
-local miscClr     = Color(255, 255, 255) -- other (just used for non-player ents) (white)
-
 local groupChars = {
   '"',
   "'"
@@ -496,7 +487,7 @@ if SERVER then
     args = istable(args) and args or { args }
     local i, pos, vars = 1, 1, {}
     for str, obj in string.gmatch(msg, "(.-)%%(%w+)%%") do
-      table.Add(vars, { textClr, str })
+      table.Add(vars, { BSU.CLR_TEXT, str })
 
       obj = string.lower(obj)
       local arg
@@ -508,9 +499,9 @@ if SERVER then
       if arg then
         if obj == "user" then
           if arg:IsValid() then
-            table.Add(vars, arg == target and { selfClr, "You" } or { team.GetColor(arg:Team()), arg:Nick() })
+            table.Add(vars, arg == target and { BSU.CLR_SELF, "You" } or { team.GetColor(arg:Team()), arg:Nick() })
           else
-            table.Add(vars, { consoleClr, "(Console)" })
+            table.Add(vars, { BSU.CLR_CONSOLE, "(Console)" })
           end
         elseif obj == "param" then
           local params = istable(arg) and arg or { arg }
@@ -524,23 +515,23 @@ if SERVER then
           end
 
           if isAllPlayers and #params > 1 and #params == #player.GetAll() then
-            table.Add(vars, { everyoneClr, "Everyone" })
+            table.Add(vars, { BSU.CLR_EVERYONE, "Everyone" })
           else
             for ii = 1, #params do
               local p = params[ii]
 
               if ii > 1 then
-                table.Add(vars, { textClr, ii < #params and ", " or (#params > 2 and ", and " or " and ") })
+                table.Add(vars, { BSU.CLR_TEXT, ii < #params and ", " or (#params > 2 and ", and " or " and ") })
               end
 
               if IsEntity(p) then
                 if p:IsPlayer() then
-                  table.Add(vars, ply == p and (ply == target and { selfClr, "Yourself" } or { selfClr, "Themself" }) or { team.GetColor(p:Team()), p:Nick() })
+                  table.Add(vars, ply == p and (ply == target and { BSU.CLR_SELF, "Yourself" } or { BSU.CLR_SELF, "Themself" }) or { team.GetColor(p:Team()), p:Nick() })
                 else
-                  table.Add(vars, { miscClr, tostring(p) })
+                  table.Add(vars, { BSU.CLR_MISC, tostring(p) })
                 end
               else
-                table.Add(vars, { paramClr, tostring(p) })
+                table.Add(vars, { BSU.CLR_PARAM, tostring(p) })
               end
             end
           end
@@ -552,7 +543,7 @@ if SERVER then
 
     local last = string.sub(msg, pos)
     if #last > 0 then
-      table.Add(vars, { textClr, last })
+      table.Add(vars, { BSU.CLR_TEXT, last })
     end
 
     return unpack(vars)

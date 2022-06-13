@@ -7,6 +7,7 @@ function BSU.RunCommand(name, argStr, silent)
   local handler = BSU.CommandHandler(LocalPlayer(), argStr, silent)
 
   xpcall(cmd.func, function(err) chat.AddText(LocalPlayer(), errorClr, "Command errored with: " .. string.Split(err, ": ")[2]) end, handler, LocalPlayer(), #handler._args, argStr)
+  xpcall(cmd.func, function(err) chat.AddText(LocalPlayer(), BSU.CLR_ERROR, "Command errored with: " .. string.Split(err, ": ")[2]) end, handler, LocalPlayer(), #handler._args, argStr)
 end
 
 function BSU.RegisterServerCommand(name, description, category)

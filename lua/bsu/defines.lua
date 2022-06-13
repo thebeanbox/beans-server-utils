@@ -29,6 +29,14 @@ BSU.PP_USE       = 3
 BSU.PP_DAMAGE    = 4
 --BSU.PP_NOCOLLIDE = 5
 
+-- color values (mainly used for command messages)
+BSU.CLR_ERROR    = Color(255, 127, 0)   -- error messages                        (orange)
+BSU.CLR_TEXT     = Color(151, 211, 255) -- normal text                           (light blue)
+BSU.CLR_PARAM    = Color(0, 255, 0)     -- when a parameter isn't an entity      (green)
+BSU.CLR_SELF     = Color(75, 0, 130)    -- when target is client                 (dark purple)
+BSU.CLR_EVERYONE = Color(0, 130, 130)   -- when targeting all plys on the server (cyan)
+BSU.CLR_CONSOLE  = Color(0, 0, 0)       -- server console name                   (black)
+BSU.CLR_MISC     = Color(255, 255, 255) -- other (just used for non-player ents) (white)
 if SERVER then
   -- server SQL database table names
   BSU.SQL_GROUPS        = "bsu_groups"
