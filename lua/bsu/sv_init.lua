@@ -25,6 +25,6 @@ AddCSLuaFile(clBaseDir .. "pp.lua")
 AddCSLuaFile(clBaseDir .. "commands.lua")
 
 -- module loading
---BSU.LoadModules()
+BSU.LoadModules()
 
 hook.Run("BSU_Init")

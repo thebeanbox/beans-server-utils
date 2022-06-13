@@ -41,7 +41,6 @@ end
 -- make a player run a command (does nothing if they do not have access to the command)
 function BSU.RunCommand(name, ply, argStr, silent)
   if not BSU.PlayerHasCommandAccess(ply, name) then
-    return BSU.SendChatMsg(ply, errorClr, "You don't have permission to use this command")
     return BSU.SendChatMsg(ply, BSU.CLR_ERROR, "You don't have permission to use this command")
   end
 
@@ -50,6 +49,5 @@ function BSU.RunCommand(name, ply, argStr, silent)
 
   local handler = BSU.CommandHandler(ply, argStr, silent)
 
-  xpcall(cmd.func, function(err) BSU.SendChatMsg(ply, errorClr, "Command errored with: " .. string.Split(err, ": ")[2]) end, handler, ply, #handler._args, argStr)
   xpcall(cmd.func, function(err) BSU.SendChatMsg(ply, BSU.CLR_ERROR, "Command errored with: " .. string.Split(err, ": ")[2]) end, handler, ply, #handler._args, argStr)
 end

@@ -236,7 +236,6 @@ function BSU.SetupCommand(name, setup)
   local cmd = BSU.Command(name)
   if setup then setup(cmd) end
   BSU.RegisterCommand(cmd)
-  if SERVER then BSU.ClientRPC(nil, "BSU.RegisterServerCommand", cmd:GetName(), cmd:GetDescription(), cmd:GetCategory()) end
 end
 
 function BSU.GetCommands()

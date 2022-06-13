@@ -7,10 +7,10 @@ concommand.Add("bsu",
     if not name then return end
     local cmd = BSU.GetCommandByName(name)
 
-    if cmd and not cmd.sv then
-      BSU.RunCommand(name, string.sub(argStr, #name + 2))
+    if cmd and not cmd.serverside then
+      BSU.RunCommand(name, string.sub(argStr, #name + 2)) -- run clientside command
     else
-      LocalPlayer():ConCommand("_bsu " .. argStr)
+      LocalPlayer():ConCommand("_bsu " .. argStr) -- try to run serverside command
     end
   end,
   function(_, args)
@@ -37,3 +37,22 @@ concommand.Add("bsu",
     end]]
   end
 )
+
+-- allow clientside command usage in chat
+local function runChatCommand(ply, text)
+  if ply ~= LocalPlayer() then return end
+
+  if not string.StartWith(text, BSU.CMD_PREFIX) then return end
+
+  local split = string.Split(text, " ")
+  local name = string.lower(string.sub(table.remove(split, 1), 2))
+  local argStr = table.concat(split, " ")
+
+  local cmd = BSU.GetCommandByName(name)
+
+  if cmd and not cmd.serverside then
+    BSU.RunCommand(name, argStr)
+  end
+end
+
+hook.Add("OnPlayerChat", "BSU_RunChatCommand", runChatCommand)

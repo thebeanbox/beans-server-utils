@@ -11,8 +11,8 @@ end
 concommand.Add("bsu", concommandCallback)
 concommand.Add("_bsu", concommandCallback, nil, nil, FCVAR_CLIENTCMD_CAN_EXECUTE)
 
--- allow command usage in chat
-hook.Add("PlayerSay", "BSU_RunChatCommand", function(ply, text)
+-- allow serverside command usage in chat
+local function runChatCommand(ply, text)
   if not string.StartWith(text, BSU.CMD_PREFIX) then return end
 
   local split = string.Split(text, " ")
@@ -22,4 +22,14 @@ hook.Add("PlayerSay", "BSU_RunChatCommand", function(ply, text)
   if BSU.GetCommandByName(name) then
     BSU.RunCommand(name, ply, argStr)
   end
-end)
+end
+
+hook.Add("PlayerSay", "BSU_RunChatCommand", runChatCommand)
+
+local function sendCommandData(ply)
+  for k, v in ipairs(BSU.GetCommands()) do
+    BSU.ClientRPC(ply, "BSU.RegisterServerCommand", v:GetName(), v:GetDescription(), v:GetCategory())
+  end
+end
+
+hook.Add("PlayerSpawn", "BSU_SendCommandData", sendCommandData)

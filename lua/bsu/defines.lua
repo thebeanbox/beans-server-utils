@@ -37,6 +37,9 @@ BSU.CLR_SELF     = Color(75, 0, 130)    -- when target is client                
 BSU.CLR_EVERYONE = Color(0, 130, 130)   -- when targeting all plys on the server (cyan)
 BSU.CLR_CONSOLE  = Color(0, 0, 0)       -- server console name                   (black)
 BSU.CLR_MISC     = Color(255, 255, 255) -- other (just used for non-player ents) (white)
+
+BSU.CMD_PREFIX = "!"
+
 if SERVER then
   -- server SQL database table names
   BSU.SQL_GROUPS        = "bsu_groups"
@@ -47,8 +50,6 @@ if SERVER then
   BSU.SQL_GROUP_LIMITS  = "bsu_grp_limits"
   BSU.SQL_PLAYER_LIMITS = "bsu_ply_limits"
   BSU.SQL_PDATA         = "bsu_pdata"
-
-  BSU.CMD_PREFIX = "!"
 
   -- command access values
   BSU.CMD_NOONE      = 0 -- access only via the server console (useful if you want a command to only be player accessible using privileges)
