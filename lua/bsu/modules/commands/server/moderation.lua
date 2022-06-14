@@ -275,7 +275,7 @@ end)
     2. Group ID (number)
 ]]
 BSU.SetupCommand("setgroup", function(cmd)
-  cmd:SetDescription("grants access to a command")
+  cmd:SetDescription("set group by id")
   cmd:SetCategory("moderation")
   cmd:SetAccess(BSU.CMD_ADMIN)
   cmd:SetFunction(function(self, ply)
@@ -287,14 +287,14 @@ BSU.SetupCommand("setgroup", function(cmd)
 end)
 
 --[[
-  Name: setprivilege
+  Name: setgrouppriv
   Desc: set access to a command by group id
   Arguments:
     1. Target Group (string)
     2. Command (string)
-    3. Restrict? Revoke = 0, Grant = 1 (number)
+    3. Restrict? Revoke = not 1, Grant = 1 (number)
 ]]
-BSU.SetupCommand("setgroupidpriv", function(cmd)
+BSU.SetupCommand("setgrouppriv", function(cmd)
   cmd:SetDescription("grants access to a command")
   cmd:SetCategory("moderation")
   cmd:SetAccess(BSU.CMD_ADMIN)
@@ -302,7 +302,7 @@ BSU.SetupCommand("setgroupidpriv", function(cmd)
     BSU.AddGroupCommandAccess(
       self:GetNumberArg(1, true),
       self:GetStringArg(2, true),
-      self:GetNumberArg(3, false)
+      self:GetNumberArg(3, false) == 1
     )
   end)
 end)
