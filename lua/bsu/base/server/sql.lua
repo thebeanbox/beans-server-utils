@@ -156,7 +156,7 @@ BSU.SQLCreateTable(BSU.SQL_PLAYER_LIMITS, string.format(
 BSU.SQLCreateTable(BSU.SQL_PDATA, string.format(
   [[
     steamid TEXT NOT NULL REFERENCES %s(steamid),
-    key TEXT NOT NULL UNIQUE,
+    key TEXT NOT NULL,
     value TEXT NOT NULL,
     network BOOLEAN NOT NULL CHECK (network in (0, 1))
   ]],
