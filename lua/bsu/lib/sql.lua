@@ -49,7 +49,7 @@ function BSU.SQLParse(data, tbl)
         data[k] = nil
       else
         local type = columnData[k].type
-        if type == "INTEGER" or type == "REAL" or type == "NUMERIC" then
+        if type == "INTEGER" or type == "REAL" or type == "NUMERIC" or type == "BOOLEAN" then
           data[k] = tonumber(v)
         end
       end
