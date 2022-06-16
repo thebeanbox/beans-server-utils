@@ -15,4 +15,10 @@ include(clBaseDir .. "commands.lua")
 -- module loading
 BSU.LoadModules()
 
+-- tell server the client is ready
+hook.Add("InitPostEntity", "BSU_ClientReady", function()
+  net.Start("bsu_client_ready")
+  net.SendToServer()
+end)
+
 hook.Run("BSU_Init")

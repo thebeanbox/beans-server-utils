@@ -1,6 +1,7 @@
 -- lib/server/networking.lua
 
 -- add some network strings
+util.AddNetworkString("bsu_client_ready") -- used to tell the server when the clientside part of the addon has loaded
 
 util.AddNetworkString("bsu_rpc") -- used for client RPC system
 util.AddNetworkString("bsu_client_info") -- used to send client info to the server
