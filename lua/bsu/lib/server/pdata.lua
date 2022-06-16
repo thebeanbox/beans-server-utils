@@ -22,12 +22,13 @@ function BSU.GetPDataBySteamID(steamid, key)
   if query then return query.value end
 end
 
-function BSU.GetAllPDataBySteamID(steamid)
+function BSU.GetAllPDataBySteamID(steamid, network)
   local query = BSU.SQLSelectByValues(BSU.SQL_PDATA, { steamid = steamid })
   local data = {}
 
   for i = 1, #query do
     local entry = query[i]
+    if network ~= nil and entry.network == (network and 0 or 1) then continue end
     data[entry.key] = entry.value
   end
 
@@ -61,6 +62,9 @@ function BSU.GetPData(ply, key)
 end
 
 -- gets a table of all the pdata on a player
-function BSU.GetAllPData(ply)
-  return BSU.GetAllPDataBySteamID(ply:SteamID64())
+-- optionally get only networked data (network = true)
+-- optionally get only non-networked data (network = false)
+-- (leave network unset to get all data)
+function BSU.GetAllPData(ply, network)
+  return BSU.GetAllPDataBySteamID(ply:SteamID64(), network)
 end

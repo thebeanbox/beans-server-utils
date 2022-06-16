@@ -32,4 +32,4 @@ local function sendCommandData(ply)
   end
 end
 
-hook.Add("PlayerSpawn", "BSU_SendCommandData", sendCommandData)
+hook.Add("BSU_ClientReady", "BSU_SendCommandData", sendCommandData)
