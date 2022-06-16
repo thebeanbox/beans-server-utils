@@ -91,7 +91,7 @@ local function updateClientInfo(_, ply)
   BSU.SetPData(ply, "timezone", math.Clamp(timezone, -12, 14), true) -- incase if spoofed, clamp the value
 end
 
-net.Receive("BSU_ClientInfo", updateClientInfo)
+net.Receive("bsu_client_info", updateClientInfo)
 
 -- fix glitchy movement when grabbing players
 hook.Add("OnPhysgunPickup", "BSU_PlayerPhysgunPickup", function(ply, ent)

@@ -71,7 +71,7 @@ function BSU.SendPPData(steamids)
 
   if table.IsEmpty(data) then return end
 
-  net.Start("BSU_PPData_Init")
+  net.Start("bsu_ppdata_init")
     net.WriteUInt(#data, 7) -- max of 127 entries (perfect because this is the max player limit excluding the local player)
     for _, v in ipairs(data) do
       net.WriteString(v.steamid)
@@ -82,7 +82,7 @@ end
 
 -- update prop protection data on the server
 function BSU.SendPPDataUpdate(method, steamid, permission)
-  net.Start("BSU_PPData_Update")
+  net.Start("bsu_ppdata_update")
     net.WriteBool(method) -- true to register data, false to remove data
     net.WriteString(steamid)
     net.WriteUInt(permission, 3)

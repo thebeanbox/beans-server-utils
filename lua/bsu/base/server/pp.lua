@@ -24,7 +24,7 @@ local function initializePPData(_, ply)
   end
 end
 
-net.Receive("BSU_PPData_Init", initializePPData)
+net.Receive("bsu_ppdata_init", initializePPData)
 
 -- update a client's prop protection data (by adding/removing an entry)
 local function updatePPData(_, ply)
@@ -51,7 +51,7 @@ local function updatePPData(_, ply)
   end
 end
 
-net.Receive("BSU_PPData_Update", updatePPData)
+net.Receive("bsu_ppdata_update", updatePPData)
 
 -- sets the owner of map entities to the world (internally just sets any entity with a N/A owner to World)
 local function setOwnerMapEntities()

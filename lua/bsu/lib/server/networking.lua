@@ -1,14 +1,15 @@
 -- lib/server/networking.lua
 
 -- add some network strings
-util.AddNetworkString("BSU_RPC") -- used for client RPC system
-util.AddNetworkString("BSU_ClientInfo") -- used to send client info to the server
 
-util.AddNetworkString("BSU_PPData_Init") -- used for getting all prop protection client data on the server
-util.AddNetworkString("BSU_PPData_Update") -- used for updating prop protection client data on the server
+util.AddNetworkString("bsu_rpc") -- used for client RPC system
+util.AddNetworkString("bsu_client_info") -- used to send client info to the server
+
+util.AddNetworkString("bsu_ppdata_init") -- used for getting all prop protection client data on the server
+util.AddNetworkString("bsu_ppdata_update") -- used for updating prop protection client data on the server
 
 function BSU.ClientRPC(plys, func, ...)
-  net.Start("BSU_RPC")
+  net.Start("bsu_rpc")
   net.WriteString(func)
 
   local tableToWrite = {...}

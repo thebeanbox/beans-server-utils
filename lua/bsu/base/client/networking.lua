@@ -16,4 +16,4 @@ local function handleRPC()
   func(unpack(args))
 end
 
-net.Receive("BSU_RPC", handleRPC)
+net.Receive("bsu_rpc", handleRPC)
