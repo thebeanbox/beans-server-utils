@@ -416,7 +416,7 @@ BSU.SetupCommand("grantgrouppriv", function(cmd)
   cmd:SetCategory("moderation")
   cmd:SetAccess(BSU.CMD_SUPERADMIN)
   cmd:SetFunction(function(self, ply)
-    local groupid, name, value = self:GetNumberArg(1, true), self:GetStringArg(2, true), self:GetStringArg(3, true)
+    local groupid, name, value = self:GetStringArg(1, true), self:GetStringArg(2, true), self:GetStringArg(3, true)
 
     local group = BSU.GetGroupByID(groupid)
     if not group then error("Group does not exist") end
@@ -432,7 +432,7 @@ BSU.SetupCommand("grantgrouppriv", function(cmd)
 
     self:BroadcastActionMsg("%user% granted the group %param% access to %param% (%param%)", {
       ply,
-      group.name,
+      groupid,
       value,
       getNameFromPriv(type)
     })
@@ -452,7 +452,7 @@ BSU.SetupCommand("revokegrouppriv", function(cmd)
   cmd:SetCategory("moderation")
   cmd:SetAccess(BSU.CMD_SUPERADMIN)
   cmd:SetFunction(function(self, ply)
-    local groupid, name, value = self:GetNumberArg(1, true), self:GetStringArg(2, true), self:GetStringArg(3, true)
+    local groupid, name, value = self:GetStringArg(1, true), self:GetStringArg(2, true), self:GetStringArg(3, true)
 
     local group = BSU.GetGroupByID(groupid)
     if not group then error("Group does not exist") end
@@ -468,7 +468,7 @@ BSU.SetupCommand("revokegrouppriv", function(cmd)
 
     self:BroadcastActionMsg("%user% revoked the group %param% access from %param% (%param%)", {
       ply,
-      group.name,
+      groupid,
       value,
       getNameFromPriv(type)
     })
@@ -488,7 +488,7 @@ BSU.SetupCommand("cleargrouppriv", function(cmd)
   cmd:SetCategory("moderation")
   cmd:SetAccess(BSU.CMD_SUPERADMIN)
   cmd:SetFunction(function(self, ply)
-    local groupid, name, value = self:GetNumberArg(1, true), self:GetStringArg(2, true), self:GetStringArg(3, true)
+    local groupid, name, value = self:GetStringArg(1, true), self:GetStringArg(2, true), self:GetStringArg(3, true)
 
     local group = BSU.GetGroupByID(groupid)
     if not group then error("Group does not exist") end
@@ -504,7 +504,7 @@ BSU.SetupCommand("cleargrouppriv", function(cmd)
     self:BroadcastActionMsg("%user% cleared a %param% privilege on the group %param% for %param% (%param%)", {
       ply,
       priv.granted == 1 and "granting" or "revoking",
-      group.name,
+      groupid,
       value,
       getNameFromPriv(type),
     })
