@@ -268,41 +268,245 @@ BSU.SetupCommand("kick", function(cmd)
 end)
 
 --[[
-  Name: setgroup
-  Desc: set group by id
-  Arguments:
-    1. Target (player)
-    2. Group ID (number)
+  Name: listgroups
+  Desc: Show a list of all groups
 ]]
-BSU.SetupCommand("setgroup", function(cmd)
-  cmd:SetDescription("set group by id")
+BSU.SetupCommand("listgroups", function(cmd)
+  cmd:SetDescription("Show a list of all groups")
   cmd:SetCategory("moderation")
-  cmd:SetAccess(BSU.CMD_ADMIN)
+  cmd:SetAccess(BSU.CMD_SUPERADMIN)
   cmd:SetFunction(function(self, ply)
-    BSU.SetPlayerGroup(
-      self:GetPlayerArg(1, true),
-      self:GetNumberArg(2, true)
-    )
+    local groups = BSU.GetAllGroups()
+    table.sort(groups, function(a, b) return a.id < b.id end)
+
+    local msg = { color_white, "Groups List:\n" }
+    for k, v in ipairs(groups) do
+      table.Add(msg, {
+        color_white, v.id .. ")\t", BSU.HexToColor(v.color), v.name .. "\n"
+      })
+    end
+
+    self:SendChatMsg(unpack(msg))
   end)
 end)
 
 --[[
-  Name: setgrouppriv
-  Desc: set access to a command by group id
+  Name: setgroup
+  Desc: Set the group of a player
   Arguments:
-    1. Target Group (string)
-    2. Command (string)
-    3. Restrict? Revoke = not 1, Grant = 1 (number)
+    1. Target (player)
+    2. Group ID (string)
 ]]
-BSU.SetupCommand("setgrouppriv", function(cmd)
-  cmd:SetDescription("grants access to a command")
+BSU.SetupCommand("setgroup", function(cmd)
+  cmd:SetDescription("Set the group of a player")
   cmd:SetCategory("moderation")
-  cmd:SetAccess(BSU.CMD_ADMIN)
+  cmd:SetAccess(BSU.CMD_SUPERADMIN)
   cmd:SetFunction(function(self, ply)
-    BSU.AddGroupCommandAccess(
-      self:GetNumberArg(1, true),
-      self:GetStringArg(2, true),
-      self:GetNumberArg(3, false) == 1
-    )
+    local target, groupid = self:GetPlayerArg(1, true), self:GetStringArg(2, true)
+
+    if not BSU.GetGroupByID(groupid) then error("Group does not exist") end
+    if BSU.GetPlayerData(target).groupid == groupid then error("Target is already in that group") end
+
+    BSU.SetPlayerGroup(target, groupid)
+
+    self:BroadcastActionMsg("%user% set the group of %param% to %param%", {
+      ply,
+      target,
+      groupid
+    })
+  end)
+end)
+
+--[[
+  Name: setteam
+  Desc: Set the team of a player
+  Arguments:
+    1. Target (player)
+    2. Team Index (number) (optional, resets team to the group team if not set)
+]]
+BSU.SetupCommand("setteam", function(cmd)
+  cmd:SetDescription("Set the team of a player")
+  cmd:SetCategory("moderation")
+  cmd:SetAccess(BSU.CMD_SUPERADMIN)
+  cmd:SetFunction(function(self, ply)
+    local target, team = self:GetPlayerArg(1, true), self:GetNumberArg(2)
+
+    local teamData
+    if team then
+      teamData = BSU.GetTeamByID(team)
+    else
+      teamData = BSU.GetTeamByName(self:GetMultiStringArg(2, -1, true))
+    end
+
+    if not teamData then error("Team does not exist") end
+    if BSU.GetPlayerData(target).team == teamData.id then error("Target is already in that team") end
+
+    BSU.SetPlayerTeam(target, teamData.id)
+
+    self:BroadcastActionMsg("%user% set the team of %param% to %param%", {
+      ply,
+      target,
+      teamData.name
+    })
+  end)
+end)
+
+--[[
+  Name: resetteam
+  Desc: Reset the team of a player to use their group's team instead
+  Arguments:
+    1. Target (Player)
+]]
+BSU.SetupCommand("resetteam", function(cmd)
+  cmd:SetDescription("Reset the team of a player to use their group's team instead")
+  cmd:SetCategory("moderation")
+  cmd:SetAccess(BSU.CMD_SUPERADMIN)
+  cmd:SetFunction(function(self, ply)
+    local target = self:GetPlayerArg(1, true)
+
+    BSU.ResetPlayerTeam(target)
+
+    self:BroadcastActionMsg("%user% reset the team of %param%", {
+      ply,
+      target
+    })
+  end)
+end)
+
+local privs = {
+  model = BSU.PRIV_MODEL,
+  mdl = BSU.PRIV_MODEL,
+  npc = BSU.PRIV_NPC,
+  sent = BSU.PRIV_SENT,
+  entity = BSU.PRIV_SENT,
+  swep = BSU.PRIV_SWEP,
+  weapon = BSU.PRIV_SWEP,
+  tool = BSU.PRIV_TOOL,
+  command = BSU.PRIV_CMD,
+  cmd = BSU.PRIV_CMD
+}
+
+local function getPrivFromName(name)
+  return privs[string.lower(name)]
+end
+
+local names = {
+  [BSU.PRIV_MODEL] = "model",
+  [BSU.PRIV_NPC] = "npc",
+  [BSU.PRIV_SENT] = "entity",
+  [BSU.PRIV_SWEP] = "weapon",
+  [BSU.PRIV_TOOL] = "tool",
+  [BSU.PRIV_CMD] = "command"
+}
+
+local function getNameFromPriv(priv)
+  return names[priv]
+end
+
+--[[
+  Name: addgrouppriv
+  Desc: Set a group to have access to a privilege
+  Arguments:
+    1. Group ID (number)
+    2. Name (string)
+    3. Value (string)
+]]
+BSU.SetupCommand("grantgrouppriv", function(cmd)
+  cmd:SetDescription("Set a group to have access to a privilege")
+  cmd:SetCategory("moderation")
+  cmd:SetAccess(BSU.CMD_SUPERADMIN)
+  cmd:SetFunction(function(self, ply)
+    local groupid, name, value = self:GetNumberArg(1, true), self:GetStringArg(2, true), self:GetStringArg(3, true)
+
+    local group = BSU.GetGroupByID(groupid)
+    if not group then error("Group does not exist") end
+    if group.usergroup == "superadmin" then error("Group is in the 'superadmin' usergroup and thus already has access to everything") end
+
+    local type = getPrivFromName(name)
+    if not type then error("Unknown privilege type") end
+
+    local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = type, value = value })[1]
+    if priv and priv.granted == 1 then error("Privilege is already granted to this group") end
+
+    BSU.RegisterGroupPrivilege(groupid, type, value, true)
+
+    self:BroadcastActionMsg("%user% granted the group %param% access to %param% (%param%)", {
+      ply,
+      group.name,
+      value,
+      getNameFromPriv(type)
+    })
+  end)
+end)
+
+--[[
+  Name: revokegrouppriv
+  Desc: Set a group to not have access to a privilege
+  Arguments:
+    1. Group ID (number)
+    2. Name (string)
+    3. Value (string)
+]]
+BSU.SetupCommand("revokegrouppriv", function(cmd)
+  cmd:SetDescription("Set a group to not have access to a privilege")
+  cmd:SetCategory("moderation")
+  cmd:SetAccess(BSU.CMD_SUPERADMIN)
+  cmd:SetFunction(function(self, ply)
+    local groupid, name, value = self:GetNumberArg(1, true), self:GetStringArg(2, true), self:GetStringArg(3, true)
+
+    local group = BSU.GetGroupByID(groupid)
+    if not group then error("Group does not exist") end
+    if group.usergroup == "superadmin" then error("Group is in the 'superadmin' usergroup and thus cannot be restricted from anything") end
+
+    local type = getPrivFromName(name)
+    if not type then error("Unknown privilege type") end
+
+    local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = type, value = value })[1]
+    if priv and priv.granted == 0 then error("Privilege is already revoked from this group") end
+
+    BSU.RegisterGroupPrivilege(groupid, type, value, false)
+
+    self:BroadcastActionMsg("%user% revoked the group %param% access from %param% (%param%)", {
+      ply,
+      group.name,
+      value,
+      getNameFromPriv(type)
+    })
+  end)
+end)
+
+--[[
+  Name: cleargrouppriv
+  Desc: Remove an existing group privilege (will then use whatever the default accessibility is for the group)
+  Arguments:
+    1. Group ID (number)
+    2. Name (string)
+    3. Value (string)
+]]
+BSU.SetupCommand("cleargrouppriv", function(cmd)
+  cmd:SetDescription("Remove an existing group privilege (will use whatever the default access settings are)")
+  cmd:SetCategory("moderation")
+  cmd:SetAccess(BSU.CMD_SUPERADMIN)
+  cmd:SetFunction(function(self, ply)
+    local groupid, name, value = self:GetNumberArg(1, true), self:GetStringArg(2, true), self:GetStringArg(3, true)
+
+    local group = BSU.GetGroupByID(groupid)
+    if not group then error("Group does not exist") end
+
+    local type = getPrivFromName(name)
+    if not type then error("Unknown privilege type") end
+
+    local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = type, value = value })[1]
+    if not priv then error("Privilege on this group doesn't exist") end
+
+    BSU.RemoveGroupPrivilege(groupid, type, value)
+
+    self:BroadcastActionMsg("%user% cleared a %param% privilege on the group %param% for %param% (%param%)", {
+      ply,
+      priv.granted == 1 and "granting" or "revoking",
+      group.name,
+      value,
+      getNameFromPriv(type),
+    })
   end)
 end)

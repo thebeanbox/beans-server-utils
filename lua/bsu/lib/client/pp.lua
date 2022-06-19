@@ -43,7 +43,7 @@ function BSU.GrantPropPermission(ply, perm)
 end
 
 function BSU.RevokePropPermission(ply, perm)
-  if ply:IsBot() then return error("Cannot grant prop permission to a bot") end
+  if ply:IsBot() then return end
   BSU.RemovePropPermission(ply:SteamID64(), perm)
 end
 
@@ -54,7 +54,7 @@ function BSU.SendPPData(steamids)
   if not steamids then
     steamids = {}
     for _, v in ipairs(player.GetHumans()) do
-      if v ~= LocalPlayer() and not v:IsBot() then
+      if v ~= LocalPlayer() then
         table.insert(steamids, v:SteamID64())
       end
     end

@@ -1,4 +1,4 @@
--- lib/client/groups.lua
+-- lib/client/teams.lua
 
 function BSU.SetupTeams(teams)
   for k, v in ipairs(teams) do

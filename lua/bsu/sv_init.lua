@@ -10,12 +10,13 @@ AddCSLuaFile(BSU.DIR_BASE .. "sql.lua")
 
 -- setup server-side scripts
 include(svBaseDir .. "sql.lua")
+include(svBaseDir .. "teams.lua")
 include(svBaseDir .. "groups.lua")
 include(svBaseDir .. "players.lua")
 include(svBaseDir .. "pdata.lua")
+include(svBaseDir .. "bans.lua")
 include(svBaseDir .. "privileges.lua")
 include(svBaseDir .. "limits.lua")
-include(svBaseDir .. "bans.lua")
 include(svBaseDir .. "pp.lua")
 include(svBaseDir .. "commands.lua")
 

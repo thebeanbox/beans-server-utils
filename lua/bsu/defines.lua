@@ -42,14 +42,15 @@ BSU.CMD_PREFIX = "!"
 
 if SERVER then
   -- server SQL database table names
+  BSU.SQL_TEAMS         = "bsu_teams"
   BSU.SQL_GROUPS        = "bsu_groups"
   BSU.SQL_PLAYERS       = "bsu_players"
+  BSU.SQL_PDATA         = "bsu_pdata"
   BSU.SQL_BANS          = "bsu_bans"
   BSU.SQL_GROUP_PRIVS   = "bsu_grp_privs"
   BSU.SQL_PLAYER_PRIVS  = "bsu_ply_privs"
   BSU.SQL_GROUP_LIMITS  = "bsu_grp_limits"
   BSU.SQL_PLAYER_LIMITS = "bsu_ply_limits"
-  BSU.SQL_PDATA         = "bsu_pdata"
 
   -- command access values
   BSU.CMD_NOONE      = 0 -- access only via the server console (useful if you want a command to only be player accessible using privileges)
@@ -58,10 +59,10 @@ if SERVER then
   BSU.CMD_ANYONE     = 3 -- access to any person
 
   -- id of the group that players are automatically set to (like when they join for the first time)
-  BSU.DEFAULT_GROUP = 1
+  BSU.DEFAULT_GROUP = "user"
 
-  -- id of the group that bots should be assigned to
-  BSU.BOT_GROUP = 2 --BSU.DEFAULT_GROUP
+  -- id of the team that bots should be assigned to
+  BSU.BOT_TEAM = 4
 
   BSU.BAN_MSG = [[============ You've Been Banned! ===========
 

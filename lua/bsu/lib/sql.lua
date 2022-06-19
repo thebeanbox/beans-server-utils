@@ -1,9 +1,9 @@
 -- lib/sql.lua (SHARED)
 -- handles some sql stuff and holds useful functions
 
--- if nil then "NULL" otherwise escape danger
+-- if nil or NULL then "NULL" otherwise escape danger
 function BSU.EscOrNULL(i, quotes)
-  return not i and "NULL" or sql.SQLStr("" .. i, quotes or type(i) == "number")
+  return not i or i == NULL and "NULL" or sql.SQLStr("" .. i, quotes or type(i) == "number")
 end
 
 -- checks if query errored or not

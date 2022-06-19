@@ -1,9 +1,9 @@
 -- lib/players.lua (SHARED)
 
 function BSU.GetPlayerTotalTime(ply)
-  return ply:GetNW2Int("BSU_TotalTime") + BSU.UTCTime() - ply:GetNW2Int("BSU_ConnectTime")
+  return tonumber(BSU.GetPData(ply, "total_time")) + BSU.UTCTime() - tonumber(BSU.GetPData(ply, "connect_time"))
 end
 
 function BSU.UTCToPlayerLocalTime(ply, utcTime)
-  return utcTime + ply:GetNW2Int("BSU_TimeOffset") * 3600
+  return (utcTime or BSU.UTCTime()) + tonumber(BSU.GetPData(ply, "timezone")) * 3600
 end

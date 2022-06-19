@@ -1,7 +1,7 @@
 -- base/server/pp.lua
 
--- request a client's prop protection data after they authenticate
-hook.Add("PlayerAuthed", "BSU_RequestPPData", function(ply) BSU.RequestPPData(ply) end)
+-- request a client's prop protection data once they can be sent net messages
+hook.Add("BSU_ClientReady", "BSU_RequestPPData", function(ply) BSU.RequestPPData(ply) end)
 
 -- initialize a client's prop protection data
 local function initializePPData(_, ply)

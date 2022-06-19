@@ -9,7 +9,7 @@ function BSU.RegisterPData(steamid, key, value, network)
     steamid = steamid,
     key = key,
     value = value,
-    network = network and 0 or 1
+    network = network and 1 or 0
   })
 end
 
@@ -41,9 +41,7 @@ function BSU.SetPData(ply, key, value, network)
   value = tostring(value)
 
   BSU.RegisterPData(ply:SteamID64(), key, value, network)
-  if network then
-    ply:SetNW2String("BSU_PDATA_" .. key, value)
-  end
+  ply:SetNW2String("BSU_PDATA_" .. key, network and value or nil)
 end
 
 -- clears pdata key on a player (or does nothing if it's not set)

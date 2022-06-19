@@ -1,13 +1,13 @@
 -- base/server/privileges.lua
 
 local function notifyRestricted(ply, name)
-  BSU.ClientRPC(ply, "notification.AddLegacy", "'" .. name .. "' is restricted", NOTIFY_ERROR, 5)
+  BSU.ClientRPC(ply, "chat.AddText", BSU.CLR_ERROR, "'" .. name .. "' is restricted")
 end
 
 local function checkModelPrivilege(ply, model)
   local allowed = BSU.PlayerIsAllowed(ply, BSU.PRIV_MODEL, model)
   if not allowed then
-    notifyRestricted(ply, string.match(model, "models/.+%.mdl"))
+    notifyRestricted(ply, string.match(model, "^models/.+%.mdl"))
     return false
   end
 end

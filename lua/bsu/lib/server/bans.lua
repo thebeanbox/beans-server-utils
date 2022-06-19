@@ -80,8 +80,7 @@ function BSU.RevokeIPBan(ip, adminID)
 end
 
 function BSU.BanPlayer(ply, reason, duration, admin)
-  if ply:IsBot() then return error("Unable to ban a bot") end
-  if admin and admin:IsBot() then return error("A bot is unable to ban") end
+  if ply:IsBot() then return error("Unable to ban a bot, try kicking") end
   BSU.BanSteamID(ply:SteamID64(), reason, duration, (admin and admin:IsValid()) and admin:SteamID64())
 end
 
@@ -99,13 +98,11 @@ function BSU.SuperDuperBanPlayer(ply, reason, duration, admin)
 end
 
 function BSU.IPBanPlayer(ply, reason, duration, admin)
-  if ply:IsBot() then return error("Unable to ip ban a bot") end
-  if admin and admin:IsBot() then return error("A bot is unable to ip ban") end
+  if ply:IsBot() then return error("Unable to ip ban a bot, try kicking") end
   BSU.BanIP(ply:IPAddress(), reason, duration, (admin and admin:IsValid()) and admin:SteamID64())
 end
 
 function BSU.KickPlayer(ply, reason, admin)
-  if admin and admin:IsBot() then return error("A bot is unable to kick") end
   game.KickID(ply:UserID(), "(Kicked) " .. (reason or "No reason given"))
   BSU.RegisterBan(ply:SteamID64(), reason, nil, (admin and admin:IsValid()) and admin:SteamID64()) -- log it
 end

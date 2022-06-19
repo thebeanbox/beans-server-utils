@@ -429,7 +429,7 @@ if SERVER then
     if not self._user:IsValid() then return true end
     local tarData = BSU.GetPlayerDataBySteamID(targetID)
     if not tarData then return true end
-    if self._user:Team() >= tarData.groupid then
+    if self._user:Team() >= tarData.group then
       return true
     elseif fail then
       error("You cannot select this target")
@@ -497,8 +497,8 @@ if SERVER then
 
       if arg then
         if obj == "user" then
-          if arg:IsValid() then
-            table.Add(vars, arg == target and { BSU.CLR_SELF, "You" } or { team.GetColor(arg:Team()), arg:Nick() })
+          if arg:IsValid() or not target:IsValid() then
+            table.Add(vars, arg == target and { BSU.CLR_SELF, "You" } or { arg })
           else
             table.Add(vars, { BSU.CLR_CONSOLE, "(Console)" })
           end
@@ -525,7 +525,7 @@ if SERVER then
 
               if IsEntity(p) then
                 if p:IsPlayer() then
-                  table.Add(vars, ply == p and (ply == target and { BSU.CLR_SELF, "Yourself" } or { BSU.CLR_SELF, "Themself" }) or { team.GetColor(p:Team()), p:Nick() })
+                  table.Add(vars, ply == p and (ply == target and { BSU.CLR_SELF, "Yourself" } or { BSU.CLR_SELF, "Themself" }) or { p })
                 else
                   table.Add(vars, { BSU.CLR_MISC, tostring(p) })
                 end
@@ -550,8 +550,15 @@ if SERVER then
 
   -- sends a message in everyone's chat and formats player entities and tables of player entities
   function objCmdHandler.BroadcastActionMsg(self, msg, ...)
-    if self._silent then return end
     local targets = player.GetHumans()
+    if self._silent then
+      for i = 1, #targets do
+        local ply = targets[i]
+        if not ply:IsSuperAdmin() and ply ~= self.user then -- remove targets that aren't superadmins and not command user
+          table.remove(targets, i)
+        end
+      end
+    end
     table.insert(targets, 1, NULL)
     for k, v in ipairs(targets) do
       BSU.SendChatMsg(v, formatActionMsg(self._user, v, msg, ...))

@@ -6,4 +6,4 @@ local function networkPData(ply)
   end
 end
 
-hook.Add("BSU_ClientReady", "BSU_NetworkPData", networkPData)
+hook.Add("BSU_PlayerReady", "BSU_NetworkPData", networkPData)

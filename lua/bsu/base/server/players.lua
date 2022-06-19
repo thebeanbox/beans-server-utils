@@ -1,74 +1,52 @@
 -- base/server/players.lua
 -- handles player data stuff
 
---[[
-  Player NW2Var Info
-
-  BSU_Init        - (bool)   the player has been initialized
-  BSU_TotalTime   - (int)    (in seconds) how long the player has been on the server (including other sessions)
-  BSU_ConnectTime - (int)    (in seconds) utc unix timestamp when the player joined the server
-]]
+hook.Add("PlayerInitialSpawn", "BSU_InitializePlayer", function(ply)
+  timer.Simple(0, function() hook.Run("BSU_PlayerInit", ply) end)
+end)
 
 -- initialize player data
 local function initializePlayer(ply)
   local id64 = ply:SteamID64()
   local plyData = BSU.GetPlayerData(ply)
+  local isPlayer = not ply:IsBot()
   
   if not plyData then -- this is the first time this player has joined
-    BSU.RegisterPlayer(id64, BSU.DEFAULT_GROUP)
+    BSU.RegisterPlayer(id64, BSU.DEFAULT_GROUP, not isPlayer and BSU.BOT_TEAM or nil)
+    plyData = BSU.GetPlayerData(ply)
   end
 
-  -- update some sql player data
-  BSU.SetPlayerData(id64, {
+  -- update some sql data
+  BSU.SetPlayerDataBySteamID(id64, {
     name = ply:Nick(),
-    ip = BSU.Address(ply:IPAddress())
+    ip = isPlayer and BSU.Address(ply:IPAddress()) or nil
   })
+
+  -- update some pdata
+  if not BSU.GetPData(ply, "total_time") then BSU.SetPData(ply, "total_time", 0, true) end
+  BSU.SetPData(ply, "connect_time", BSU.UTCTime(), true)
+
+  -- set group values
+  local groupData = BSU.GetGroupByID(plyData.groupid)
+
+  ply:SetTeam(plyData.team and plyData.team or groupData.team)
+  ply:SetUserGroup(groupData.usergroup or "user")
+
+  -- request for client system info
+  if isPlayer then BSU.RequestClientInfo(ply) end
+
+  ply.bsu_ready = true
+  hook.Run("BSU_PlayerReady", ply) -- signal that the player has finished being initialized
 end
 
-hook.Add("PlayerAuthed", "BSU_InitializePlayer", initializePlayer)
+hook.Add("BSU_PlayerInit", "BSU_InitializePlayer", initializePlayer)
 
--- initialize player values
-local function initializePlayerValues(ply)
-  if ply:GetNW2Bool("BSU_Init") then return end
-  ply:SetNW2Bool("BSU_Init", true)
-
-  if ply:IsBot() then
-    local groupData = BSU.GetGroupByID(BSU.BOT_GROUP)
-
-    -- set group values
-    ply:SetTeam(BSU.BOT_GROUP)
-    ply:SetUserGroup(groupData.usergroup or "user")
-
-    ply:SetNW2Int("BSU_TotalTime", 0)
-  else
-    local plyData = BSU.GetPlayerData(ply)
-    local groupData = BSU.GetGroupByID(plyData.groupid)
-
-    -- set group values
-    ply:SetTeam(plyData.groupid)
-    ply:SetUserGroup(groupData.usergroup or "user")
-
-    ply:SetNW2Int("BSU_TotalTime", plyData.totaltime)
-
-    -- request for client system info
-    BSU.RequestClientInfo(ply)
-  end
-
-  ply:SetNW2Int("BSU_ConnectTime", BSU.UTCTime())
-end
-
-hook.Add("PlayerSpawn", "BSU_InitializePlayerValues", initializePlayerValues)
-
--- updates the totaltime and lastvisit values of sql player data for all connected players
+-- update total_time and last_visit pdata values for all connected players
 local function updatePlayerData()
-  for k, v in ipairs(player.GetHumans()) do
-    local id64 = v:SteamID64()
-    BSU.SetPlayerData(id64,
-      {
-        totaltime = v:GetNW2Int("BSU_TotalTime") + BSU.UTCTime() - v:GetNW2Int("BSU_ConnectTime"),
-        lastvisit = BSU.UTCTime()
-      }
-    )
+  for k, v in ipairs(player.GetAll()) do
+    if not v.bsu_ready then return end
+    BSU.SetPData(v, "total_time", tonumber(BSU.GetPData(v, "total_time")) + BSU.UTCTime() - tonumber(BSU.GetPData(v, "connect_time")), true)
+    BSU.SetPData(v, "last_visit", BSU.UTCTime(), true)
   end
 end
 
@@ -77,7 +55,7 @@ timer.Create("BSU_UpdatePlayerData", 1, 0, updatePlayerData) -- update player da
 -- updates the name value of sql player data whenever a player's steam name is changed
 gameevent.Listen("player_changename")
 hook.Add("player_changename", "BSU_UpdatePlayerDataName", function(data)
-  BSU.SetPlayerData(Player(data.userid):SteamID64(), { name = data.newname })
+  BSU.SetPlayerData(Player(data.userid), { name = data.newname })
 end)
 
 -- receive some client data and update pdata (see BSU.RequestClientInfo)
