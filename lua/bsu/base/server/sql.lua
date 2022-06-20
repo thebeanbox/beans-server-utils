@@ -19,10 +19,10 @@ BSU.SQLCreateTable(BSU.SQL_TEAMS, string.format(
 --[[
   Groups
 
-  id        - (text)        id of the group
-  team      - (int)         id of the team the group should use
-  usergroup - (text)        usergroup players under this group should be given (ex: "admin", "superadmin") (default: "user")
-  inherit   - (int or NULL) id of the group this group should inherit the properties of
+  id        - (text)         id of the group
+  team      - (int)          id of the team the group should use
+  usergroup - (text)         usergroup players under this group should be given (ex: "admin", "superadmin") (default: "user")
+  inherit   - (text or NULL) id of the group this group should inherit the properties of
 ]]
 
 BSU.SQLCreateTable(BSU.SQL_GROUPS, string.format(
@@ -30,7 +30,7 @@ BSU.SQLCreateTable(BSU.SQL_GROUPS, string.format(
     id TEXT PRIMARY KEY,
     team INTEGER NOT NULL REFERENCES %s(id),
     usergroup TEXT NOT NULL DEFAULT user,
-    inherit INTEGER REFERENCES %s(id)
+    inherit TEXT REFERENCES %s(id)
   ]],
     BSU.EscOrNULL(BSU.SQL_TEAMS, true),
     BSU.EscOrNULL(BSU.SQL_GROUPS, true)
