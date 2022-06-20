@@ -33,21 +33,18 @@ end
 if SERVER then
   function plyMeta:CPPIGetFriends()
     local steamids = BSU.GetPlayerPermissionList(self:SteamID64(), BSU.PP_TOOLGUN)
+    local lookup = {}
+    for i = 1, #steamids do
+      lookup[steamids[i]] = true
+    end
     
     local players = player.GetAll()
     local friends = {}
     for _, ply in ipairs(players) do
       if ply:IsSuperAdmin() then
         table.insert(friends, ply)
-        table.remove(steamids, k)
-      else
-        for k, id in ipairs(steamids) do
-          if ply:SteamID64() == id then
-            table.insert(friends, ply)
-            table.remove(steamids, k)
-            break
-          end
-        end
+      elseif lookup[ply:SteamID64()] then
+        table.insert(friends, ply)
       end
     end
     
