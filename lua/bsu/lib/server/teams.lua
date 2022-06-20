@@ -41,9 +41,7 @@ end
 
 -- setup teams on a client (nil to send data to all clients)
 function BSU.ClientSetupTeams(ply)
-  local teamData = {}
   for _, v in ipairs(BSU.GetAllTeams()) do
-    teamData[v.id] = { name = v.name, color = BSU.HexToColor(v.color) }
+    BSU.ClientRPC(ply, "team.SetUp", v.id, v.name, BSU.HexToColor(v.color))
   end
-  BSU.ClientRPC(ply, "BSU.SetupTeams", teamData)
 end

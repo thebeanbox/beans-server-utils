@@ -11,5 +11,5 @@ end
 -- setup teams serverside
 BSU.SetupTeams()
 
--- setup teams clientside on player init
-hook.Add("BSU_PlayerInit", "BSU_ClientSetupTeams", BSU.ClientSetupTeams)
+-- setup teams clientside on player ready
+hook.Add("BSU_PlayerReady", "BSU_ClientSetupTeams", BSU.ClientSetupTeams)

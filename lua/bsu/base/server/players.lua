@@ -1,50 +1,45 @@
 -- base/server/players.lua
 -- handles player data stuff
 
-hook.Add("PlayerInitialSpawn", "BSU_InitializePlayer", function(ply)
-  timer.Simple(0, function() hook.Run("BSU_PlayerInit", ply) end)
-end)
-
 -- initialize player data
-local function initializePlayer(ply)
-  local id64 = ply:SteamID64()
-  local plyData = BSU.GetPlayerData(ply)
-  local isPlayer = not ply:IsBot()
-  
-  if not plyData then -- this is the first time this player has joined
-    BSU.RegisterPlayer(id64, BSU.DEFAULT_GROUP, not isPlayer and BSU.BOT_TEAM or nil)
-    plyData = BSU.GetPlayerData(ply)
+hook.Add("OnGamemodeLoaded", "BSU_InitializePlayer", function()
+  local oldPlyInitSpawn = GAMEMODE.PlayerInitialSpawn
+
+  function GAMEMODE.PlayerInitialSpawn(self, ply, transition)
+    oldPlyInitSpawn(self, ply, transition)
+
+    local id64 = ply:SteamID64()
+    local plyData = BSU.GetPlayerData(ply)
+    local isPlayer = not ply:IsBot()
+    
+    if not plyData then -- this is the first time this player has joined
+      BSU.RegisterPlayer(id64, GetConVar("bsu_default_group"):GetString(), not isPlayer and GetConVar("bsu_bot_team"):GetInt() or nil)
+      plyData = BSU.GetPlayerData(ply)
+    end
+
+    -- update some sql data
+    BSU.SetPlayerDataBySteamID(id64, {
+      name = ply:Nick(),
+      ip = isPlayer and BSU.Address(ply:IPAddress()) or nil
+    })
+
+    -- update some pdata
+    if not BSU.GetPData(ply, "total_time") then BSU.SetPData(ply, "total_time", 0, true) end
+    BSU.SetPData(ply, "connect_time", BSU.UTCTime(), true)
+
+    local groupData = BSU.GetGroupByID(plyData.groupid)
+    ply:SetTeam(plyData.team and plyData.team or groupData.team)
+    ply:SetUserGroup(groupData.usergroup or "user")
+
+    ply.bsu_ready = true
+    hook.Run("BSU_PlayerReady", ply)
   end
-
-  -- update some sql data
-  BSU.SetPlayerDataBySteamID(id64, {
-    name = ply:Nick(),
-    ip = isPlayer and BSU.Address(ply:IPAddress()) or nil
-  })
-
-  -- update some pdata
-  if not BSU.GetPData(ply, "total_time") then BSU.SetPData(ply, "total_time", 0, true) end
-  BSU.SetPData(ply, "connect_time", BSU.UTCTime(), true)
-
-  -- set group values
-  local groupData = BSU.GetGroupByID(plyData.groupid)
-
-  ply:SetTeam(plyData.team and plyData.team or groupData.team)
-  ply:SetUserGroup(groupData.usergroup or "user")
-
-  -- request for client system info
-  if isPlayer then BSU.RequestClientInfo(ply) end
-
-  ply.bsu_ready = true
-  hook.Run("BSU_PlayerReady", ply) -- signal that the player has finished being initialized
-end
-
-hook.Add("BSU_PlayerInit", "BSU_InitializePlayer", initializePlayer)
+end)
 
 -- update total_time and last_visit pdata values for all connected players
 local function updatePlayerData()
   for k, v in ipairs(player.GetAll()) do
-    if not v.bsu_ready then return end
+    if not v.bsu_ready then continue end
     BSU.SetPData(v, "total_time", tonumber(BSU.GetPData(v, "total_time")) + BSU.UTCTime() - tonumber(BSU.GetPData(v, "connect_time")), true)
     BSU.SetPData(v, "last_visit", BSU.UTCTime(), true)
   end
@@ -58,7 +53,7 @@ hook.Add("player_changename", "BSU_UpdatePlayerDataName", function(data)
   BSU.SetPlayerData(Player(data.userid), { name = data.newname })
 end)
 
--- receive some client data and update pdata (see BSU.RequestClientInfo)
+-- update pdata with client data (see BSU.RequestClientInfo)
 local function updateClientInfo(_, ply)
   local os = net.ReadUInt(2)
   local country = net.ReadString()
@@ -70,6 +65,9 @@ local function updateClientInfo(_, ply)
 end
 
 net.Receive("bsu_client_info", updateClientInfo)
+
+-- send request for some client data
+hook.Add("BSU_PlayerReady", "BSU_RequestClientInfo", BSU.RequestClientInfo)
 
 -- fix glitchy movement when grabbing players
 hook.Add("OnPhysgunPickup", "BSU_PlayerPhysgunPickup", function(ply, ent)
