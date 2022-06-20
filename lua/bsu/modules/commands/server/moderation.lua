@@ -276,8 +276,11 @@ BSU.SetupCommand("listgroups", function(cmd)
   cmd:SetCategory("moderation")
   cmd:SetAccess(BSU.CMD_SUPERADMIN)
   cmd:SetFunction(function(self, ply)
+    local groups = BSU.GetAllGroups()
+    table.sort(groups, function(a, b) return a.team > b.team end)
+
     local msg = { "Groups List:\n" }
-    for k, v in ipairs(BSU.GetAllGroups()) do
+    for k, v in ipairs(groups) do
       table.Add(msg, {
         BSU.CLR_TEXT, "- ", BSU.HexToColor(BSU.GetTeamByID(v.team).color), v.id .. "\n"
       })
