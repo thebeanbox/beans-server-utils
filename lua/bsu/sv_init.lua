@@ -9,6 +9,7 @@ include(BSU.DIR_BASE .. "sql.lua")
 AddCSLuaFile(BSU.DIR_BASE .. "sql.lua")
 
 -- setup server-side scripts
+include(svBaseDir .. "convars.lua")
 include(svBaseDir .. "sql.lua")
 include(svBaseDir .. "teams.lua")
 include(svBaseDir .. "groups.lua")

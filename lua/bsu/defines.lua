@@ -59,12 +59,6 @@ if SERVER then
   BSU.CMD_SUPERADMIN = 2 -- access only for superadmins and via the server console
   BSU.CMD_ANYONE     = 3 -- access to any person
 
-  -- id of the group that players are automatically set to (like when they join for the first time)
-  BSU.DEFAULT_GROUP = "user"
-
-  -- id of the team that bots should be assigned to
-  BSU.BOT_TEAM = 4
-
   BSU.BAN_MSG = [[============ You've Been Banned! ===========
 
 Ban Reason:
