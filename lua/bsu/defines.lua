@@ -14,12 +14,13 @@ BSU.DIR_LIB = BSU.DIR .. "lib/"
 BSU.DIR_MODULES = BSU.DIR .. "modules/"
 
 -- privilege values
-BSU.PRIV_MODEL = 0
-BSU.PRIV_NPC   = 1
-BSU.PRIV_SENT  = 2
-BSU.PRIV_SWEP  = 3
-BSU.PRIV_TOOL  = 4
-BSU.PRIV_CMD   = 5
+BSU.PRIV_MODEL  = 0
+BSU.PRIV_NPC    = 1
+BSU.PRIV_SENT   = 2
+BSU.PRIV_SWEP   = 3
+BSU.PRIV_TOOL   = 4
+BSU.PRIV_CMD    = 5
+BSU.PRIV_TARGET = 6
 
 -- prop protection values
 BSU.PP_PHYSGUN   = 0

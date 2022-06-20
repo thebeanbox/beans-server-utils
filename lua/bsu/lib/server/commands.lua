@@ -14,12 +14,24 @@ function BSU.AddPlayerCommandAccess(steamid, cmd, access)
   BSU.RegisterPlayerPrivilege(steamid, BSU.PRIV_CMD, string.lower(cmd), access == nil and true or access)
 end
 
-function BSU.RemoveGroupCommandAccess(groupid, cmd, access)
+function BSU.RemoveGroupCommandAccess(groupid, cmd)
   BSU.RemoveGroupPrivilege(groupid, BSU.PRIV_CMD, string.lower(cmd))
 end
 
-function BSU.RemovePlayerCommandAccess(steamid, cmd, access)
+function BSU.RemovePlayerCommandAccess(steamid, cmd)
   BSU.RemovePlayerPrivilege(steamid, BSU.PRIV_CMD, string.lower(cmd))
+end
+
+function BSU.AddGroupTargetAccess(groupid, target, access)
+  target = string.match(target, "^[%w_]+$")
+  if not target then error("Target can only have letters, digits, or underscores") end
+  BSU.RegisterGroupPrivilege(groupid, BSU.PRIV_TARGET, string.lower(target), access == nil and true or access)
+end
+
+function BSU.RemoveGroupTargetAccess(groupid, target)
+  target = string.match(target, "^[%w_]+$")
+  if not target then error("Target can only have letters, digits, or underscores") end
+  BSU.RemoveGroupPrivilege(groupid, BSU.PRIV_TARGET, string.lower(target))
 end
 
 -- returns bool if the player has access to the command

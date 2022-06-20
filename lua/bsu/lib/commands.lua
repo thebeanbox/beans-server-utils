@@ -414,37 +414,26 @@ function objCmdHandler.GetPlayersArg(self, n, check)
 end
 
 if SERVER then
-  function objCmdHandler.CheckCanTarget(self, target, fail)
-    if not self._user:IsValid() or self._user:IsSuperAdmin() then return true end -- is server console or superadmin
-    if self._user:Team() >= target:Team() then
-      return true
-    end
-    if fail then
-      error("You cannot select this target")
+  function objCmdHandler.CheckCanTargetSteamID(self, targetID, fail)
+    targetID = BSU.ID64(targetID)
+    if not self._user:IsValid() or self._user:IsSuperAdmin() or self._user:SteamID64() == targetID then return true end
+    local targetPriv = BSU.CheckPlayerPrivilege(self._user:SteamID64(), BSU.PRIV_TARGET, BSU.GetPlayerDataBySteamID(targetID).groupid)
+    if targetPriv ~= nil then
+      if targetPriv then
+        return true
+      elseif fail then
+        error("You cannot select this target")
+      end
     end
     return false
   end
 
-  function objCmdHandler.CheckCanTargetSteamID(self, targetID, fail)
-    if not self._user:IsValid() then return true end
-    local tarData = BSU.GetPlayerDataBySteamID(targetID)
-    if not tarData then return true end
-    if self._user:Team() >= tarData.group then
-      return true
-    elseif fail then
-      error("You cannot select this target")
-    end
-    return false
+  function objCmdHandler.CheckCanTarget(self, target, fail)
+    if not self._user:IsValid() or self._user:IsSuperAdmin() or self._user == target then return true end -- is server console or superadmin
+    return self:CheckCanTargetSteamID(target:SteamID64(), fail)
   end
 
   function objCmdHandler.FilterTargets(self, targets, fail)
-    if #targets == 1 then
-      if self:CheckCanTarget(targets[1], fail) then
-        return targets
-      end
-      return {}
-    end
-
     local tbl = {}
     for i = 1, #targets do
       local tar = targets[i]
@@ -453,7 +442,7 @@ if SERVER then
       end
     end
     if table.IsEmpty(tbl) and fail then
-      error("None of the targets could be selected")
+      error("You cannot select " .. (#targets == 1 and "this target" or "these targets"))
     end
     return tbl
   end
