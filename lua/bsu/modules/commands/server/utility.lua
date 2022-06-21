@@ -21,6 +21,7 @@ BSU.SetupCommand("god", function(cmd)
     self:BroadcastActionMsg("%user% godded %param%", { ply, targets })
   end)
 end)
+BSU.AliasCommand("build", "god")
 
 --[[
   Name: ungod
@@ -45,6 +46,7 @@ BSU.SetupCommand("ungod", function(cmd)
     self:BroadcastActionMsg("%user% ungodded %param%", { ply, targets })
   end)
 end)
+BSU.AliasCommand("pvp", "ungod")
 
 --[[
   Name: teleport
@@ -95,3 +97,4 @@ BSU.SetupCommand("teleport", function(cmd)
     self:BroadcastActionMsg("%user% teleported %param% to %param%", { ply, targetA, targetB })
   end)
 end)
+BSU.AliasCommand("tp", "teleport")
