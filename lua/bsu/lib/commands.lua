@@ -238,6 +238,18 @@ function BSU.SetupCommand(name, setup)
   BSU.RegisterCommand(cmd)
 end
 
+function BSU.AliasCommand(alias, original)
+  local originalCmd = BSU._cmds[string.lower(original)]
+  local aliasCmd = BSU.Command(
+    alias,
+    "Alias of " .. string.lower(original),
+    originalCmd:GetCategory(),
+    SERVER and originalCmd:GetAccess() or nil,
+    originalCmd:GetFunction()
+  )
+  BSU.RegisterCommand(aliasCmd)
+end
+
 function BSU.GetCommands()
   return table.ClearKeys(BSU._cmds)
 end
