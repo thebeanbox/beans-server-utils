@@ -1,6 +1,8 @@
 --- base/client/pp.lua
 -- Simple info display to view the owner of the prop and ect.
 
+local contextMenuOpen = false
+
 local font = "BSU_PP_HUD"
 surface.CreateFont(font, {
   font = "Verdana",
@@ -16,7 +18,7 @@ local function drawPPHUD()
   local trace = util.TraceLine(util.GetPlayerTrace(LocalPlayer()))
   if trace.HitNonWorld then
     local ent = trace.Entity
-    if IsValid(ent) and not ent:IsPlayer() then
+    if IsValid(ent) and not ent:IsPlayer() and contextMenuOpen then
       local owner = BSU.GetEntityOwner(ent)
       local id, name
       if IsValid(owner) then
@@ -33,11 +35,22 @@ local function drawPPHUD()
         tostring(ent)
 
       surface.SetFont(font)
+      local cursX, cursY = input.GetCursorPos()
       local w, h = surface.GetTextSize(text)
-      draw.RoundedBox(4, ScrW() - w - 8, ScrH() / 2 - h / 2 - 4, w + 8, h + 8, Color(0, 0, 0, 175))
-      draw.DrawText(text, font, ScrW() - 4, ScrH() / 2 - h / 2, Color(255, 255, 255), TEXT_ALIGN_RIGHT)
+      draw.RoundedBox(4, cursX + 2, cursY - h - 10, w + 8, h + 8, Color(0, 0, 0, 175))
+      draw.DrawText(text, font, cursX + 6, cursY - h - 8, Color(255, 255, 255), TEXT_ALIGN_LEFT)
     end
   end
 end
 
 hook.Add("HUDPaint", "BSU_DrawPPHUD", drawPPHUD)
+
+
+hook.Add("OnContextMenuOpen", "BSU_PPContextMenuOpen", function()
+  contextMenuOpen = true
+end)
+
+
+hook.Add("OnContextMenuClose", "BSU_PPContextMenuClose", function()
+  contextMenuOpen = false
+end)
