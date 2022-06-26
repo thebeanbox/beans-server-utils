@@ -8,16 +8,18 @@ BSU.SetupCommand("god", function(cmd)
   cmd:SetDescription("Enables godmode on a player")
   cmd:SetCategory("utility")
   cmd:SetAccess(BSU.CMD_ADMIN)
-  cmd:SetFunction(function(self, ply)
-    local targets = self:GetPlayersArg(1)
-    if targets then
-      targets = self:FilterTargets(targets, true)
+  cmd:SetFunction(function(self, ply, args)
+    local targets = {}
+    if args[1] then
+      targets = self:FilterTargets(self:GetPlayersArg(1, true), true)
     else
       targets = { ply }
     end
+
     for _, ply in pairs(targets) do
       ply:GodEnable()
     end
+
     self:BroadcastActionMsg("%user% godded %param%", { ply, targets })
   end)
 end)
