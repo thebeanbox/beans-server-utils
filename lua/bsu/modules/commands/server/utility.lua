@@ -1,8 +1,8 @@
 --[[
   Name: god
-  Desc: Enables godmode on a player
+  Desc: Enable godmode on players
   Arguments:
-    1. Targets (players)
+    1. Targets (players, default: self)
 ]]
 BSU.SetupCommand("god", function(cmd)
   cmd:SetDescription("Enables godmode on a player")
@@ -16,7 +16,7 @@ BSU.SetupCommand("god", function(cmd)
       targets = { ply }
     end
 
-    for _, ply in pairs(targets) do
+    for _, ply in ipairs(targets) do
       ply:GodEnable()
     end
 
@@ -27,7 +27,7 @@ BSU.AliasCommand("build", "god")
 
 --[[
   Name: ungod
-  Desc: Disables godmode on a player
+  Desc: Disable godmode on players
   Arguments:
     1. Targets (players)
 ]]
@@ -35,30 +35,37 @@ BSU.SetupCommand("ungod", function(cmd)
   cmd:SetDescription("Enables godmode on a player")
   cmd:SetCategory("utility")
   cmd:SetAccess(BSU.CMD_ADMIN)
-  cmd:SetFunction(function(self, ply)
-    local targets = self:GetPlayersArg(1)
-    if targets then
-      targets = self:FilterTargets(targets, true)
+  cmd:SetFunction(function(self, ply, args)
+    local targets
+    if args[1] then
+      targets = self:FilterTargets(self:GetPlayersArg(1, true), true)
     else
       targets = { ply }
     end
-    for _, ply in pairs(targets) do
-      ply:GodDisable()
+
+    for _, ply in ipairs(targets) do
+      ply:GodEnable()
     end
+
     self:BroadcastActionMsg("%user% ungodded %param%", { ply, targets })
   end)
 end)
 BSU.AliasCommand("pvp", "ungod")
 
+local function teleport(ply, pos)
+  ply.bsu_returnPos = ply:GetPos() -- used for return cmd
+  ply:SetPos(pos)
+end
+
 --[[
   Name: teleport
-  Desc: Teleports player A to player B or you to player A if there is not player B
+  Desc: Teleport players to a target player
   Arguments:
-    1. Targets A (players)
-    2. Targets B (players)
+    1. Targets (players)
+    2. Target (player)
 ]]
 BSU.SetupCommand("teleport", function(cmd)
-  cmd:SetDescription("Teleports player A to player B or you to player A if there is not player B")
+  cmd:SetDescription("Teleports players to a target player")
   cmd:SetCategory("utility")
   cmd:SetAccess(BSU.CMD_ADMIN)
   cmd:SetFunction(function(self, ply)
@@ -69,30 +76,22 @@ BSU.SetupCommand("teleport", function(cmd)
       self:CheckCanTarget(targetA, true)
 
       targetB = self:GetPlayerArg(2, true)
-      if targetA == targetB then error("Cannot teleport target to the same target") end
+      if targetA == targetB then error("Cannot teleport target to same target") end
       self:CheckCanTarget(targetB, true)
 
-      targetA:SetPos(targetB:GetPos())
+      teleport(targetA, targetB:GetPos())
     else
       targetA = self:GetPlayersArg(1, true)
 
       targetB = self:GetPlayerArg(2, true)
       self:CheckCanTarget(targetB, true)
 
-      for i = 1, #targetA do -- remove targetB from list of targets
-        local tar = targetA[i]
-        if tar == targetB then
-          table.remove(targetA, i)
-          break
-        end
-      end
-
+      table.RemoveByValue(targetA, targetB) -- remove targetB from list of targets
       targetA = self:FilterTargets(targetA, true)
 
       local pos = targetB:GetPos()
-      for i = 1, #targetA do
-        local tar = targetA[i]
-        tar:SetPos(pos)
+      for _, tar in ipairs(targetA) do
+        teleport(tar, pos)
       end
     end
 
@@ -100,3 +99,83 @@ BSU.SetupCommand("teleport", function(cmd)
   end)
 end)
 BSU.AliasCommand("tp", "teleport")
+
+--[[
+  Name: goto
+  Desc: Teleport yourself to a player
+  Arguments:
+    1. Target (player)
+]]
+BSU.SetupCommand("goto", function(cmd)
+  cmd:SetDescription("Teleports yourself to a player")
+  cmd:SetCategory("utility")
+  cmd:SetAccess(BSU.CMD_ADMIN)
+  cmd:SetFunction(function(self, ply)
+    local target = self:GetPlayerArg(1, true)
+    self:CheckCanTarget(target, true)
+
+    teleport(ply, target:GetPos())
+
+    self:BroadcastActionMsg("%user% teleported to %param%", { ply, target })
+  end)
+end)
+
+--[[
+  Name: bring
+  Desc: Teleport players to yourself
+  Arguments:
+    1. Targets (players)
+]]
+BSU.SetupCommand("bring", function(cmd)
+  cmd:SetDescription("Teleports yourself to a player")
+  cmd:SetCategory("utility")
+  cmd:SetAccess(BSU.CMD_ADMIN)
+  cmd:SetFunction(function(self, ply)
+    local targets = self:GetPlayersArg(1, true)
+    table.RemoveByValue(targets, ply) -- remove self from list of targets
+    targets = self:FilterTargets(targets, true)
+
+    local pos = ply:GetPos()
+    for _, tar in ipairs(targets) do
+      teleport(tar, pos)
+    end
+
+    self:BroadcastActionMsg("%user% brought %param%", { ply, targets })
+  end)
+end)
+
+--[[
+  Name: return
+  Desc: Return players to their original position
+  Arguments:
+    1. Targets (players, default: self)
+]]
+BSU.SetupCommand("return", function(cmd)
+  cmd:SetDescription("Return a player or multiple players to their original position")
+  cmd:SetCategory("utility")
+  cmd:SetAccess(BSU.CMD_ADMIN)
+  cmd:SetFunction(function(self, ply, args)
+    local targets
+    if args[1] then
+      targets = self:FilterTargets(self:GetPlayersArg(1, true), true)
+    else
+      targets = { ply }
+    end
+
+    local newTargets = {}
+    for _, tar in ipairs(targets) do
+      if tar.bsu_returnPos then
+        table.insert(newTargets, tar)
+      end
+    end
+
+    if table.IsEmpty(newTargets) then error("Failed to return any players") end
+
+    for _, tar in ipairs(newTargets) do
+      tar:SetPos(tar.bsu_returnPos)
+      tar.bsu_returnPos = nil
+    end
+
+    self:BroadcastActionMsg("%user% returned %param%", { ply, newTargets })
+  end)
+end)
