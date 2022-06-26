@@ -61,5 +61,5 @@ function BSU.RunCommand(name, ply, argStr, silent)
 
   local handler = BSU.CommandHandler(ply, argStr, silent)
 
-  xpcall(cmd.func, function(err) BSU.SendChatMsg(ply, BSU.CLR_ERROR, "Command errored with: " .. string.Split(err, ": ")[2]) end, handler, ply, #handler._args, argStr)
+  xpcall(cmd.func, function(err) BSU.SendChatMsg(ply, BSU.CLR_ERROR, "Command errored with: " .. string.Split(err, ": ")[2]) end, handler, ply, table.Copy(handler._args), argStr)
 end
