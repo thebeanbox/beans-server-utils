@@ -107,22 +107,17 @@ local function parsePlayerArg(user, str)
         end
         return {}
       end
-    elseif pre == "#" then -- players by exact group name (will include all players in all groups of same name)
+    elseif pre == "#" then -- players by team name
       val = parseArgs(val)[1]
 
-      local name, plys = string.lower(val), {}
-
-      for _, v in ipairs(BSU.GetAllGroups()) do
-        if string.lower(v.name) == name then
-          for _, vv in ipairs(team.GetPlayers(v.id)) do
-            if not plys[vv] then -- use a lookup table to prevent duplicate players
-              plys[vv] = true
-            end
-          end
+      local plys = {}
+      for _, v in ipairs(player.GetAll()) do
+        if val == team.GetName(v:Team()) then
+          table.insert(plys, v)
         end
       end
 
-      return table.GetKeys(plys)
+      return plys
     elseif pre == "!" then -- opposite of next prefix
       local result = parsePlayerArg(user, val)
       
