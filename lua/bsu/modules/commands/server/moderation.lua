@@ -302,7 +302,7 @@ BSU.SetupCommand("setgroup", function(cmd)
   cmd:SetCategory("moderation")
   cmd:SetAccess(BSU.CMD_SUPERADMIN)
   cmd:SetFunction(function(self, ply)
-    local target, groupid = self:GetPlayerArg(1, true), self:GetStringArg(2, true)
+    local target, groupid = self:GetPlayerArg(1, true), string.lower(self:GetStringArg(2, true))
 
     if not BSU.GetGroupByID(groupid) then error("Group does not exist") end
     if BSU.GetPlayerData(target).groupid == groupid then error("Target is already in that group") end
@@ -416,7 +416,7 @@ BSU.SetupCommand("grantgrouppriv", function(cmd)
   cmd:SetCategory("moderation")
   cmd:SetAccess(BSU.CMD_SUPERADMIN)
   cmd:SetFunction(function(self, ply)
-    local groupid, name, value = self:GetStringArg(1, true), self:GetStringArg(2, true), self:GetStringArg(3, true)
+    local groupid, name, value = string.lower(self:GetStringArg(1, true)), self:GetStringArg(2, true), self:GetStringArg(3, true)
 
     local group = BSU.GetGroupByID(groupid)
     if not group then error("Group does not exist") end
@@ -452,7 +452,7 @@ BSU.SetupCommand("revokegrouppriv", function(cmd)
   cmd:SetCategory("moderation")
   cmd:SetAccess(BSU.CMD_SUPERADMIN)
   cmd:SetFunction(function(self, ply)
-    local groupid, name, value = self:GetStringArg(1, true), self:GetStringArg(2, true), self:GetStringArg(3, true)
+    local groupid, name, value = string.lower(self:GetStringArg(1, true)), self:GetStringArg(2, true), self:GetStringArg(3, true)
 
     local group = BSU.GetGroupByID(groupid)
     if not group then error("Group does not exist") end
@@ -488,7 +488,7 @@ BSU.SetupCommand("cleargrouppriv", function(cmd)
   cmd:SetCategory("moderation")
   cmd:SetAccess(BSU.CMD_SUPERADMIN)
   cmd:SetFunction(function(self, ply)
-    local groupid, name, value = self:GetStringArg(1, true), self:GetStringArg(2, true), self:GetStringArg(3, true)
+    local groupid, name, value = string.lower(self:GetStringArg(1, true)), self:GetStringArg(2, true), self:GetStringArg(3, true)
 
     local group = BSU.GetGroupByID(groupid)
     if not group then error("Group does not exist") end
