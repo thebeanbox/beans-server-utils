@@ -36,6 +36,7 @@ end
 -- checks if a string is a valid ip address (valid excluding the port)
 function BSU.IsValidIP(ip)
   if not ip then return false end
+  if ip == "loopback" then return true end
   local address, port = unpack(string.Split(ip, ":"))
   return string.match(address, "^%d%d?%d?%.%d%d?%d?%.%d%d?%d?%.%d%d?%d?$") ~= nil and (not port or string.match(port, "^%d%d?%d?%d?%d?$") ~= nil)
 end
