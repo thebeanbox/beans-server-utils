@@ -40,7 +40,7 @@ end)
 local function updatePlayerData()
   for k, v in ipairs(player.GetAll()) do
     if not v.bsu_ready then continue end
-    BSU.SetPData(v, "total_time", tonumber(BSU.GetPData(v, "total_time")) + BSU.UTCTime() - tonumber(BSU.GetPData(v, "connect_time")), true)
+    BSU.SetPData(v, "total_time", tonumber(BSU.GetPData(v, "total_time")) + 1, true)
     BSU.SetPData(v, "last_visit", BSU.UTCTime(), true)
   end
 end
