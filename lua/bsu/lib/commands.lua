@@ -428,9 +428,10 @@ if SERVER then
     if targetPriv ~= nil then
       if targetPriv then
         return true
-      elseif fail then
-        error("You cannot select this target")
       end
+    end
+    if fail then
+      error("You cannot select this target")
     end
     return false
   end
