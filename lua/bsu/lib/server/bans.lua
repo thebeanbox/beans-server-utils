@@ -108,7 +108,7 @@ function BSU.KickPlayer(ply, reason, admin)
 end
 
 -- formats a ban message that shows ban reason, duration, time left and the date of the ban
--- duration should be in mins and time should be UTC in secs
+-- duration should be the ban length in mins and time should be the ban time in UTC secs
 -- timezoneOffset is used for adjusting the time in different timezones (if it's not set UTC time is used)
 function BSU.FormatBanMsg(reason, duration, time, timezoneOffset)
   return string.gsub(BSU.BAN_MSG, "%%([%w_]+)%%",
@@ -116,7 +116,7 @@ function BSU.FormatBanMsg(reason, duration, time, timezoneOffset)
       reason = reason or "(None given)",
       duration = duration == 0 and "(Permaban)" or BSU.StringTime(duration),
       remaining = duration == 0 and "(Permaban)" or BSU.StringTime(math.ceil(time / 60 + duration - BSU.UTCTime() / 60)),
-      time = os.date("%a, %b %d, %Y - %I:%M:%S %p", time + (timezoneOffset and timezoneOffset * 3600 or 0)) .. " (" .. (BSU.UTCTime() - time < 60 and "A few seconds ago" or BSU.StringTime(math.ceil(BSU.UTCTime() / 60 - time / 60 - 1)) .. " ago") .. ")"
+      time = os.date("!%a, %b %d, %Y - %I:%M:%S %p", time + (timezoneOffset and timezoneOffset * 3600 or 0)) .. " (" .. (BSU.UTCTime() - time < 60 and "A few seconds ago" or BSU.StringTime(math.ceil(BSU.UTCTime() / 60 - time / 60 - 1)) .. " ago") .. ")"
     }
   )
 end

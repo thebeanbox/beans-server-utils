@@ -16,6 +16,10 @@ function BSU.HexToColor(hex, alpha)
 end
 
 function BSU.UTCTime()
+  return os.time()
+end
+
+function BSU.LocalTime()
   return os.time(os.date("!*t"))
 end
 
