@@ -47,7 +47,7 @@ BSU.SetupCommand("banid", function(cmd)
   cmd:SetAccess(BSU.CMD_ADMIN)
   cmd:SetFunction(function(self, ply)
     local steamid = BSU.ID64(self:GetStringArg(1, true))
-    self:CheckCanTargetID(steamid, true) -- make sure ply is allowed to target this person
+    self:CheckCanTargetSteamID(steamid, true) -- make sure ply is allowed to target this person
     local duration = self:GetNumberArg(2)
     local reason
     if duration then
@@ -121,7 +121,7 @@ BSU.SetupCommand("banip", function(cmd)
     local address = BSU.Address(self:GetStringArg(1, true))
     local targetData = BSU.GetPlayerDataByIPAddress(address) -- find any players associated with this address
     for i = 1, #targetData do -- make sure ply is allowed to target all of these players
-      self:CheckCanTargetID(targetData[i].steamid, true)
+      self:CheckCanTargetSteamID(targetData[i].steamid, true)
     end
     local duration = self:GetNumberArg(2)
     local reason
