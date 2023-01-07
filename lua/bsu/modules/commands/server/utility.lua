@@ -44,7 +44,7 @@ BSU.SetupCommand("ungod", function(cmd)
     end
 
     for _, ply in ipairs(targets) do
-      ply:GodEnable()
+      ply:GodDisable()
     end
 
     self:BroadcastActionMsg("%user% ungodded %param%", { ply, targets })
