@@ -13,7 +13,7 @@ concommand.Add("bsu",
 			LocalPlayer():ConCommand("_bsu " .. argStr) -- try to run serverside command
 		end
 	end,
-	function(_, args)
+	function()
 		--[[local name = args[1]
 		if not name then return end
 		local cmd = BSU.GetCommandByName(name)
