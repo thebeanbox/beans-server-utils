@@ -42,24 +42,24 @@ BSU.CLR_MISC     = Color(255, 255, 255) -- other (just used for non-player ents)
 BSU.CMD_PREFIX = "!"
 
 if SERVER then
-  -- server SQL database table names
-  BSU.SQL_TEAMS         = "bsu_teams"
-  BSU.SQL_GROUPS        = "bsu_groups"
-  BSU.SQL_PLAYERS       = "bsu_players"
-  BSU.SQL_PDATA         = "bsu_pdata"
-  BSU.SQL_BANS          = "bsu_bans"
-  BSU.SQL_GROUP_PRIVS   = "bsu_grp_privs"
-  BSU.SQL_PLAYER_PRIVS  = "bsu_ply_privs"
-  BSU.SQL_GROUP_LIMITS  = "bsu_grp_limits"
-  BSU.SQL_PLAYER_LIMITS = "bsu_ply_limits"
+	-- server SQL database table names
+	BSU.SQL_TEAMS         = "bsu_teams"
+	BSU.SQL_GROUPS        = "bsu_groups"
+	BSU.SQL_PLAYERS       = "bsu_players"
+	BSU.SQL_PDATA         = "bsu_pdata"
+	BSU.SQL_BANS          = "bsu_bans"
+	BSU.SQL_GROUP_PRIVS   = "bsu_grp_privs"
+	BSU.SQL_PLAYER_PRIVS  = "bsu_ply_privs"
+	BSU.SQL_GROUP_LIMITS  = "bsu_grp_limits"
+	BSU.SQL_PLAYER_LIMITS = "bsu_ply_limits"
 
-  -- command access values
-  BSU.CMD_NOONE      = 0 -- access only via the server console (useful if you want a command to only be player accessible using privileges)
-  BSU.CMD_ADMIN      = 1 -- access only for admins, superadmins and via the server console
-  BSU.CMD_SUPERADMIN = 2 -- access only for superadmins and via the server console
-  BSU.CMD_ANYONE     = 3 -- access to any person
+	-- command access values
+	BSU.CMD_NOONE      = 0 -- access only via the server console (useful if you want a command to only be player accessible using privileges)
+	BSU.CMD_ADMIN      = 1 -- access only for admins, superadmins and via the server console
+	BSU.CMD_SUPERADMIN = 2 -- access only for superadmins and via the server console
+	BSU.CMD_ANYONE     = 3 -- access to any person
 
-  BSU.BAN_MSG = [[============ You've Been Banned! ===========
+	BSU.BAN_MSG = [[============ You've Been Banned! ===========
 
 Ban Reason:
 %reason%
@@ -75,6 +75,6 @@ Ban Date:
 
 =====================================]]
 else
-  -- client SQL database table names
-  BSU.SQL_PP = "bsu_pp"
+	-- client SQL database table names
+	BSU.SQL_PP = "bsu_pp"
 end

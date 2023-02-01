@@ -31,7 +31,7 @@ AddCSLuaFile(clBaseDir .. "commands.lua")
 BSU.LoadModules()
 
 net.Receive("bsu_client_ready", function(_, ply)
-  hook.Run("BSU_ClientReady", ply)
+	hook.Run("BSU_ClientReady", ply)
 end)
 
 hook.Run("BSU_Init")
