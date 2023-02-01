@@ -328,7 +328,7 @@ BSU.SetupCommand("setteam", function(cmd)
 	cmd:SetDescription("Set the team of a player")
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_SUPERADMIN)
-	md:SetFunction(function(self, ply)
+	cmd:SetFunction(function(self, ply)
 		local target, team = self:GetPlayerArg(1, true), self:GetNumberArg(2)
 
 		local teamData
