@@ -22,7 +22,7 @@
 	"lint_spaceBetweenParens": true,
 	"lint_spaceBetweenBrackets": true,
 	"lint_spaceBetweenBraces": false,
-	"lint_ignoreFiles": ["**.lua"],
+	"lint_ignoreFiles": [],
 	"lint_spaceBeforeComma": false,
 	"lint_spaceAfterComma": true,
 
