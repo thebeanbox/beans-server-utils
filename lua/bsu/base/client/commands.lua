@@ -13,28 +13,32 @@ concommand.Add("bsu",
 			LocalPlayer():ConCommand("_bsu " .. argStr) -- try to run serverside command
 		end
 	end,
-	function()
-		--[[local name = args[1]
+	function(_, strargs)
+		local args = string.Explode(" ", strargs)
+		table.remove(args, 1)
+		local name = args[1]
 		if not name then return end
-		local cmd = BSU.GetCommandByName(name)
-		
-		if cmd then
+		local bsucmd = BSU.GetCommandByName(name)
+
+		if bsucmd then
+			-- TODO: Autocomplete/suggest args
 			return {}
 		else
 			local autocomplete = {}
 			local names = {}
-			-- this don't work, pls fix
-			for _, v in ipairs(table.GetKeys(BSU._cmds)) do
-				if v == string.sub(name, 0, #v) then
-					table.insert(names, v)
+			for k, _ in pairs(BSU._cmds) do
+				if name == string.sub(k, 1, #name) then
+					table.insert(names, k)
 				end
 			end
-			table.sort(names, function(a, b) return #a <= #b end)
+			table.sort(names, function(a, b)
+				return #a < #b
+			end)
 			for _, v in ipairs(names) do
-				table.insert("bsu " .. v)
+				table.insert(autocomplete, "bsu " .. v)
 			end
 			return autocomplete
-		end]]
+		end
 	end
 )
 
