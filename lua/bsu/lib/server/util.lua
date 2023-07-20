@@ -37,15 +37,15 @@ function BSU.LoadModules(dir)
 end
 
 local function sendSvConMsg(...)
-	local args = {...}
-	for i = 1, #args do -- convert player entities to color tbl and name str so it looks correct in the server console
-		local arg = args[i]
-		if IsEntity(arg) and IsValid(arg) and arg:IsPlayer() then
-			args[i] = arg:Nick()
-			table.insert(args, i, team.GetColor(arg:Team()))
+	local vars = {}
+	for _, v in ipairs({...}) do -- convert player entities to color tbl and name str so it looks correct in the server console
+		if isentity(v) and v:IsPlayer() then
+			table.Add(vars, { team.GetColor(v:Team()), v:Nick() })
+		else
+			table.insert(vars, v)
 		end
 	end
-	MsgC(unpack(args))
+	MsgC(unpack(vars))
 	MsgN()
 end
 
