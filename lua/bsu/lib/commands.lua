@@ -287,15 +287,21 @@ end
 -- command handler object
 local objCmdHandler = {}
 objCmdHandler.__index = objCmdHandler
-objCmdHandler.__tostring = function(self) return "BSU Command Handler[" .. #self.args .. "]" end
+objCmdHandler.__tostring = function(self) return "BSU Command Handler[" .. self.name .. "]" end
+
+function objCmdHandler.GetName(self)
+	return self.name
+end
+
+function objCmdHandler.GetSilent(self)
+	return self.silent
+end
 
 function objCmdHandler.GetCaller(self, fail)
-	local caller = self.caller
-	if caller:IsValid() then
-		return caller
-	elseif fail then
+	if fail and not self.caller:IsValid() then
 		error("Unable to find player who called the command (was ran from server console?)")
 	end
+	return self.caller
 end
 
 local function errorBadArgument(num, reason)
@@ -455,76 +461,48 @@ if SERVER then
 		return tbl
 	end
 
-	local actionHandlers = {
-		user = function(arg, _, target)
-			if arg:IsValid() or not target:IsValid() then
-				return arg == target and { BSU.CLR_SELF, "You" } or { arg }
-			end
-			return { BSU.CLR_CONSOLE, "(Console)" }
-		end,
-		param = function(arg, ply, target)
-			local vars = {}
-			local params = istable(arg) and arg or { arg }
-
-			local isAllPlayers = true
-			for _, v in ipairs(params) do
-				if not v or not (IsEntity(v) and v:IsPlayer()) then
-					isAllPlayers = false
-					break
+	local function formatArg(ply, target, arg)
+		local vars = {}
+		if istable(arg) then
+			for k, v in ipairs(arg) do -- expect table arg to be sequential
+				if not istable(v) then -- ignore tables in table arg (can cause weird formatting or infinite recursion)
+					if k > 1 then
+						table.Add(vars, { BSU.CLR_TEXT, k < #arg and ", " or (#arg > 2 and ", and " or " and ") })
+					end
+					table.Add(vars, formatArg(ply, target, v))
 				end
 			end
-
-			if isAllPlayers and #params > 1 and #params == #player.GetAll() then
-				table.Add(vars, { BSU.CLR_EVERYONE, "Everyone" })
+		elseif isentity(arg) then
+			if arg:IsPlayer() then
+				table.Add(vars, arg == ply and (arg == target and { BSU.CLR_SELF, "Yourself" } or { BSU.CLR_SELF, "Themself" }) or { arg })
 			else
-				for ii = 1, #params do
-					local p = params[ii]
-
-					if ii > 1 then
-						table.Add(vars, { BSU.CLR_TEXT, ii < #params and ", " or (#params > 2 and ", and " or " and ") })
-					end
-
-					if IsEntity(p) then
-						if p:IsPlayer() then
-							table.Add(vars, ply == p and (ply == target and { BSU.CLR_SELF, "Yourself" } or { BSU.CLR_SELF, "Themself" }) or { p })
-						else
-							table.Add(vars, { BSU.CLR_MISC, tostring(p) })
-						end
-					else
-						table.Add(vars, { BSU.CLR_PARAM, tostring(p) })
-					end
-				end
+				table.Add(vars, { BSU.CLR_MISC, tostring(arg) })
 			end
-
-			return vars
+		else
+			table.Add(vars, { BSU.CLR_PARAM, tostring(arg) })
 		end
-	}
+		return vars
+	end
 
 	local function formatActionMsg(ply, target, msg, args)
-		args = istable(args) and args or { args }
-		local i, pos, vars = 1, 1, {}
-		for str, obj in string.gmatch(msg, "(.-)%%(%w+)%%") do
-			table.Add(vars, { BSU.CLR_TEXT, str })
+		local vars = {}
+		local pos = 1
 
-			obj = string.lower(obj)
-			local arg
-			while not arg and i <= #args do
-				arg = args[i]
-				i = i + 1
+		for pre, name in string.gmatch(msg, "(.-)%%([%w_]+)%%") do
+			table.Add(vars, { BSU.CLR_TEXT, pre })
+
+			local arg = args[name]
+			if arg ~= nil then
+				table.Add(vars, formatArg(ply, target, arg))
+			elseif name == "caller" then
+				table.Add(vars, ply:IsValid() and (ply == target and { BSU.CLR_SELF, "You" } or { ply }) or { BSU.CLR_CONSOLE, "(Console)" })
 			end
 
-			if arg then
-				local handler = actionHandlers[obj]
-				if handler then
-					table.Add(vars, handler(arg, ply, target))
-				end
-			end
-
-			pos = pos + #str + #obj + 2
+			pos = pos + #pre + #name + 2
 		end
 
 		local last = string.sub(msg, pos)
-		if #last > 0 then
+		if #last > 0 then -- add last part of the msg
 			table.Add(vars, { BSU.CLR_TEXT, last })
 		end
 
@@ -533,19 +511,13 @@ if SERVER then
 
 	-- sends a message in everyone's chat and formats player entities and tables of player entities
 	function objCmdHandler.BroadcastActionMsg(self, msg, args)
-		local targets = player.GetHumans()
-		if self.silent then
-			msg = "(SILENT) " .. msg
-			for _, ply in ipairs(targets) do
-				if not ply:IsSuperAdmin() and ply ~= self.caller then -- remove targets that aren't superadmins and not command caller
-					table.remove(targets, i)
-				end
+		if self.silent then msg = "(SILENT) " .. msg end
+		for _, v in ipairs(player.GetHumans()) do
+			if v:IsValid() and (not self.silent or (v:IsSuperAdmin() or v == self.caller)) then
+				BSU.SendChatMsg(v, formatActionMsg(self.caller, v, msg, args))
 			end
 		end
-		table.insert(targets, 1, NULL) -- send msg to server console
-		for _, v in ipairs(targets) do
-			BSU.SendChatMsg(v, formatActionMsg(self.caller, v, msg, args))
-		end
+		BSU.SendChatMsg(NULL, formatActionMsg(self.caller, NULL, msg, args)) -- send msg to server console
 	end
 end
 
@@ -573,14 +545,11 @@ function objCmdHandler.SendChatMsg(self, ...)
 	end
 end
 
-function objCmdHandler.IsSilent(self)
-	return self.silent
-end
-
 -- create a command handler object
-function BSU.CommandHandler(caller, argStr, silent)
+function BSU.CommandHandler(caller, name, argStr, silent)
 	return setmetatable({
-		caller = caller or NULL,
+		caller = caller,
+		name = name,
 		args = parseArgs(argStr or "", true),
 		silent = silent or false
 	}, objCmdHandler)

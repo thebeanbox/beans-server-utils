@@ -8,7 +8,7 @@ BSU.SetupCommand("god", function(cmd)
 	cmd:SetDescription("Enables godmode on a player")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self, ply)
+	cmd:SetFunction(function(self)
 		local targets = self:GetPlayersArg(1)
 		if targets then
 			targets = self:FilterTargets(targets, nil, true)
@@ -20,7 +20,7 @@ BSU.SetupCommand("god", function(cmd)
 			v:GodEnable()
 		end
 
-		self:BroadcastActionMsg("%user% godded %param%", { ply, targets })
+		self:BroadcastActionMsg("%caller% godded %targets%", { targets = targets })
 	end)
 end)
 BSU.AliasCommand("build", "god")
@@ -35,7 +35,7 @@ BSU.SetupCommand("ungod", function(cmd)
 	cmd:SetDescription("Enables godmode on a player")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self, ply)
+	cmd:SetFunction(function(self)
 		local targets = self:GetPlayersArg(1)
 		if targets then
 			targets = self:FilterTargets(targets, nil, true)
@@ -47,7 +47,7 @@ BSU.SetupCommand("ungod", function(cmd)
 			v:GodDisable()
 		end
 
-		self:BroadcastActionMsg("%user% ungodded %param%", { ply, targets })
+		self:BroadcastActionMsg("%caller% ungodded %targets%", { targets = targets })
 	end)
 end)
 BSU.AliasCommand("pvp", "ungod")
@@ -68,7 +68,7 @@ BSU.SetupCommand("teleport", function(cmd)
 	cmd:SetDescription("Teleports players to a target player")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self, ply)
+	cmd:SetFunction(function(self)
 		local targetA, targetB
 
 		targetA = self:GetPlayerArg(1)
@@ -87,12 +87,12 @@ BSU.SetupCommand("teleport", function(cmd)
 			self:CheckCanTarget(targetB, true)
 
 			local pos = targetB:GetPos()
-			for _, tar in ipairs(targetA) do
-				teleport(tar, pos)
+			for _, v in ipairs(targetA) do
+				teleport(v, pos)
 			end
 		end
 
-		self:BroadcastActionMsg("%user% teleported %param% to %param%", { ply, targetA, targetB })
+		self:BroadcastActionMsg("%caller% teleported %targetA% to %targetB%", { targetA = targetA, targetB = targetB })
 	end)
 end)
 BSU.AliasCommand("tp", "teleport")
@@ -107,13 +107,13 @@ BSU.SetupCommand("goto", function(cmd)
 	cmd:SetDescription("Teleports yourself to a player")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self, ply)
+	cmd:SetFunction(function(self)
 		local target = self:GetPlayerArg(1, true)
 		self:CheckCanTarget(target, true)
 
 		teleport(self:GetCaller(true), target:GetPos())
 
-		self:BroadcastActionMsg("%user% teleported to %param%", { ply, target })
+		self:BroadcastActionMsg("%caller% teleported to %target%", { target = target })
 	end)
 end)
 
@@ -127,15 +127,15 @@ BSU.SetupCommand("bring", function(cmd)
 	cmd:SetDescription("Teleports yourself to a player")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self, ply)
+	cmd:SetFunction(function(self)
 		local targets = self:FilterTargets(self:GetPlayersArg(1, true), true, true)
 
-		local pos = ply:GetPos()
-		for _, tar in ipairs(targets) do
-			teleport(tar, pos)
+		local pos = self:GetCaller(true):GetPos()
+		for _, v in ipairs(targets) do
+			teleport(v, pos)
 		end
 
-		self:BroadcastActionMsg("%user% brought %param%", { ply, targets })
+		self:BroadcastActionMsg("%caller% brought %targets%", { targets = targets })
 	end)
 end)
 
@@ -149,7 +149,7 @@ BSU.SetupCommand("return", function(cmd)
 	cmd:SetDescription("Return a player or multiple players to their original position")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self, ply)
+	cmd:SetFunction(function(self)
 		local targets = self:GetPlayersArg(1)
 		if targets then
 			targets = self:FilterTargets(targets, nil, true)
@@ -157,20 +157,17 @@ BSU.SetupCommand("return", function(cmd)
 			targets = { self:GetCaller(true) }
 		end
 
-		local newTargets = {}
-		for _, tar in ipairs(targets) do
-			if tar.bsu_oldPos then
-				table.insert(newTargets, tar)
+		local returned = {}
+		for _, v in ipairs(targets) do
+			if v.bsu_oldPos then
+				v:SetPos(v.bsu_oldPos)
+				v.bsu_oldPos = nil
+				table.insert(returned, v)
 			end
 		end
 
-		if table.IsEmpty(newTargets) then error("Failed to return any players") end
+		if next(returned) == nil then error("Failed to return any players") end
 
-		for _, tar in ipairs(newTargets) do
-			tar:SetPos(tar.bsu_oldPos)
-			tar.bsu_oldPos = nil
-		end
-
-		self:BroadcastActionMsg("%user% returned %param%", { ply, newTargets })
+		self:BroadcastActionMsg("%caller% returned %returned%", { returned = returned })
 	end)
 end)

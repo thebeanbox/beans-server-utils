@@ -25,11 +25,15 @@ local function chatCommand(ply, text)
 		silent = true
 	end
 
-	local name, argStr = string.match(text, "^(%S+) ?(%S*)")
-	name = string.sub(name, #(silent and prefixSilent or prefix) + 1)
+	local split = string.Split(text, " ")
+	local name = string.sub(table.remove(split, 1), #(silent and prefixSilent or prefix) + 1)
+	local argStr = table.concat(split, " ")
 
-	-- yeah i know this looks dumb, but blame Garry for not adding a way to override chat messages clientside before they are sent to the server
-	BSU.ClientRPC(ply, "BSU.SafeRunCommand", name, argStr, silent)
+	if BSU.SafeGetCommandByName(name) then -- check if command exists serverside then run it
+		BSU.RunCommand(ply, name, argStr, silent)
+	else -- tell client to try run it clientside
+		BSU.ClientRPC(ply, "BSU.SafeRunCommand", name, argStr, silent)
+	end
 
 	if silent then return "" end
 end
@@ -38,7 +42,9 @@ hook.Add("PlayerSay", "BSU_ChatCommand", chatCommand)
 
 local function sendCommandData(ply)
 	for _, v in ipairs(BSU.GetCommands()) do
-		BSU.ClientRPC(ply, "BSU.RegisterServerCommand", v:GetName(), v:GetDescription(), v:GetCategory())
+		if v:GetAccess() ~= BSU.CMD_CONSOLE then
+			BSU.ClientRPC(ply, "BSU.RegisterServerCommand", v:GetName(), v:GetDescription(), v:GetCategory())
+		end
 	end
 end
 

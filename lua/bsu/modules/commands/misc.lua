@@ -6,7 +6,7 @@ local desc_color = Color(180, 180, 180)
 ]]
 BSU.SetupCommand("help", function(cmd)
 	cmd:SetDescription("Show a list of all available BSU commands")
-	cmd:SetAccess(BSU.CMD_NOONE)
+	cmd:SetAccess(BSU.CMD_CONSOLE)
 	cmd:SetFunction(function(self)
 		local msg = { color_white, "\n\n[BSU COMMAND LIST]\n\n" }
 		local categories = BSU.GetCommandCategories()

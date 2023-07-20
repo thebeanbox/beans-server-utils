@@ -6,8 +6,8 @@
 ]]
 BSU.SetupCommand("nothing", function(cmd)
 	cmd:SetDescription("Do nothing to a player")
-	cmd:SetFunction(function(self, ply)
+	cmd:SetFunction(function(self)
 		local targets = self:FilterTargets(self:GetPlayersArg(1, true), nil, true)
-		self:BroadcastActionMsg("%user% did nothing to %param%", { ply, targets })
+		self:BroadcastActionMsg("%caller% did nothing to %targets%", { targets = targets })
 	end)
 end)

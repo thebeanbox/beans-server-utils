@@ -10,26 +10,28 @@ BSU.SetupCommand("ban", function(cmd)
 	cmd:SetDescription("Ban a player")
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self, ply)
+	cmd:SetFunction(function(self)
 		local target = self:GetPlayerArg(1, true)
-		self:CheckCanTarget(target, true) -- make sure ply is allowed to target this person
+		self:CheckCanTarget(target, true) -- make sure caller is allowed to target this person
+
 		local duration = self:GetNumberArg(2)
 		local reason
 		if duration then
 			duration = math.max(duration, 0)
 			reason = self:GetMultiStringArg(3, -1)
 		else
-		reason = self:GetMultiStringArg(2, -1)
+			duration = 0 -- permaban
+			reason = self:GetMultiStringArg(2, -1)
 		end
 
-		BSU.BanPlayer(target, reason, duration, ply)
-
-		self:BroadcastActionMsg("%user% banned %param%" .. (duration and duration ~= 0 and " for %param%" or " permanently") .. (reason and " (%param%)" or ""), {
-			ply,
-			target,
-			duration and duration ~= 0 and BSU.StringTime(duration, 10000),
-			reason
+		self:BroadcastActionMsg("%caller% banned %target%<%steamid%>" .. (duration ~= 0 and " for %duration%" or " permanently") .. (reason and " (%reason%)" or ""), {
+			target = target,
+			steamid = target:SteamID(),
+			duration = duration ~= 0 and BSU.StringTime(duration, 10000) or nil,
+			reason = reason
 		})
+
+		BSU.BanPlayer(target, reason, duration, self:GetCaller())
 	end)
 end)
 
@@ -45,27 +47,30 @@ BSU.SetupCommand("banid", function(cmd)
 	cmd:SetDescription("Ban a player by steamid")
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self, ply)
+	cmd:SetFunction(function(self)
 		local steamid = BSU.ID64(self:GetStringArg(1, true))
-		self:CheckCanTargetSteamID(steamid, true) -- make sure ply is allowed to target this person
+		self:CheckCanTargetSteamID(steamid, true) -- make sure caller is allowed to target this person
+
 		local duration = self:GetNumberArg(2)
 		local reason
 		if duration then
 			duration = math.max(duration, 0)
 			reason = self:GetMultiStringArg(3, -1)
 		else
+			duration = 0 -- permaban
 			reason = self:GetMultiStringArg(2, -1)
 		end
 
+		local ply = self:GetCaller()
 		BSU.BanSteamID(steamid, reason, duration, ply:IsValid() and ply:SteamID64())
 
 		local name = BSU.GetPlayerDataBySteamID(steamid).name
-		self:BroadcastActionMsg("%user% banned steamid %param%" .. (name and " (%param%)" or "") .. (duration and duration ~= 0 and " for %param%" or " permanently") .. (reason and " (%param%)" or ""), {
-			ply,
-			util.SteamIDFrom64(steamid),
-			name,
-			duration and duration ~= 0 and BSU.StringTime(duration, 10000),
-			reason
+
+		self:BroadcastActionMsg("%caller% banned steamid %steamid%" .. (name and " (%name%)" or "") .. (duration ~= 0 and " for %duration%" or " permanently") .. (reason and " (%reason%)" or ""), {
+			steamid = util.SteamIDFrom64(steamid),
+			name = name,
+			duration = duration ~= 0 and BSU.StringTime(duration, 10000) or nil,
+			reason = reason
 		})
 	end)
 end)
@@ -82,26 +87,27 @@ BSU.SetupCommand("ipban", function(cmd)
 	cmd:SetDescription("IP ban a player")
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self, ply)
+	cmd:SetFunction(function(self)
 		local target = self:GetPlayerArg(1, true)
-		self:CheckCanTarget(target, true) -- make sure ply is allowed to target this person
+		self:CheckCanTarget(target, true) -- make sure caller is allowed to target this person
+
 		local duration = self:GetNumberArg(2)
 		local reason
 		if duration then
 			duration = math.max(duration, 0)
 			reason = self:GetMultiStringArg(3, -1)
 		else
+			duration = 0
 			reason = self:GetMultiStringArg(2, -1)
 		end
 
-		BSU.IPBanPlayer(target, reason, duration, ply)
-
-		self:BroadcastActionMsg("%user% ip banned %param%" .. (duration and duration ~= 0 and " for %param%" or " permanently") .. (reason and " (%param%)" or ""), {
-			ply,
-			target,
-			duration and duration ~= 0 and BSU.StringTime(duration, 10000),
-			reason
+		self:BroadcastActionMsg("%caller% ip banned %target%" .. (duration ~= 0 and " for %duration%" or " permanently") .. (reason and " (%reason%)" or ""), {
+			target = target,
+			duration = duration ~= 0 and BSU.StringTime(duration, 10000) or nil,
+			reason = reason
 		})
+
+		BSU.IPBanPlayer(target, reason, duration, self:GetCaller())
 	end)
 end)
 
@@ -117,32 +123,35 @@ BSU.SetupCommand("banip", function(cmd)
 	cmd:SetDescription("Ban a player by ip")
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self, ply)
+	cmd:SetFunction(function(self)
 		local address = BSU.Address(self:GetStringArg(1, true))
 		local targetData = BSU.GetPlayerDataByIPAddress(address) -- find any players associated with this address
-		for i = 1, #targetData do -- make sure ply is allowed to target all of these players
+		for i = 1, #targetData do -- make sure caller is allowed to target all of these players
 			self:CheckCanTargetSteamID(targetData[i].steamid, true)
 		end
+
 		local duration = self:GetNumberArg(2)
 		local reason
 		if duration then
 			duration = math.max(duration, 0)
 			reason = self:GetMultiStringArg(3, -1)
 		else
+			duration = 0 -- permaban
 			reason = self:GetMultiStringArg(2, -1)
 		end
 
+		local ply = self:GetCaller()
 		BSU.BanIP(address, reason, duration, ply:IsValid() and ply:SteamID64())
 
 		local names = {}
 		for i = 1, #targetData do
 			table.insert(names, targetData[i].name)
 		end
-		self:BroadcastActionMsg("%user% banned an ip" .. (not table.IsEmpty(names) and " (%param%)" or "") .. (duration and duration ~= 0 and " for %param%" or " permanently") .. (reason and " (%param%)" or ""), {
-			ply,
-			not table.IsEmpty(names) and names,
-			duration and duration ~= 0 and BSU.StringTime(duration, 10000),
-			reason
+
+		self:BroadcastActionMsg("%caller% banned an ip" .. (next(names) ~= nil and " (%names%)" or "") .. (duration ~= 0 and " for %duration%" or " permanently") .. (reason and " (%reason%)" or ""), {
+			names = next(names) ~= nil and names or nil,
+			duration = duration ~= 0 and BSU.StringTime(duration, 10000) or nil,
+			reason = reason
 		})
 	end)
 end)
@@ -157,17 +166,18 @@ BSU.SetupCommand("unban", function(cmd)
 	cmd:SetDescription("Unban a player")
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self, ply)
+	cmd:SetFunction(function(self)
 		local steamid = self:GetStringArg(1, true)
 		steamid = BSU.ID64(steamid)
 
-		BSU.RevokeSteamIDBan(steamid, ply:IsValid() and ply:SteamID64()) -- this also checks if the steam id is actually banned
+		local caller = self:GetCaller()
+		BSU.RevokeSteamIDBan(steamid, caller:IsValid() and caller:SteamID64()) -- this also checks if the steam id is actually banned
 
 		local name = BSU.GetPlayerDataBySteamID(steamid).name
-		self:BroadcastActionMsg("%user% unbanned %param%" .. (name and " (%param%)" or ""), {
-			ply,
-			util.SteamIDFrom64(steamid),
-		name
+
+		self:BroadcastActionMsg("%caller% unbanned %steamid%" .. (name and " (%name%)" or ""), {
+			steamid = util.SteamIDFrom64(steamid),
+			name = name
 		})
 	end)
 end)
@@ -182,19 +192,20 @@ BSU.SetupCommand("unbanip", function(cmd)
 	cmd:SetDescription("Unban a player by ip")
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self, ply)
+	cmd:SetFunction(function(self)
 		local address = self:GetStringArg(1, true)
 		address = BSU.Address(address)
 
-		BSU.RevokeIPBan(address, ply:IsValid() and ply:SteamID64()) -- this also checks if the steam id is actually banned
+		local caller = self:GetCaller()
+		BSU.RevokeIPBan(address, caller:IsValid() and caller:SteamID64()) -- this also checks if the steam id is actually banned
 
 		local targetData, names = BSU.GetPlayerDataByIPAddress(address), {}
 		for i = 1, #targetData do -- get all the names of players associated with the address
 			table.insert(names, targetData[i].name)
 		end
-		self:BroadcastActionMsg("%user% unbanned an ip" .. (not table.IsEmpty(names) and " (%param%)" or ""), {
-			ply,
-			not table.IsEmpty(names) and names
+
+		self:BroadcastActionMsg("%caller% unbanned an ip" .. (next(names) ~= nil and " (%names%)" or ""), {
+			names = next(names) ~= nil and names or nil
 		})
 	end)
 end)
@@ -211,14 +222,13 @@ BSU.SetupCommand("superban", function(cmd)
 	cmd:SetDescription("Equivalent to the ban command, except it will also ban the account that owns the game license if the player is using Steam Family Sharing")
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_SUPERADMIN)
-	cmd:SetFunction(function(self, ply, _, argStr)
+	cmd:SetFunction(function(self)
 		local target = self:GetPlayerArg(1, true)
-
-		BSU.RunCommand("ban", ply, argStr)
-
+		local ply, silent = self:GetCaller(), self:GetSilent()
+		BSU.RunCommand(ply, "ban", self:GetRawMultiStringArg(1, -1), silent)
 		local ownerID = target:OwnerSteamID64()
 		if ownerID ~= target:SteamID64() then
-			BSU.RunCommand("banid", ply, ownerID .. " " .. (self:GetRawMultiStringArg(2, -1) or ""))
+			BSU.RunCommand(ply, "banid", ownerID .. " " .. (self:GetRawMultiStringArg(2, -1) or ""), silent)
 		end
 	end)
 end)
@@ -235,9 +245,10 @@ BSU.SetupCommand("superduperban", function(cmd)
 	cmd:SetDescription("Equivalent to the superban command, except it will also ip ban the player")
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_SUPERADMIN)
-	cmd:SetFunction(function(_, ply, _, argStr)
-		BSU.RunCommand("superban", ply, argStr)
-		BSU.RunCommand("ipban", ply, argStr)
+	cmd:SetFunction(function(self)
+		local ply, argStr, silent = self:GetCaller(), self:GetRawMultiStringArg(1, -1) or "", self:GetSilent()
+		BSU.RunCommand(ply, "superban", argStr, silent)
+		BSU.RunCommand(ply, "ipban", argStr, silent)
 	end)
 end)
 
@@ -252,18 +263,18 @@ BSU.SetupCommand("kick", function(cmd)
 	cmd:SetDescription("Kick a player")
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self, ply)
+	cmd:SetFunction(function(self)
 		local target = self:GetPlayerArg(1, true)
 		self:CheckCanTarget(target, true)
 		local reason = self:GetMultiStringArg(2, -1)
 
-		BSU.KickPlayer(target, reason, ply)
-
-		self:BroadcastActionMsg("%user% kicked %param%" .. (reason and " (%param%)" or ""), {
-			ply,
-			target,
-			reason
+		self:BroadcastActionMsg("%caller% kicked %target%<%steamid%>" .. (reason and " (%reason%)" or ""), {
+			target = target,
+			steamid = target:SteamID(),
+			reason = reason
 		})
+
+		BSU.KickPlayer(target, reason, self:GetCaller())
 	end)
 end)
 
@@ -278,19 +289,18 @@ BSU.SetupCommand("setgroup", function(cmd)
 	cmd:SetDescription("Set the group of a player")
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_SUPERADMIN)
-	cmd:SetFunction(function(self, ply)
+	cmd:SetFunction(function(self)
 		local target, groupid = self:GetPlayerArg(1, true), string.lower(self:GetStringArg(2, true))
 
 		if not BSU.GetGroupByID(groupid) then error("Group does not exist") end
 		if BSU.GetPlayerData(target).groupid == groupid then error("Target is already in that group") end
 
-		BSU.SetPlayerGroup(target, groupid)
-
-		self:BroadcastActionMsg("%user% set the group of %param% to %param%", {
-			ply,
-			target,
-			groupid
+		self:BroadcastActionMsg("%caller% set the group of %target% to %groupid%", {
+			target = target,
+			groupid = groupid
 		})
+
+		BSU.SetPlayerGroup(target, groupid)
 	end)
 end)
 
@@ -305,7 +315,7 @@ BSU.SetupCommand("setteam", function(cmd)
 	cmd:SetDescription("Set the team of a player")
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_SUPERADMIN)
-	cmd:SetFunction(function(self, ply)
+	cmd:SetFunction(function(self)
 		local target, team = self:GetPlayerArg(1, true), self:GetNumberArg(2)
 
 		local teamData
@@ -318,13 +328,12 @@ BSU.SetupCommand("setteam", function(cmd)
 		if not teamData then error("Team does not exist") end
 		if BSU.GetPlayerData(target).team == teamData.id then error("Target is already in that team") end
 
-		BSU.SetPlayerTeam(target, teamData.id)
-
-		self:BroadcastActionMsg("%user% set the team of %param% to %param%", {
-			ply,
-			target,
-			teamData.name
+		self:BroadcastActionMsg("%caller% set the team of %target% to %name%", {
+			target = target,
+			name = teamData.name
 		})
+
+		BSU.SetPlayerTeam(target, teamData.id)
 	end)
 end)
 
@@ -338,15 +347,14 @@ BSU.SetupCommand("resetteam", function(cmd)
 	cmd:SetDescription("Reset the team of a player to use their group's team instead")
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_SUPERADMIN)
-	cmd:SetFunction(function(self, ply)
+	cmd:SetFunction(function(self)
 		local target = self:GetPlayerArg(1, true)
 
-		BSU.ResetPlayerTeam(target)
-
-		self:BroadcastActionMsg("%user% reset the team of %param%", {
-			ply,
-			target
+		self:BroadcastActionMsg("%caller% reset the team of %target%", {
+			target = target
 		})
+
+		BSU.ResetPlayerTeam(target)
 	end)
 end)
 
@@ -392,26 +400,25 @@ BSU.SetupCommand("grantgrouppriv", function(cmd)
 	cmd:SetDescription("Set a group to have access to a privilege")
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_SUPERADMIN)
-	cmd:SetFunction(function(self, ply)
+	cmd:SetFunction(function(self)
 		local groupid, name, value = string.lower(self:GetStringArg(1, true)), self:GetStringArg(2, true), self:GetStringArg(3, true)
 
 		local group = BSU.GetGroupByID(groupid)
 		if not group then error("Group does not exist") end
 		if group.usergroup == "superadmin" then error("Group is in the 'superadmin' usergroup and thus already has access to everything") end
 
-		local type = getPrivFromName(name)
-		if not type then error("Unknown privilege type") end
+		local typ = getPrivFromName(name)
+		if not typ then error("Unknown privilege type") end
 
-		local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = type, value = value })[1]
+		local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = typ, value = value })[1]
 		if priv and priv.granted == 1 then error("Privilege is already granted to this group") end
 
-		BSU.RegisterGroupPrivilege(groupid, type, value, true)
+		BSU.RegisterGroupPrivilege(groupid, typ, value, true)
 
-		self:BroadcastActionMsg("%user% granted the group %param% access to %param% (%param%)", {
-			ply,
-			groupid,
-			value,
-			getNameFromPriv(type)
+		self:BroadcastActionMsg("%caller% granted the group %groupid% access to %value% (%name%)", {
+			groupid = groupid,
+			value = value,
+			name = getNameFromPriv(typ)
 		})
 	end)
 end)
@@ -428,26 +435,25 @@ BSU.SetupCommand("revokegrouppriv", function(cmd)
 	cmd:SetDescription("Set a group to not have access to a privilege")
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_SUPERADMIN)
-	cmd:SetFunction(function(self, ply)
+	cmd:SetFunction(function(self)
 		local groupid, name, value = string.lower(self:GetStringArg(1, true)), self:GetStringArg(2, true), self:GetStringArg(3, true)
 
 		local group = BSU.GetGroupByID(groupid)
 		if not group then error("Group does not exist") end
 		if group.usergroup == "superadmin" then error("Group is in the 'superadmin' usergroup and thus cannot be restricted from anything") end
 
-		local type = getPrivFromName(name)
-		if not type then error("Unknown privilege type") end
+		local typ = getPrivFromName(name)
+		if not typ then error("Unknown privilege type") end
 
-		local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = type, value = value })[1]
+		local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = typ, value = value })[1]
 		if priv and priv.granted == 0 then error("Privilege is already revoked from this group") end
 
-		BSU.RegisterGroupPrivilege(groupid, type, value, false)
+		BSU.RegisterGroupPrivilege(groupid, typ, value, false)
 
-		self:BroadcastActionMsg("%user% revoked the group %param% access from %param% (%param%)", {
-			ply,
-			groupid,
-			value,
-			getNameFromPriv(type)
+		self:BroadcastActionMsg("%caller% revoked the group %groupid% access from %value% (%name%)", {
+			groupid = groupid,
+			value = value,
+			name = getNameFromPriv(typ)
 		})
 	end)
 end)
@@ -464,26 +470,25 @@ BSU.SetupCommand("cleargrouppriv", function(cmd)
 	cmd:SetDescription("Remove an existing group privilege (will use whatever the default access settings are)")
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_SUPERADMIN)
-	cmd:SetFunction(function(self, ply)
+	cmd:SetFunction(function(self)
 		local groupid, name, value = string.lower(self:GetStringArg(1, true)), self:GetStringArg(2, true), self:GetStringArg(3, true)
 
 		local group = BSU.GetGroupByID(groupid)
 		if not group then error("Group does not exist") end
 
-		local type = getPrivFromName(name)
-		if not type then error("Unknown privilege type") end
+		local typ = getPrivFromName(name)
+		if not typ then error("Unknown privilege type") end
 
-		local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = type, value = value })[1]
+		local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = typ, value = value })[1]
 		if not priv then error("Privilege on this group doesn't exist") end
 
-		BSU.RemoveGroupPrivilege(groupid, type, value)
+		BSU.RemoveGroupPrivilege(groupid, typ, value)
 
-		self:BroadcastActionMsg("%user% cleared a %param% privilege on the group %param% for %param% (%param%)", {
-			ply,
-			priv.granted == 1 and "granting" or "revoking",
-			groupid,
-			value,
-			getNameFromPriv(type),
+		self:BroadcastActionMsg("%caller% cleared a %kind% privilege on the group %groupid% for %value% (%name%)", {
+			kind = priv.granted == 1 and "granting" or "revoking",
+			groupid = groupid,
+			value = value,
+			name = getNameFromPriv(typ),
 		})
 	end)
 end)
