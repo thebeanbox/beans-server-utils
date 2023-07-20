@@ -444,8 +444,7 @@ if SERVER then
 
 	function objCmdHandler.FilterTargets(self, targets, exclude, fail)
 		local tbl = {}
-		for i = 1, #targets do
-			local tar = targets[i]
+		for _, tar in ipairs(targets) do
 			if tar:IsValid() and not (exclude and tar == self.caller) and self:CheckCanTarget(tar) then
 				table.insert(tbl, tar)
 			end
@@ -537,9 +536,8 @@ if SERVER then
 		local targets = player.GetHumans()
 		if self.silent then
 			msg = "(SILENT) " .. msg
-			for i = 1, #targets do
-				local ply = targets[i]
-				if not ply:IsSuperAdmin() and ply ~= self.caller then -- remove targets that aren't superadmins and not command user
+			for _, ply in ipairs(targets) do
+				if not ply:IsSuperAdmin() and ply ~= self.caller then -- remove targets that aren't superadmins and not command caller
 					table.remove(targets, i)
 				end
 			end

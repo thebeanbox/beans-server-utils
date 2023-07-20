@@ -28,6 +28,7 @@ local function chatCommand(ply, text)
 	local name, argStr = string.match(text, "^(%S+) ?(%S*)")
 	name = string.sub(name, #(silent and prefixSilent or prefix) + 1)
 
+	-- yeah i know this looks dumb, but blame Garry for not adding a way to override chat messages clientside before they are sent to the server
 	BSU.ClientRPC(ply, "BSU.SafeRunCommand", name, argStr, silent)
 
 	if silent then return "" end
