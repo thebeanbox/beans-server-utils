@@ -43,9 +43,9 @@ local function updatePPData(_, ply)
 	BSU._ppdata[plyID][steamid][permission] = method or nil
 
 	-- remove these tables if they are empty
-	if table.IsEmpty(BSU._ppdata[plyID][steamid]) then
+	if next(BSU._ppdata[plyID][steamid]) == nil then
 		BSU._ppdata[plyID][steamid] = nil
-		if table.IsEmpty(BSU._ppdata[plyID]) then
+		if next(BSU._ppdata[plyID]) == nil then
 			BSU._ppdata[plyID] = nil
 		end
 	end

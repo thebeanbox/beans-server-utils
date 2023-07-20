@@ -49,7 +49,7 @@ end
 
 -- send prop protection data to the server (takes a table of steamids or nil for all current players)
 function BSU.SendPPData(steamids)
-	if steamids and table.IsEmpty(steamids) then return end
+	if steamids and next(steamids) == nil then return end
 
 	if not steamids then
 		steamids = {}
@@ -69,7 +69,7 @@ function BSU.SendPPData(steamids)
 		end
 	end
 
-	if table.IsEmpty(data) then return end
+	if next(data) == nil then return end
 
 	net.Start("bsu_ppdata_init")
 		net.WriteUInt(#data, 7) -- max of 127 entries (perfect because this is the max player limit excluding the local player)

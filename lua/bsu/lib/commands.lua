@@ -24,7 +24,7 @@ local function parseArgs(input, inclusive)
 
 		local found
 
-		if not table.IsEmpty(foundGroupChars) then
+		if next(foundGroupChars) ~= nil then
 			table.sort(foundGroupChars, function(a, b) return a[2] < b[2] end)
 
 			for i = 1, #foundGroupChars do
@@ -407,7 +407,7 @@ function objCmdHandler.GetPlayerArg(self, n, fail)
 				errorBadArgument(n, "target was invalid")
 			end
 		elseif fail then
-			if table.IsEmpty(plys) then
+			if next(plys) == nil then
 				errorBadArgument(n, "failed to find a target")
 			else
 				errorBadArgument(n, "received too many targets")
@@ -423,7 +423,7 @@ function objCmdHandler.GetPlayersArg(self, n, fail)
 	local arg = self.args[n]
 	if arg then
 		local plys = parsePlayerArg(self.caller, arg)
-		if not table.IsEmpty(plys) then
+		if next(plys) ~= nil then
 			return plys
 		elseif fail then
 			errorBadArgument(n, "failed to find any targets")
@@ -455,7 +455,7 @@ if SERVER then
 				table.insert(tbl, tar)
 			end
 		end
-		if table.IsEmpty(tbl) and fail then
+		if next(tbl) == nil and fail then
 			error("You cannot select " .. (#targets == 1 and "this target" or "these targets"))
 		end
 		return tbl
