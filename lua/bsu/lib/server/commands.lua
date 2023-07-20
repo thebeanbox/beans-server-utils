@@ -36,11 +36,11 @@ end
 
 -- returns bool if the player has access to the command
 function BSU.PlayerHasCommandAccess(ply, name)
-	if not ply:IsValid() then return true end -- a NULL entity means it was ran through the server console so we don't need to check
-
 	name = string.lower(name)
 	local cmd = BSU._cmds[name]
 	if not cmd then error("Command '" .. name .. "' does not exist") end
+
+	if not ply:IsValid() then return true end -- a NULL entity means it was ran through the server console so we don't need to check
 
 	if ply:IsSuperAdmin() then return true end
 	local accessPriv = BSU.CheckPlayerPrivilege(ply:SteamID64(), BSU.PRIV_CMD, name)
@@ -51,15 +51,29 @@ function BSU.PlayerHasCommandAccess(ply, name)
 end
 
 -- make a player run a command (does nothing if they do not have access to the command)
-function BSU.RunCommand(name, ply, argStr, silent)
-	if not BSU.PlayerHasCommandAccess(ply, name) then
-		return BSU.SendChatMsg(ply, BSU.CLR_ERROR, "You don't have permission to use this command")
-	end
-
+function BSU.RunCommand(ply, name, argStr, silent)
+	name = string.lower(name)
 	local cmd = BSU._cmds[name]
 	if not cmd then error("Command '" .. name .. "' does not exist") end
 
+	if not BSU.PlayerHasCommandAccess(ply, name) then
+		BSU.SendChatMsg(ply, BSU.CLR_ERROR, "You don't have permission to use this command")
+		return
+	end
+
 	local handler = BSU.CommandHandler(ply, argStr, silent)
 
-	xpcall(cmd.func, function(err) BSU.SendChatMsg(ply, BSU.CLR_ERROR, "Command errored with: " .. string.Split(err, ": ")[2]) end, handler, ply, table.Copy(handler._args), argStr)
+	xpcall(cmd.func, function(err) BSU.SendChatMsg(ply, BSU.CLR_ERROR, "Command errored with: " .. string.Split(err, ": ")[2]) end, handler, ply, name, argStr)
 end
+
+function BSU.SafeRunCommand(ply, name, argStr, silent)
+	if not BSU.GetCommandByName(name) then BSU.SendConMsg(color_white, "Unknown BSU command: '" .. name .. "'") return end
+	BSU.RunCommand(ply, name, argStr, silent)
+end
+
+net.Receive("bsu_command", function(_, ply)
+	local name = net.ReadString()
+	local argStr = net.ReadString()
+	local silent = net.ReadBool()
+	BSU.RunCommand(ply, name, argStr, silent)
+end)

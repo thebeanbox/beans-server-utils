@@ -6,7 +6,8 @@ local desc_color = Color(180, 180, 180)
 ]]
 BSU.SetupCommand("help", function(cmd)
 	cmd:SetDescription("Show a list of all available BSU commands")
-	cmd:SetFunction(function()
+	cmd:SetAccess(BSU.CMD_NOONE)
+	cmd:SetFunction(function(self)
 		local msg = { color_white, "\n\n[BSU COMMAND LIST]\n\n" }
 		local categories = BSU.GetCommandCategories()
 
@@ -22,7 +23,7 @@ BSU.SetupCommand("help", function(cmd)
 			table.insert(msg, "\n\n")
 		end
 
-		MsgC(unpack(msg))
-		chat.AddText("Command help list has been printed to console")
+		self:SendConMsg(unpack(msg))
+		self:SendChatMsg("Command help list has been printed to console")
 	end)
 end)

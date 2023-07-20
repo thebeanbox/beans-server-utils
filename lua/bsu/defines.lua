@@ -40,6 +40,7 @@ BSU.CLR_CONSOLE  = Color(0, 0, 0)       -- server console name                  
 BSU.CLR_MISC     = Color(255, 255, 255) -- other (just used for non-player ents) (white)
 
 BSU.CMD_PREFIX = "!"
+BSU.CMD_PREFIX_SILENT = "/"
 
 if SERVER then
 	-- server SQL database table names

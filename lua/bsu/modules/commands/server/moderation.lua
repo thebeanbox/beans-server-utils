@@ -259,34 +259,11 @@ BSU.SetupCommand("kick", function(cmd)
 
 		BSU.KickPlayer(target, reason, ply)
 
-	self:BroadcastActionMsg("%user% kicked %param%" .. (reason and " (%param%)" or ""), {
-	ply,
-	target,
-	reason
-	})
-	end)
-end)
-
---[[
-	Name: listgroups
-	Desc: Show a list of all groups
-]]
-BSU.SetupCommand("listgroups", function(cmd)
-	cmd:SetDescription("Show a list of all groups")
-	cmd:SetCategory("moderation")
-	cmd:SetAccess(BSU.CMD_SUPERADMIN)
-	cmd:SetFunction(function(self, _)
-		local groups = BSU.GetAllGroups()
-		table.sort(groups, function(a, b) return a.team > b.team end)
-
-		local msg = { "Groups List:\n" }
-		for _, v in ipairs(groups) do
-			table.Add(msg, {
-				BSU.CLR_TEXT, "- ", BSU.HexToColor(BSU.GetTeamByID(v.team).color), v.id .. "\n"
-			})
-		end
-
-		self:SendChatMsg(unpack(msg))
+		self:BroadcastActionMsg("%user% kicked %param%" .. (reason and " (%param%)" or ""), {
+			ply,
+			target,
+			reason
+		})
 	end)
 end)
 

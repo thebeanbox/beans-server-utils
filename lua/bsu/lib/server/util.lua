@@ -31,7 +31,7 @@ function BSU.LoadModules(dir)
 
 	for _, v in ipairs(folders) do
 		v = string.lower(v)
-		if v == "server" or folder == "client" then continue end
+		if v == "server" or v == "client" then continue end
 		BSU.LoadModules(dir .. v .. "/")
 	end
 end

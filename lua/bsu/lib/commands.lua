@@ -174,10 +174,8 @@ function objCommand.SetCategory(self, category)
 	self.category = category and string.lower(category) or "misc"
 end
 
-if SERVER then
-	function objCommand.SetAccess(self, access)
-		self.access = access or BSU.CMD_ANYONE
-	end
+function objCommand.SetAccess(self, access) -- only used serverside, is pointless clientside but kept for shared scripts
+	self.access = access or BSU.CMD_ANYONE
 end
 
 function objCommand.SetFunction(self, func)
@@ -202,10 +200,8 @@ function objCommand.GetCategory(self)
 	return self.category
 end
 
-if SERVER then
-	function objCommand.GetAccess(self)
-		return self.access
-	end
+function objCommand.GetAccess(self) -- only used serverside, is pointless clientside but kept for shared scripts
+	return self.access
 end
 
 function objCommand.GetFunction(self)
@@ -249,6 +245,10 @@ function BSU.GetCommands()
 	return table.ClearKeys(BSU._cmds)
 end
 
+function BSU.GetCommandNames()
+	return table.GetKeys(BSU._cmds)
+end
+
 function BSU.GetCommandByName(name)
 	return BSU._cmds[string.lower(name)]
 end
@@ -274,64 +274,71 @@ function BSU.GetCommandCategories()
 	return table.GetKeys(seen)
 end
 
-if SERVER then
-	function BSU.GetCommandsByAccess(access)
-		local list = {}
-		for _, v in pairs(BSU._cmds) do
-			if v.access == access then
-				table.insert(list, v)
-			end
+function BSU.GetCommandsByAccess(access)  -- only used serverside, is pointless clientside but kept for shared scripts
+	local list = {}
+	for _, v in pairs(BSU._cmds) do
+		if v.access == access then
+			table.insert(list, v)
 		end
-		return list
 	end
+	return list
 end
 
 -- command handler object
 local objCmdHandler = {}
 objCmdHandler.__index = objCmdHandler
-objCmdHandler.__tostring = function(self) return self._args end
+objCmdHandler.__tostring = function(self) return "BSU Command Handler[" .. #self.args .. "]" end
+
+function objCmdHandler.GetCaller(self, fail)
+	local caller = self.caller
+	if caller:IsValid() then
+		return caller
+	elseif fail then
+		error("Unable to find player who called the command (was ran from server console?)")
+	end
+end
 
 local function errorBadArgument(num, reason)
 	error("Bad argument #" .. num .. " (" .. reason .. ")")
 end
 
 -- used for getting the original string of the argument
-function objCmdHandler.GetRawStringArg(self, n, check)
-	local arg = self._args[n]
+function objCmdHandler.GetRawStringArg(self, n, fail)
+	local arg = self.args[n]
 	if arg then
 		return arg
-	elseif check then
+	elseif fail then
 		errorBadArgument(n, "expected string, found nothing")
 	end
 end
 
 -- used for getting the string of the argument but parsed
-function objCmdHandler.GetStringArg(self, n, check)
-	local str = self:GetRawStringArg(n, check)
+function objCmdHandler.GetStringArg(self, n, fail)
+	local str = self:GetRawStringArg(n, fail)
 	if str then
 		return parseArgs(str)[1]
-	elseif check then
+	elseif fail then
 		errorBadArgument(n, "expected string, found nothing")
 	end
 end
 
 -- used for getting multiple original string arguments as a single string
-function objCmdHandler.GetRawMultiStringArg(self, n1, n2, check)
+function objCmdHandler.GetRawMultiStringArg(self, n1, n2, fail)
 	if n1 < 0 then
-		n1 = #self._args + n1 + 1
+		n1 = #self.args + n1 + 1
 	end
 	if n2 then
 		if n2 < 0 then
-			n2 = #self._args + n2 + 1
+			n2 = #self.args + n2 + 1
 		end
 	else
-		n2 = #self._args
+		n2 = #self.args
 	end
 
 	if n1 ~= n2 then -- get unparsed arguments from n1 to n2
 		local str
 		for i = n1, n2 do
-			local arg = self._args[i]
+			local arg = self.args[i]
 			if arg then
 				if not str then
 					str = arg
@@ -344,78 +351,78 @@ function objCmdHandler.GetRawMultiStringArg(self, n1, n2, check)
 		end
 		if str then
 			return str
-		elseif check then
+		elseif fail then
 			errorBadArgument(n1, "expected string, found nothing")
 		end
 	end
-	local arg = self._args[n1]
+	local arg = self.args[n1]
 	if arg then
 		return arg
-	elseif check then
+	elseif fail then
 		errorBadArgument(n1, "expected string, found nothing")
 	end
 end
 
 -- used for getting multiple parsed string arguments as a single string
-function objCmdHandler.GetMultiStringArg(self, n1, n2, check)
-	local str = self:GetRawMultiStringArg(n1, n2, check)
+function objCmdHandler.GetMultiStringArg(self, n1, n2, fail)
+	local str = self:GetRawMultiStringArg(n1, n2, fail)
 	if str then
 		return table.concat(parseArgs(str), " ") -- parse and concat back to string
-	elseif check then
+	elseif fail then
 		errorBadArgument(n1, "expected string, found nothing")
 	end
 end
 
 -- used for getting an argument parsed as a number (will fail if it couldn't be converted to a number)
-function objCmdHandler.GetNumberArg(self, n, check)
-	local arg = self._args[n]
+function objCmdHandler.GetNumberArg(self, n, fail)
+	local arg = self.args[n]
 	if arg then
 		local val = tonumber(arg)
 		if val then
 			return val
-		elseif check then
+		elseif fail then
 			errorBadArgument(n, "failed to interpret '" .. arg .. "' as a number")
 		end
-	elseif check then
+	elseif fail then
 		errorBadArgument(n, "expected number, got nothing")
 	end
 end
 
 -- used for getting an argument parsed as a target (will fail if none or more than 1 targets are found)
-function objCmdHandler.GetPlayerArg(self, n, check)
-	local arg = self._args[n]
+function objCmdHandler.GetPlayerArg(self, n, fail)
+	local arg = self.args[n]
 	if arg then
-		local plys = parsePlayerArg(self._user, arg)
+		local plys = parsePlayerArg(self.caller, arg)
 		if #plys == 1 then
 			local ply = plys[1]
 			if ply:IsValid() then
 				return ply
-			elseif check then
+			elseif fail then
 				errorBadArgument(n, "target was invalid")
 			end
-		elseif check then
+		elseif fail then
 			if table.IsEmpty(plys) then
 				errorBadArgument(n, "failed to find a target")
 			else
 				errorBadArgument(n, "received too many targets")
 			end
 		end
-	elseif check then
+	elseif fail then
 		errorBadArgument(n, "expected target, found nothing")
 	end
 end
 
 -- used for getting an argument parsed as 1 or more targets (will fail if none are found)
-function objCmdHandler.GetPlayersArg(self, n, check)
-	local arg = self._args[n]
+function objCmdHandler.GetPlayersArg(self, n, fail)
+	local arg = self.args[n]
 	if arg then
-		local plys = parsePlayerArg(self._user, arg)
+		local plys = parsePlayerArg(self.caller, arg)
 		if not table.IsEmpty(plys) then
 			return plys
-		elseif check then
+		elseif fail then
 			errorBadArgument(n, "failed to find any targets")
 		end
-	elseif check then
+	elseif fail then
 		errorBadArgument(n, "expected targets, found nothing")
 	end
 end
@@ -423,23 +430,23 @@ end
 if SERVER then
 	function objCmdHandler.CheckCanTargetSteamID(self, targetID, fail)
 		targetID = BSU.ID64(targetID)
-		if not self._user:IsValid() or self._user:IsSuperAdmin() or self._user:SteamID64() == targetID then return true end
-		local targetPriv = BSU.CheckPlayerPrivilege(self._user:SteamID64(), BSU.PRIV_TARGET, BSU.GetPlayerDataBySteamID(targetID).groupid)
+		if not self.caller:IsValid() or self.caller:IsSuperAdmin() or self.caller:SteamID64() == targetID then return true end
+		local targetPriv = BSU.CheckPlayerPrivilege(self.caller:SteamID64(), BSU.PRIV_TARGET, BSU.GetPlayerDataBySteamID(targetID).groupid)
 		if targetPriv then return true end
 		if fail then error("You cannot select this target") end
 		return false
 	end
 
 	function objCmdHandler.CheckCanTarget(self, target, fail)
-		if not self._user:IsValid() or self._user:IsSuperAdmin() or self._user == target then return true end -- is server console or superadmin
+		if not self.caller:IsValid() or self.caller:IsSuperAdmin() or self.caller == target then return true end -- is server console or superadmin
 		return self:CheckCanTargetSteamID(target:SteamID64(), fail)
 	end
 
-	function objCmdHandler.FilterTargets(self, targets, fail)
+	function objCmdHandler.FilterTargets(self, targets, exclude, fail)
 		local tbl = {}
 		for i = 1, #targets do
 			local tar = targets[i]
-			if self:CheckCanTarget(tar) then
+			if tar:IsValid() and not (exclude and tar == self.caller) and self:CheckCanTarget(tar) then
 				table.insert(tbl, tar)
 			end
 		end
@@ -447,30 +454,6 @@ if SERVER then
 			error("You cannot select " .. (#targets == 1 and "this target" or "these targets"))
 		end
 		return tbl
-	end
-
-	-- sends a message to the player in console (will print into the server console if the command was ran through it)
-	function objCmdHandler.SendConMsg(self, ...)
-		if SERVER and self._user:IsValid() then
-			BSU.SendConMsg(self._user, ...)
-		else -- cmd was ran through the server console
-			MsgC(...)
-			MsgN()
-		end
-	end
-
-	-- sends a message to the player in chat (will print into the server console if the command was ran through it)
-	function objCmdHandler.SendChatMsg(self, ...)
-		if SERVER then
-			if self._user:IsValid() then -- cmd was ran through the server console
-				BSU.SendChatMsg(self._user, ...)
-			else -- cmd was ran through the server console
-				MsgC(...)
-				MsgN()
-			end
-		else
-			chat.AddText(...)
-		end
 	end
 
 	local actionHandlers = {
@@ -550,28 +533,57 @@ if SERVER then
 	end
 
 	-- sends a message in everyone's chat and formats player entities and tables of player entities
-	function objCmdHandler.BroadcastActionMsg(self, msg, ...)
+	function objCmdHandler.BroadcastActionMsg(self, msg, args)
 		local targets = player.GetHumans()
-		if self._silent then
+		if self.silent then
+			msg = "(SILENT) " .. msg
 			for i = 1, #targets do
 				local ply = targets[i]
-				if not ply:IsSuperAdmin() and ply ~= self.user then -- remove targets that aren't superadmins and not command user
+				if not ply:IsSuperAdmin() and ply ~= self.caller then -- remove targets that aren't superadmins and not command user
 					table.remove(targets, i)
 				end
 			end
 		end
-		table.insert(targets, 1, NULL)
+		table.insert(targets, 1, NULL) -- send msg to server console
 		for _, v in ipairs(targets) do
-			BSU.SendChatMsg(v, formatActionMsg(self._user, v, msg, ...))
+			BSU.SendChatMsg(v, formatActionMsg(self.caller, v, msg, args))
 		end
 	end
 end
 
+-- sends a message to the player in console (will print into the server console if the command was ran through it)
+function objCmdHandler.SendConMsg(self, ...)
+	if SERVER and self.caller:IsValid() then
+		BSU.SendConMsg(self.caller, ...)
+	else -- cmd was ran through the server console
+		MsgC(...)
+		MsgN()
+	end
+end
+
+-- sends a message to the player in chat (will print into the server console if the command was ran through it)
+function objCmdHandler.SendChatMsg(self, ...)
+	if SERVER then
+		if self.caller:IsValid() then -- cmd was ran through the server console
+			BSU.SendChatMsg(self.caller, ...)
+		else -- cmd was ran through the server console
+			MsgC(...)
+			MsgN()
+		end
+	else
+		chat.AddText(...)
+	end
+end
+
+function objCmdHandler.IsSilent(self)
+	return self.silent
+end
+
 -- create a command handler object
-function BSU.CommandHandler(user, argStr, silent)
+function BSU.CommandHandler(caller, argStr, silent)
 	return setmetatable({
-		_user = user or NULL,
-		_args = argStr and parseArgs(argStr, true) or "",
-		_silent = silent or false
+		caller = caller or NULL,
+		args = parseArgs(argStr or "", true),
+		silent = silent or false
 	}, objCmdHandler)
 end
