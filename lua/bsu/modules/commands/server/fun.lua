@@ -1,3 +1,7 @@
+hook.Add("PlayerSpawn", "BSU_FixGodRespawn", function(ply)
+	if ply.bsu_godded then ply:AddFlags(FL_GODMODE) end
+end)
+
 local function getSpawnInfo(ply)
 	if ply.bsu_spawnInfo then return end
 
@@ -144,6 +148,74 @@ hook.Add("PlayerSpawnNPC", "BSU_BlockPlayer", block)
 hook.Add("CanPlayerSuicide", "BSU_BlockPlayer", block)
 
 --[[
+	Name: god
+	Desc: Enable godmode on players
+	Arguments:
+		1. Targets (players, default: self)
+]]
+BSU.SetupCommand("god", function(cmd)
+	cmd:SetDescription("Enables godmode on a player")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local targets = self:GetPlayersArg(1)
+		if targets then
+			targets = self:FilterTargets(targets, nil, true)
+		else
+			targets = { self:GetCaller(true) }
+		end
+
+		local godded = {}
+		for _, v in ipairs(targets) do
+			if self:CheckExclusive(v, true) and not v.bsu_godded then
+				v:AddFlags(FL_GODMODE)
+				v.bsu_godded = true
+				table.insert(godded, v)
+			end
+		end
+
+		if next(godded) ~= nil then
+			self:BroadcastActionMsg("%caller% godded %godded%", { godded = godded })
+		end
+	end)
+end)
+BSU.AliasCommand("build", "god")
+
+--[[
+	Name: ungod
+	Desc: Disable godmode on players
+	Arguments:
+		1. Targets (players)
+]]
+BSU.SetupCommand("ungod", function(cmd)
+	cmd:SetDescription("Enables godmode on a player")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local targets = self:GetPlayersArg(1)
+		if targets then
+			targets = self:FilterTargets(targets, nil, true)
+		else
+			targets = { self:GetCaller(true) }
+		end
+
+		local ungodded = {}
+		for _, v in ipairs(targets) do
+			if self:CheckExclusive(v, true) and v.bsu_godded then
+				if not v.bsu_frozen then v:RemoveFlags(FL_GODMODE) end
+				v.bsu_godded = nil
+				table.insert(ungodded, v)
+			end
+		end
+
+		if next(ungodded) ~= nil then
+			self:BroadcastActionMsg("%caller% ungodded %ungodded%", { ungodded = ungodded })
+		end
+	end)
+end)
+BSU.AliasCommand("pvp", "ungod")
+
+--[[
 	Name: ragdoll
 	Desc: Set players into ragdoll mode
 	Arguments:
@@ -228,7 +300,7 @@ BSU.SetupCommand("freeze", function(cmd)
 		local frozen = {}
 		for _, v in ipairs(targets) do
 			if self:CheckExclusive(v, true) then
-				v:Lock()
+				v:AddFlags(FL_FROZEN + FL_GODMODE)
 				v.bsu_frozen = true
 				self:SetExclusive(v, "frozen")
 				table.insert(frozen, v)
@@ -262,7 +334,8 @@ BSU.SetupCommand("unfreeze", function(cmd)
 		local unfrozen = {}
 		for _, v in ipairs(targets) do
 			if v:IsFlagSet(FL_FROZEN) then
-				v:UnLock()
+				v:RemoveFlags(FL_FROZEN)
+				if not v.bsu_godded then v:RemoveFlags(FL_GODMODE) end
 				v.bsu_frozen = nil
 				self:ClearExclusive(v)
 				table.insert(unfrozen, v)
