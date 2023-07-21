@@ -41,3 +41,6 @@ concommand.Add("sbsu", function(_, _, args, argStr)
 	local name = string.lower(args[1])
 	BSU.SafeRunCommand(name, string.sub(argStr, #name + 2), true)
 end, autoComplete)
+
+-- create convar for hiding silent commands
+CreateClientConVar("bsu_showsilent", "2", true, true, "Set whether silent commands should show their message (2 for chat, 1 for console, 0 for hidden)", 0, 2)
