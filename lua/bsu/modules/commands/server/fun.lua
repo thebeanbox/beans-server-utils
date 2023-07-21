@@ -114,7 +114,7 @@ local function unragdollPlayer(ply)
 	return true
 end
 
-hook.Add("PlayerSpawn", "BSU_FixRagdollSpawn", function(ply)
+hook.Add("PlayerSpawn", "BSU_FixRagdollRespawn", function(ply)
 	if ply.bsu_ragdoll then
 		timer.Simple(0, function()
 			if not ply:IsValid() or not ply.bsu_ragdoll then return end

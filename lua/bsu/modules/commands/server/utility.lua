@@ -1,3 +1,7 @@
+hook.Add("PlayerSpawn", "BSU_FixGodRespawn", function(ply)
+	if ply.godded then ply:GodEnable() end
+end)
+
 --[[
 	Name: god
 	Desc: Enable godmode on players
@@ -18,8 +22,9 @@ BSU.SetupCommand("god", function(cmd)
 
 		local godded = {}
 		for _, v in ipairs(targets) do
-			if self:CheckExclusive(v, true) then
+			if self:CheckExclusive(v, true) and not v.godded then
 				v:GodEnable()
+				v.godded = true
 				table.insert(godded, v)
 			end
 		end
@@ -51,8 +56,9 @@ BSU.SetupCommand("ungod", function(cmd)
 
 		local ungodded = {}
 		for _, v in ipairs(targets) do
-			if self:CheckExclusive(v, true) then
+			if self:CheckExclusive(v, true) and v.godded then
 				v:GodDisable()
+				v.godded = nil
 				table.insert(ungodded, v)
 			end
 		end
