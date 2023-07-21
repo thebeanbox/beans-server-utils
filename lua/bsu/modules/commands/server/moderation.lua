@@ -407,18 +407,18 @@ BSU.SetupCommand("grantgrouppriv", function(cmd)
 		if not group then error("Group does not exist") end
 		if group.usergroup == "superadmin" then error("Group is in the 'superadmin' usergroup and thus already has access to everything") end
 
-		local typ = getPrivFromName(name)
-		if not typ then error("Unknown privilege type") end
+		local type = getPrivFromName(name)
+		if not type then error("Unknown privilege type") end
 
-		local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = typ, value = value })[1]
-		if priv and priv.granted == 1 then error("Privilege is already granted to this group") end
+		local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = type, value = value })[1]
+		if priv and priv.granted ~= 0 then error("Privilege is already granted to this group") end
 
-		BSU.RegisterGroupPrivilege(groupid, typ, value, true)
+		BSU.RegisterGroupPrivilege(groupid, type, value, true)
 
 		self:BroadcastActionMsg("%caller% granted the group %groupid% access to %value% (%name%)", {
 			groupid = groupid,
 			value = value,
-			name = getNameFromPriv(typ)
+			name = getNameFromPriv(type)
 		})
 	end)
 end)
@@ -442,18 +442,18 @@ BSU.SetupCommand("revokegrouppriv", function(cmd)
 		if not group then error("Group does not exist") end
 		if group.usergroup == "superadmin" then error("Group is in the 'superadmin' usergroup and thus cannot be restricted from anything") end
 
-		local typ = getPrivFromName(name)
-		if not typ then error("Unknown privilege type") end
+		local type = getPrivFromName(name)
+		if not type then error("Unknown privilege type") end
 
-		local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = typ, value = value })[1]
+		local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = type, value = value })[1]
 		if priv and priv.granted == 0 then error("Privilege is already revoked from this group") end
 
-		BSU.RegisterGroupPrivilege(groupid, typ, value, false)
+		BSU.RegisterGroupPrivilege(groupid, type, value, false)
 
 		self:BroadcastActionMsg("%caller% revoked the group %groupid% access from %value% (%name%)", {
 			groupid = groupid,
 			value = value,
-			name = getNameFromPriv(typ)
+			name = getNameFromPriv(type)
 		})
 	end)
 end)
@@ -476,19 +476,19 @@ BSU.SetupCommand("cleargrouppriv", function(cmd)
 		local group = BSU.GetGroupByID(groupid)
 		if not group then error("Group does not exist") end
 
-		local typ = getPrivFromName(name)
-		if not typ then error("Unknown privilege type") end
+		local type = getPrivFromName(name)
+		if not type then error("Unknown privilege type") end
 
-		local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = typ, value = value })[1]
+		local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = type, value = value })[1]
 		if not priv then error("Privilege on this group doesn't exist") end
 
-		BSU.RemoveGroupPrivilege(groupid, typ, value)
+		BSU.RemoveGroupPrivilege(groupid, type, value)
 
 		self:BroadcastActionMsg("%caller% cleared a %kind% privilege on the group %groupid% for %value% (%name%)", {
-			kind = priv.granted == 1 and "granting" or "revoking",
+			kind = priv.granted ~= 0 and "granting" or "revoking",
 			groupid = groupid,
 			value = value,
-			name = getNameFromPriv(typ),
+			name = getNameFromPriv(type),
 		})
 	end)
 end)

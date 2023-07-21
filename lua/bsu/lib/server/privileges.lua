@@ -71,13 +71,13 @@ function BSU.GetPlayerWildcardPrivileges(steamid, type)
 	return query and BSU.SQLParse(query, BSU.SQL_PLAYER_PRIVS) or {}
 end
 
--- returns bool if a group is granted the privilege (or nothing if the privilege is not registered)
+-- returns bool if the group is granted the privilege (or nothing if the privilege is not registered)
 function BSU.CheckGroupPrivilege(groupid, type, value)
 	-- check for group privilege
 	local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = type, value = value })[1]
 
 	if priv then
-		return priv.granted == 1
+		return priv.granted ~= 0
 	else
 		-- check wildcard privileges
 		local wildcards = BSU.GetGroupWildcardPrivileges(groupid, type)
@@ -85,14 +85,14 @@ function BSU.CheckGroupPrivilege(groupid, type, value)
 
 		for _, v in ipairs(wildcards) do
 			if string.find(value, string.Replace(v.value, "*", "(.-)")) ~= nil then
-				return v.granted == 1
+				return v.granted ~= 0
 			end
 		end
 
 		-- check for privilege in inherited group
-		local query = BSU.SQLSelectByValues(BSU.SQL_GROUPS, { id = groupid })[1]
-		if query and query.inherit then
-			return BSU.CheckGroupPrivilege(query.inherit, type, value)
+		local data = BSU.SQLSelectByValues(BSU.SQL_GROUPS, { id = groupid })[1]
+		if data and data.inherit then
+			return BSU.CheckGroupPrivilege(data.inherit, type, value)
 		end
 	end
 end
@@ -105,7 +105,7 @@ function BSU.CheckPlayerPrivilege(steamid, type, value)
 	local priv = BSU.SQLSelectByValues(BSU.SQL_PLAYER_PRIVS, { steamid = steamid, type = type, value = value })[1]
 
 	if priv then
-		return priv.granted == 1
+		return priv.granted ~= 0
 	else
 		-- check wildcard privileges
 		local wildcards = BSU.GetPlayerWildcardPrivileges(steamid, type)
@@ -113,21 +113,14 @@ function BSU.CheckPlayerPrivilege(steamid, type, value)
 
 		for _, v in ipairs(wildcards) do
 			if string.find(value, string.Replace(v.value, "*", "(.-)")) ~= nil then
-				return v.granted == 1
+				return v.granted ~= 0
 			end
 		end
 
 		-- check for privilege in player's group
-		local query = BSU.SQLSelectByValues(BSU.SQL_PLAYERS, { steamid = steamid })[1]
-		if query then
-			return BSU.CheckGroupPrivilege(query.groupid, type, value)
+		local data = BSU.SQLSelectByValues(BSU.SQL_PLAYERS, { steamid = steamid })[1]
+		if data then
+			return BSU.CheckGroupPrivilege(data.groupid, type, value)
 		end
 	end
-end
-
--- returns bool if the player is allowed to spawn/tool something
-function BSU.PlayerIsAllowed(ply, type, privilege)
-	if ply:IsSuperAdmin() then return true end
-	local check = BSU.CheckPlayerPrivilege(ply:SteamID64(), type, privilege)
-	return check == nil or check == true
 end
