@@ -36,24 +36,12 @@ function BSU.LoadModules(dir)
 	end
 end
 
-local function sendSvConMsg(...)
-	local vars = {}
-	for _, v in ipairs({...}) do -- convert player entities to color tbl and name str so it looks correct in the server console
-		if isentity(v) and v:IsPlayer() then
-			table.Add(vars, { team.GetColor(v:Team()), v:Nick() })
-		else
-			table.insert(vars, v)
-		end
-	end
-	MsgC(unpack(vars))
-	MsgN()
-end
-
 -- send a console message to a player or list of players
 -- or set target to NULL to send in the server console
 function BSU.SendConMsg(plys, ...)
 	if plys == NULL then
-		sendSvConMsg(...)
+		MsgC(BSU.FixMsgCArgs(...))
+		MsgN()
 		return
 	end
 	BSU.ClientRPC(plys, "BSU.SendConMsg", ...)
@@ -63,7 +51,8 @@ end
 -- or set target to NULL to send in the server console
 function BSU.SendChatMsg(plys, ...)
 	if plys == NULL then
-		sendSvConMsg(...)
+		MsgC(BSU.FixMsgCArgs(...))
+		MsgN()
 		return
 	end
 	BSU.ClientRPC(plys, "chat.AddText", ...)

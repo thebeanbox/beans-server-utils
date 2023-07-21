@@ -108,3 +108,30 @@ function BSU.FindVar(location, root)
 
 	return root[tableCrumbs[#tableCrumbs]]
 end
+
+local color_default = Color(150, 210, 255)
+
+-- tries to fix args for MsgC to appear as it would with chat.AddText
+function BSU.FixMsgCArgs(...)
+	local args, lastColor = {}, color_default
+
+	for _, v in ipairs({...}) do
+		if isentity(v) then
+			if not v:IsValid() then
+				table.insert(args, "(null)")
+			elseif v:IsPlayer() then
+				table.Add(args, { team.GetColor(v:Team()), v:Nick(), lastColor })
+			else
+				table.insert(args, v:GetClass())
+			end
+		elseif istable(v) then
+			local color = Color(v.r or 255, v.g or 255, v.b or 255)
+			lastColor = color
+			table.insert(args, color)
+		elseif isstring(v) then
+			table.insert(args, v)
+		end
+	end
+
+	return unpack(args)
+end

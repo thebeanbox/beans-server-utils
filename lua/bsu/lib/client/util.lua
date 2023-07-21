@@ -29,6 +29,6 @@ end
 
 -- prints a message to console (intended to be called by client RPC)
 function BSU.SendConMsg(...)
-	MsgC(...)
+	MsgC(BSU.FixMsgCArgs(...))
 	MsgN()
 end
