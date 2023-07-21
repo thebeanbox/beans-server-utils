@@ -16,11 +16,17 @@ BSU.SetupCommand("god", function(cmd)
 			targets = { self:GetCaller(true) }
 		end
 
+		local godded = {}
 		for _, v in ipairs(targets) do
-			v:GodEnable()
+			if self:CheckExclusive(v, true) then
+				v:GodEnable()
+				table.insert(godded, v)
+			end
 		end
 
-		self:BroadcastActionMsg("%caller% godded %targets%", { targets = targets })
+		if next(godded) ~= nil then
+			self:BroadcastActionMsg("%caller% godded %godded%", { godded = godded })
+		end
 	end)
 end)
 BSU.AliasCommand("build", "god")
@@ -43,16 +49,22 @@ BSU.SetupCommand("ungod", function(cmd)
 			targets = { self:GetCaller(true) }
 		end
 
+		local ungodded = {}
 		for _, v in ipairs(targets) do
-			v:GodDisable()
+			if self:CheckExclusive(v, true) then
+				v:GodDisable()
+				table.insert(ungodded, v)
+			end
 		end
 
-		self:BroadcastActionMsg("%caller% ungodded %targets%", { targets = targets })
+		if next(ungodded) ~= nil then
+			self:BroadcastActionMsg("%caller% ungodded %ungodded%", { ungodded = ungodded })
+		end
 	end)
 end)
 BSU.AliasCommand("pvp", "ungod")
 
-local function teleport(ply, pos)
+local function teleportPlayer(ply, pos)
 	ply.bsu_oldPos = ply:GetPos() -- used for return cmd
 	ply:SetPos(pos)
 end
@@ -71,6 +83,8 @@ BSU.SetupCommand("teleport", function(cmd)
 	cmd:SetFunction(function(self)
 		local targetA, targetB
 
+		local teleported = {}
+
 		targetA = self:GetPlayerArg(1)
 		if targetA then
 			self:CheckCanTarget(targetA, true)
@@ -79,7 +93,10 @@ BSU.SetupCommand("teleport", function(cmd)
 			if targetA == targetB then error("Cannot teleport target to same target") end
 			self:CheckCanTarget(targetB, true)
 
-			teleport(targetA, targetB:GetPos())
+			if self:CheckExclusive(targetA, true) then
+				teleportPlayer(targetA, targetB:GetPos())
+				table.insert(teleported, targetA)
+			end
 		else
 			targetA = self:FilterTargets(self:GetPlayersArg(1, true), true, true)
 
@@ -88,11 +105,16 @@ BSU.SetupCommand("teleport", function(cmd)
 
 			local pos = targetB:GetPos()
 			for _, v in ipairs(targetA) do
-				teleport(v, pos)
+				if self:CheckExclusive(v, true) then
+					teleportPlayer(v, pos)
+					table.insert(teleported, v)
+				end
 			end
 		end
 
-		self:BroadcastActionMsg("%caller% teleported %targetA% to %targetB%", { targetA = targetA, targetB = targetB })
+		if next(teleported) ~= nil then
+			self:BroadcastActionMsg("%caller% teleported %teleported% to %target%", { teleported = teleported, target = targetB })
+		end
 	end)
 end)
 BSU.AliasCommand("tp", "teleport")
@@ -111,9 +133,11 @@ BSU.SetupCommand("goto", function(cmd)
 		local target = self:GetPlayerArg(1, true)
 		self:CheckCanTarget(target, true)
 
-		teleport(self:GetCaller(true), target:GetPos())
-
-		self:BroadcastActionMsg("%caller% teleported to %target%", { target = target })
+		local ply = self:GetCaller(true)
+		if self:CheckExclusive(ply, true) then
+			teleportPlayer(ply, target:GetPos())
+			self:BroadcastActionMsg("%caller% teleported to %target%", { target = target })
+		end
 	end)
 end)
 
@@ -131,11 +155,17 @@ BSU.SetupCommand("bring", function(cmd)
 		local targets = self:FilterTargets(self:GetPlayersArg(1, true), true, true)
 
 		local pos = self:GetCaller(true):GetPos()
+		local teleported = {}
 		for _, v in ipairs(targets) do
-			teleport(v, pos)
+			if self:CheckExclusive(v, true) then
+				teleportPlayer(v, pos)
+				table.insert(teleported, v)
+			end
 		end
 
-		self:BroadcastActionMsg("%caller% brought %targets%", { targets = targets })
+		if next(teleported) ~= nil then
+			self:BroadcastActionMsg("%caller% brought %teleported%", { teleported = teleported })
+		end
 	end)
 end)
 
@@ -159,15 +189,15 @@ BSU.SetupCommand("return", function(cmd)
 
 		local returned = {}
 		for _, v in ipairs(targets) do
-			if v.bsu_oldPos then
+			if self:CheckExclusive(v, true) and v.bsu_oldPos then
 				v:SetPos(v.bsu_oldPos)
 				v.bsu_oldPos = nil
 				table.insert(returned, v)
 			end
 		end
 
-		if next(returned) == nil then error("Failed to return any players") end
-
-		self:BroadcastActionMsg("%caller% returned %returned%", { returned = returned })
+		if next(returned) ~= nil then
+			self:BroadcastActionMsg("%caller% returned %returned%", { returned = returned })
+		end
 	end)
 end)

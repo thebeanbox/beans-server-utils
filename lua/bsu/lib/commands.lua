@@ -545,6 +545,27 @@ function objCmdHandler.SendChatMsg(self, ...)
 	end
 end
 
+function objCmdHandler.SendErrorMsg(self, err)
+	self:SendChatMsg(BSU.CLR_ERROR, err)
+end
+
+-- used for a command to check if it should process something on a player
+function objCmdHandler.SetExclusive(self, ply, action)
+	ply.bsu_exclusive = action
+end
+
+function objCmdHandler.CheckExclusive(self, ply, warn)
+	if not ply.bsu_exclusive then return true end
+	if warn then
+		self:SendErrorMsg((ply == self.caller and "You are " or (ply:Nick() .. " is ")) .. ply.bsu_exclusive .. "!")
+	end
+	return false
+end
+
+function objCmdHandler.ClearExclusive(self, ply)
+	ply.bsu_exclusive = nil
+end
+
 -- create a command handler object
 function BSU.CommandHandler(caller, name, argStr, silent)
 	return setmetatable({
