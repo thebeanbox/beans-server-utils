@@ -42,8 +42,8 @@ hook.Add("PlayerSay", "BSU_ChatCommand", chatCommand)
 
 -- override silent action messages
 local function overrideActionMessage(caller, target, silent)
-	if not silent or (not target:IsSuperAdmin() and target ~= caller) then return end
-	local val = tonumber(target:GetInfo("bsu_showsilent"))
+	if not target:IsSuperAdmin() and target ~= caller then return end
+	local val = tonumber(target:GetInfo(not silent and "bsu_show_actions" or "bsu_show_silent_actions"))
 	if val then return math.floor(val) end
 end
 

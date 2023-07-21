@@ -28,19 +28,22 @@ local function autoComplete(_, argStr)
 	end
 end
 
--- create concommand for using commands
+-- concommand for using commands
 concommand.Add("bsu", function(_, _, args, argStr)
 	if not args[1] then return end
 	local name = string.lower(args[1])
 	BSU.SafeRunCommand(name, string.sub(argStr, #name + 2))
 end, autoComplete)
 
--- create concommand for using commands silently
+-- concommand for using commands silently
 concommand.Add("sbsu", function(_, _, args, argStr)
 	if not args[1] then return end
 	local name = string.lower(args[1])
 	BSU.SafeRunCommand(name, string.sub(argStr, #name + 2), true)
 end, autoComplete)
 
--- create convar for hiding silent commands
-CreateClientConVar("bsu_showsilent", "2", true, true, "Set whether silent commands should show their message (2 for chat, 1 for console, 0 for hidden)", 0, 2)
+-- convar for hiding command messages
+CreateClientConVar("bsu_show_actions", "2", true, true, "Set how command messages should show; does not affect (SILENT) messages (2 for chat, 1 for console, 0 for hidden)", 0, 2)
+
+-- convar for hiding silent command messages
+CreateClientConVar("bsu_show_silent_actions", "2", true, true, "Set how (SILENT) command messages should show (2 for chat, 1 for console, 0 for hidden)", 0, 2)
