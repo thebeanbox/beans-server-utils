@@ -71,11 +71,44 @@ net.Receive("bsu_client_info", updateClientInfo)
 -- send request for some client data
 hook.Add("BSU_PlayerReady", "BSU_RequestClientInfo", BSU.RequestClientInfo)
 
+local grabbed = {}
+
 -- fix glitchy movement when grabbing players
 hook.Add("OnPhysgunPickup", "BSU_PlayerPhysgunPickup", function(_, ent)
-	if ent:IsPlayer() then ent:SetMoveType(MOVETYPE_NONE) end
+	if ent:IsPlayer() then
+		ent:SetMoveType(MOVETYPE_NONE)
+		grabbed[ent] = true
+	end
 end)
 
 hook.Add("PhysgunDrop", "BSU_PlayerPhysgunDrop", function(_, ent)
-	if ent:IsPlayer() then ent:SetMoveType(MOVETYPE_WALK) end
+	if ent:IsPlayer() then
+		ent:SetMoveType(MOVETYPE_WALK)
+		grabbed[ent] = nil
+		if ent.bsu_grabbedVel then
+			ent:SetVelocity(ent.bsu_grabbedVel / engine.TickInterval() - ent:GetVelocity())
+		end
+		ent.bsu_grabbedOldPos = nil
+		ent.bsu_grabbedPos = nil
+		ent.bsu_grabbedVel = nil
+	end
+end)
+
+hook.Add("Think", "BSU_PlayerGrabbed", function()
+	for ply, _ in pairs(grabbed) do
+		if not ply:IsValid() then
+			grabbed[ply] = nil
+			return
+		end
+		ply.bsu_grabbedOldPos = ply.bsu_grabbedPos
+		ply.bsu_grabbedPos = ply:GetPos()
+		if ply.bsu_grabbedOldPos then
+			local vel = ply.bsu_grabbedPos - ply.bsu_grabbedOldPos
+			if ply.bsu_grabbedVel then
+				ply.bsu_grabbedVel = (ply.bsu_grabbedVel + vel) / 2
+			else
+				ply.bsu_grabbedVel = vel
+			end
+		end
+	end
 end)
