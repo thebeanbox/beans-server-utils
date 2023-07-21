@@ -1,4 +1,6 @@
 local function getSpawnInfo(ply)
+	if ply.bsu_spawnInfo then return end
+
 	local data = {}
 	data.health = ply:Health()
 	data.armor = ply:Armor()
@@ -112,17 +114,7 @@ local function unragdollPlayer(ply)
 	return true
 end
 
-local function prevent(ply)
-	if ply.bsu_ragdoll then return false end
-end
-
-hook.Add("PlayerSpawnObject", "BSU_Ragdoll", prevent)
-hook.Add("PlayerSpawnSENT", "BSU_Ragdoll", prevent)
-hook.Add("PlayerSpawnVehicle", "BSU_Ragdoll", prevent)
-hook.Add("PlayerSpawnNPC", "BSU_Ragdoll", prevent)
-hook.Add("CanPlayerSuicide", "BSU_Ragdoll", prevent)
-
-hook.Add("PlayerSpawn", "BSU_Ragdoll", function(ply)
+hook.Add("PlayerSpawn", "BSU_FixRagdollSpawn", function(ply)
 	if ply.bsu_ragdoll then
 		timer.Simple(0, function()
 			if not ply:IsValid() or not ply.bsu_ragdoll then return end
@@ -133,12 +125,23 @@ hook.Add("PlayerSpawn", "BSU_Ragdoll", function(ply)
 	end
 end)
 
-hook.Add("PlayerDisconnected", "BSU_Ragdoll", function(ply)
+hook.Add("PlayerDisconnected", "BSU_RemoveRagdoll", function(ply)
 	if ply.bsu_ragdoll then
 		ply.bsu_ragdoll:RemoveCallOnRemove("BSU_Ragdoll")
 		ply.bsu_ragdoll:Remove()
 	end
 end)
+
+
+local function block(ply)
+	if ply.bsu_ragdoll or ply.bsu_frozen then return false end
+end
+
+hook.Add("PlayerSpawnObject", "BSU_BlockPlayer", block)
+hook.Add("PlayerSpawnSENT", "BSU_BlockPlayer", block)
+hook.Add("PlayerSpawnVehicle", "BSU_BlockPlayer", block)
+hook.Add("PlayerSpawnNPC", "BSU_BlockPlayer", block)
+hook.Add("CanPlayerSuicide", "BSU_BlockPlayer", block)
 
 --[[
 	Name: ragdoll
@@ -203,3 +206,139 @@ BSU.SetupCommand("unragdoll", function(cmd)
 		end
 	end)
 end)
+
+--[[
+	Name: freeze
+	Desc: Make players unable to move
+	Arguments:
+		1. Targets (players, default: self)
+]]
+BSU.SetupCommand("freeze", function(cmd)
+	cmd:SetDescription("Make players unable to move")
+	cmd:SetCategory("fun")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local targets = self:GetPlayersArg(1)
+		if targets then
+			targets = self:FilterTargets(targets, nil, true)
+		else
+			targets = { self:GetCaller(true) }
+		end
+
+		local frozen = {}
+		for _, v in ipairs(targets) do
+			if self:CheckExclusive(v, true) then
+				v:Lock()
+				v.bsu_frozen = true
+				self:SetExclusive(v, "frozen")
+				table.insert(frozen, v)
+			end
+		end
+
+		if next(frozen) ~= nil then
+			self:BroadcastActionMsg("%caller% froze %frozen%", { frozen = frozen })
+		end
+	end)
+end)
+
+--[[
+	Name: unfreeze
+	Desc: Make players able to move again
+	Arguments:
+		1. Targets (players, default: self)
+]]
+BSU.SetupCommand("unfreeze", function(cmd)
+	cmd:SetDescription("Make players able to move again")
+	cmd:SetCategory("fun")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local targets = self:GetPlayersArg(1)
+		if targets then
+			targets = self:FilterTargets(targets, nil, true)
+		else
+			targets = { self:GetCaller(true) }
+		end
+
+		local unfrozen = {}
+		for _, v in ipairs(targets) do
+			if v:IsFlagSet(FL_FROZEN) then
+				v:UnLock()
+				v.bsu_frozen = nil
+				self:ClearExclusive(v)
+				table.insert(unfrozen, v)
+			end
+		end
+
+		if next(unfrozen) ~= nil then
+			self:BroadcastActionMsg("%caller% froze %unfrozen%", { unfrozen = unfrozen })
+		end
+	end)
+end)
+
+--[[
+	Name: health
+	Desc: Set health of players
+	Arguments:
+		1. Targets (players, default: self)
+]]
+BSU.SetupCommand("health", function(cmd)
+	cmd:SetDescription("Set health of players")
+	cmd:SetCategory("fun")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local targets = self:GetPlayersArg(1)
+		local amount
+		if targets then
+			targets = self:FilterTargets(targets, nil, true)
+			amount = self:GetNumberArg(2, true)
+		else
+			targets = { self:GetCaller(true) }
+			amount = self:GetNumberArg(1, true)
+		end
+
+		amount = math.min(math.max(amount, 0), 2 ^ 31 - 1)
+
+		for _, v in ipairs(targets) do
+			v:SetHealth(amount)
+		end
+
+		if next(targets) ~= nil then
+			self:BroadcastActionMsg("%caller% set the health of %targets% to %amount%", { targets = targets, amount = amount })
+		end
+	end)
+end)
+BSU.AliasCommand("hp", "health")
+
+--[[
+	Name: armor
+	Desc: Set armor of players
+	Arguments:
+		1. Targets (players, default: self)
+]]
+BSU.SetupCommand("armor", function(cmd)
+	cmd:SetDescription("Set armor of players")
+	cmd:SetCategory("fun")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local targets = self:GetPlayersArg(1)
+		local amount
+		if targets then
+			targets = self:FilterTargets(targets, nil, true)
+			amount = self:GetNumberArg(2, true)
+		else
+			targets = { self:GetCaller(true) }
+			amount = self:GetNumberArg(1, true)
+		end
+
+		amount = math.min(math.max(amount, 0), 2 ^ 31 - 1)
+
+		for _, v in ipairs(targets) do
+			v:SetArmor(amount)
+		end
+
+		if next(targets) ~= nil then
+			self:BroadcastActionMsg("%caller% set the armor of %targets% to %amount%", { targets = targets, amount = amount })
+		end
+	end)
+end)
+BSU.AliasCommand("suit", "armor")
