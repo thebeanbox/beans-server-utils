@@ -32,7 +32,7 @@ BSU.PP_DAMAGE    = 4
 
 -- color values (mainly used for command messages)
 BSU.CLR_ERROR    = Color(255, 127, 0)   -- error messages                        (orange)
-BSU.CLR_TEXT     = Color(151, 211, 255) -- normal text                           (light blue)
+BSU.CLR_TEXT     = Color(150, 210, 255) -- normal text                           (light blue)
 BSU.CLR_PARAM    = Color(0, 255, 0)     -- when a parameter isn't an entity      (green)
 BSU.CLR_SELF     = Color(75, 0, 130)    -- when target is client                 (dark purple)
 BSU.CLR_EVERYONE = Color(0, 130, 130)   -- when targeting all plys on the server (cyan)
