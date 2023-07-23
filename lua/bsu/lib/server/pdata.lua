@@ -28,7 +28,7 @@ function BSU.GetAllPDataBySteamID(steamid, network)
 
 	for i = 1, #query do
 		local entry = query[i]
-		if network ~= nil and entry.network == (network and 0 or 1) then continue end
+		if network ~= nil and entry.network == (network and 1 or 0) then continue end
 		data[entry.key] = entry.value
 	end
 
@@ -41,7 +41,7 @@ function BSU.SetPData(ply, key, value, network)
 	value = tostring(value)
 
 	BSU.RegisterPData(ply:SteamID64(), key, value, network)
-	ply:SetNW2String("BSU_PDATA_" .. key, network and value or nil)
+	ply:SetNW2String("bsu_" .. key, network and value or nil)
 end
 
 -- clears pdata key on a player (or does nothing if it's not set)
@@ -51,7 +51,7 @@ function BSU.ClearPData(ply, key)
 	if not BSU.GetPData(ply, key) then return end
 
 	BSU.RemovePData(ply:SteamID64(), key)
-	ply:SetNW2String("BSU_PDATA_" .. key, nil)
+	ply:SetNW2String("bsu_" .. key, nil)
 end
 
 -- gets a pdata value on a player (or nothing if it's not set)
