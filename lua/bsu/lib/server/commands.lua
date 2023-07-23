@@ -45,8 +45,8 @@ function BSU.PlayerHasCommandAccess(ply, name)
 	if not ply:IsValid() then return true end -- expect NULL entity means it was ran through the server console
 	if access == BSU.CMD_CONSOLE then return false end
 
-	local accessPriv = BSU.CheckPlayerPrivilege(ply:SteamID64(), BSU.PRIV_CMD, name)
-	if accessPriv ~= nil then return accessPriv end
+	local check = BSU.CheckPlayerPrivilege(ply:SteamID64(), BSU.PRIV_CMD, name)
+	if check ~= nil then return check end
 	if access == BSU.CMD_NONE then return false end
 
 	if access == BSU.CMD_ANYONE then return true end
@@ -83,7 +83,15 @@ function BSU.SafeRunCommand(ply, name, argStr, silent)
 	BSU.RunCommand(ply, name, argStr, silent)
 end
 
-net.Receive("bsu_command", function(_, ply)
+function BSU.SendRunCommand(ply, name, argStr, silent)
+	net.Start("bsu_command_run")
+		net.WriteString(name)
+		net.WriteString(argStr)
+		net.WriteBool(silent)
+	net.Send(ply)
+end
+
+net.Receive("bsu_command_run", function(_, ply)
 	local name = net.ReadString()
 	local argStr = net.ReadString()
 	local silent = net.ReadBool()

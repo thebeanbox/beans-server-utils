@@ -17,12 +17,23 @@ function BSU.SafeRunCommand(name, argStr, silent)
 	BSU.RunCommand(name, argStr, silent)
 end
 
-local function callback(self)
-	net.Start("bsu_command")
-		net.WriteString(self:GetName())
-		net.WriteString(self:GetRawMultiStringArg(1, -1) or "")
-		net.WriteBool(self:GetSilent())
+function BSU.SendRunCommand(name, argStr, silent)
+	net.Start("bsu_command_run")
+		net.WriteString(name)
+		net.WriteString(argStr)
+		net.WriteBool(silent)
 	net.SendToServer()
+end
+
+net.Receive("bsu_command_run", function()
+	local name = net.ReadString()
+	local argStr = net.ReadString()
+	local silent = net.ReadBool()
+	BSU.SafeRunCommand(name, argStr, silent)
+end)
+
+local function callback(self)
+	BSU.SendRunCommand(self:GetName(), self:GetRawMultiStringArg(1, -1) or "", self:GetSilent())
 end
 
 function BSU.RegisterServerCommand(name, description, category)
