@@ -31,12 +31,11 @@ local function chatCommand(ply, text)
 
 	if BSU.SafeGetCommandByName(name) then -- check if command exists serverside then run it
 		BSU.RunCommand(ply, name, argStr, silent)
-		if silent then return "" end
 	else -- tell client to try run it
 		BSU.SendRunCommand(ply, name, argStr, silent)
 	end
 
-	return ""
+	if silent then return "" end
 end
 
 hook.Add("PlayerSay", "BSU_ChatCommand", chatCommand)
