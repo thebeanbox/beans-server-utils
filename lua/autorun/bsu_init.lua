@@ -10,8 +10,16 @@ A utilities and moderation addon for a dedicated Garry's Mod server
 
 if BSU then return end
 
-include("bsu/defines.lua")
-if SERVER then AddCSLuaFile(BSU.DIR .. "defines.lua") end
+BSU = BSU or {}
+
+-- directory paths
+BSU.DIR = "bsu/"
+BSU.DIR_BASE = BSU.DIR .. "base/"
+BSU.DIR_LIB = BSU.DIR .. "lib/"
+BSU.DIR_MODULES = BSU.DIR .. "modules/"
+
+include(BSU.DIR .. "defines.lua")
+AddCSLuaFile(BSU.DIR .. "defines.lua")
 
 local shLib = file.Find(BSU.DIR_LIB .. "*.lua", "LUA")
 local clLib = file.Find(BSU.DIR_LIB .. "client/*.lua", "LUA")
@@ -19,7 +27,7 @@ local clLib = file.Find(BSU.DIR_LIB .. "client/*.lua", "LUA")
 -- load/send shared library
 for _, v in ipairs(shLib) do
 	include(BSU.DIR_LIB .. v)
-	if SERVER then AddCSLuaFile(BSU.DIR_LIB .. v) end
+	AddCSLuaFile(BSU.DIR_LIB .. v)
 end
 
 if SERVER then

@@ -1,19 +1,7 @@
 -- bsu/defines.lua
 -- defines some values on both the server and client
 
-BSU = BSU or {}
-
--- some info
-BSU.TITLE = "Beans Server Utilities"
-BSU.VERSION = "0.0.1-dev"
-
--- directory paths
-BSU.DIR = "bsu/"
-BSU.DIR_BASE = BSU.DIR .. "base/"
-BSU.DIR_LIB = BSU.DIR .. "lib/"
-BSU.DIR_MODULES = BSU.DIR .. "modules/"
-
--- privilege values
+-- privilege types
 BSU.PRIV_MODEL  = 0
 BSU.PRIV_NPC    = 1
 BSU.PRIV_SENT   = 2
