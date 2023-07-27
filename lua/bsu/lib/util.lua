@@ -23,36 +23,37 @@ function BSU.LocalTime()
 	return os.time(os.date("!*t"))
 end
 
--- checks if a string is a valid STEAM_0 or 64 bit formatted steam id
+-- checks if a string is a valid STEAM_0 or 64 bit formatted steam id (also returns if it was 64 bit or not)
 function BSU.IsValidSteamID(steamid)
-	if not steamid then return false end
-	if string.match(steamid, "STEAM_%d:%d:%d+") then
-		return true
-	else
-		local id = tonumber(steamid)
-		if id and id >= 76561197960265728 then
-			return true
-		end
+	if not isstring(steamid) then return false end
+	if string.match(steamid, "^STEAM_0:%d:%d+$") then
+		return true, false
+	elseif string.match(steamid, "^%d+$") then
+		return true, true
 	end
 	return false
 end
 
--- checks if a string is a valid ip address (valid excluding the port)
+-- checks if a string is a valid ipv4 address or "loopback" (ignores the port)
 function BSU.IsValidIP(ip)
-	if not ip then return false end
-	if ip == "loopback" then return true end
-	local address, port = unpack(string.Split(ip, ":"))
-	return string.match(address, "^%d%d?%d?%.%d%d?%d?%.%d%d?%d?%.%d%d?%d?$") ~= nil and (not port or string.match(port, "^%d%d?%d?%d?%d?$") ~= nil)
+	if not isstring(ip) then return false end
+	if ip == "loopback" then return true end -- fix for single-player hosts
+	local address = string.Split(ip, ":")[1]
+	return string.match(address, "^%d%d?%d?%.%d%d?%d?%.%d%d?%d?%.%d%d?%d?$") ~= nil
 end
 
 -- tries to convert a steamid to 64 bit if it's valid
 function BSU.ID64(steamid)
-	if not BSU.IsValidSteamID(steamid) then return error("Received bad steam ID") end
-	local id64 = util.SteamIDTo64(steamid)
-	return id64 ~= "0" and id64 or steamid
+	local valid, is64 = BSU.IsValidSteamID(steamid)
+	if not valid then return error("Received bad steam ID") end
+	if is64 then
+		return steamid
+	else
+		return util.SteamIDTo64(steamid)
+	end
 end
 
--- removes port from ip if it's valid
+-- tries to remove the port from an ip if it's valid
 function BSU.Address(ip)
 	if not BSU.IsValidIP(ip) then return error("Received bad IP address") end
 	return string.Split(ip, ":")[1]
