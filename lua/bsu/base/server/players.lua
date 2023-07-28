@@ -71,29 +71,36 @@ net.Receive("bsu_client_info", updateClientInfo)
 -- send request for some client data
 hook.Add("BSU_PlayerReady", "BSU_RequestClientInfo", BSU.RequestClientInfo)
 
+-- allow players picking up other players
+hook.Add("PhysgunPickup", "BSU_AllowPlayerPhysgunPickup", function(ply, ent)
+	if not ent:IsPlayer() then return end
+	return BSU.PlayerHasPropPermission(ply, ent, BSU.PP_PHYSGUN) ~= false
+end)
+
 local grabbed = {}
 
--- fix glitchy movement when grabbing players
+-- fix glitchy player movement on physgun pickup
 hook.Add("OnPhysgunPickup", "BSU_PlayerPhysgunPickup", function(_, ent)
-	if ent:IsPlayer() then
-		ent:SetMoveType(MOVETYPE_NONE)
-		grabbed[ent] = true
-	end
+	if not ent:IsPlayer() then return end
+	ent:SetMoveType(MOVETYPE_NONE)
+	grabbed[ent] = true
 end)
 
+-- allow throwing players across the map on physgun drop
 hook.Add("PhysgunDrop", "BSU_PlayerPhysgunDrop", function(_, ent)
-	if ent:IsPlayer() then
-		ent:SetMoveType(MOVETYPE_WALK)
-		grabbed[ent] = nil
-		if ent.bsu_grabbedVel then
-			ent:SetVelocity(ent.bsu_grabbedVel / engine.TickInterval() - ent:GetVelocity())
-		end
-		ent.bsu_grabbedOldPos = nil
-		ent.bsu_grabbedPos = nil
-		ent.bsu_grabbedVel = nil
+	if not ent:IsPlayer() then return end
+	ent:SetMoveType(MOVETYPE_WALK)
+	grabbed[ent] = nil
+	if ent.bsu_grabbedVel then
+		-- SetVelocity actually ADDS velocity to a player, so the original velocity is also subtracted to reset velocity
+		ent:SetVelocity(ent.bsu_grabbedVel - ent:GetVelocity())
 	end
+	ent.bsu_grabbedOldPos = nil
+	ent.bsu_grabbedPos = nil
+	ent.bsu_grabbedVel = nil
 end)
 
+-- calculate velocity of grabbed players
 hook.Add("Think", "BSU_PlayerGrabbed", function()
 	for ply, _ in pairs(grabbed) do
 		if not ply:IsValid() then
@@ -103,9 +110,9 @@ hook.Add("Think", "BSU_PlayerGrabbed", function()
 		ply.bsu_grabbedOldPos = ply.bsu_grabbedPos
 		ply.bsu_grabbedPos = ply:GetPos()
 		if ply.bsu_grabbedOldPos then
-			local vel = ply.bsu_grabbedPos - ply.bsu_grabbedOldPos
+			local vel = (ply.bsu_grabbedPos - ply.bsu_grabbedOldPos) / engine.TickInterval()
 			if ply.bsu_grabbedVel then
-				ply.bsu_grabbedVel = (ply.bsu_grabbedVel + vel) / 2
+				ply.bsu_grabbedVel = (ply.bsu_grabbedVel + vel) / 2 -- probably not accurate but it works
 			else
 				ply.bsu_grabbedVel = vel
 			end
