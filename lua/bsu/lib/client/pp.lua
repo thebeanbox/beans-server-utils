@@ -27,12 +27,8 @@ function BSU.CheckPropPermission(steamid, perm)
 	return bit.band(permission, perm) == perm
 end
 
-local allPerm = BSU.PP_PHYSGUN + BSU.PP_GRAVGUN + BSU.PP_TOOLGUN + BSU.PP_USE + BSU.PP_DAMAGE
-
 -- returns a table of current players on the server the client has granted the permission to
 function BSU.GetPropPermissionList(perm)
-	perm = perm or allPerm
-
 	local plys = {}
 	for _, v in ipairs(player.GetHumans()) do
 		if bit.band(BSU.GetPropPermission(v:GetSteamID64()), perm) == perm then
@@ -85,7 +81,7 @@ function BSU.GrantPropPermission(ply, perm)
 	if ply ~= LocalPlayer() and not ply:IsBot() then -- ignore local player and bots
 		local steamid = ply:SteamID64()
 		local permission = BSU.GetPropPermission(steamid)
-		BSU.SetPropPermission(steamid, bit.bor(permission, perm or allPerm))
+		BSU.SetPropPermission(steamid, bit.bor(permission, perm))
 		BSU.SendPropPermissionData(ply)
 	end
 end
@@ -94,7 +90,7 @@ function BSU.RevokePropPermission(ply, perm)
 	if ply ~= LocalPlayer() and not ply:IsBot() then -- ignore local player and bots
 		local steamid = ply:SteamID64()
 		local permission = BSU.GetPropPermission(steamid)
-		BSU.SetPropPermission(steamid, bit.bxor(permission, perm or allPerm))
+		BSU.SetPropPermission(steamid, bit.bxor(permission, perm))
 		BSU.SendPropPermissionData(ply)
 	end
 end
