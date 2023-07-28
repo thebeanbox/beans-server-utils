@@ -24,14 +24,14 @@ BSU.SetupCommand("ban", function(cmd)
 			reason = self:GetMultiStringArg(2, -1)
 		end
 
+		BSU.BanPlayer(target, reason, duration, self:GetCaller())
+
 		self:BroadcastActionMsg("%caller% banned %target%<%steamid%>" .. (duration ~= 0 and " for %duration%" or " permanently") .. (reason and " (%reason%)" or ""), {
 			target = target,
 			steamid = target:SteamID(),
 			duration = duration ~= 0 and BSU.StringTime(duration, 10000) or nil,
 			reason = reason
 		})
-
-		BSU.BanPlayer(target, reason, duration, self:GetCaller())
 	end)
 end)
 
@@ -101,13 +101,13 @@ BSU.SetupCommand("ipban", function(cmd)
 			reason = self:GetMultiStringArg(2, -1)
 		end
 
+		BSU.IPBanPlayer(target, reason, duration, self:GetCaller())
+
 		self:BroadcastActionMsg("%caller% ip banned %target%" .. (duration ~= 0 and " for %duration%" or " permanently") .. (reason and " (%reason%)" or ""), {
 			target = target,
 			duration = duration ~= 0 and BSU.StringTime(duration, 10000) or nil,
 			reason = reason
 		})
-
-		BSU.IPBanPlayer(target, reason, duration, self:GetCaller())
 	end)
 end)
 
