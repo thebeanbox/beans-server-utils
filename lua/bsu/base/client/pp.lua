@@ -73,10 +73,10 @@ local function addPPMenu()
 					for i = 1, 5 do
 						local box = elem:Add("DCheckBox")
 						elem.box = box
-						box.OnChange = boxOnChange
 						box.ply = v
 						box.perm = math.pow(2, i - 1)
 						box:SetValue(BSU.CheckPropPermission(v:SteamID64(), box.perm))
+						box.OnChange = boxOnChange
 					end
 				end
 			end
