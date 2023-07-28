@@ -10,7 +10,7 @@ function BSU.SetPlayerPropPermission(ply, target, perm)
 	if perm and perm > 0 then
 		if not BSU._perms[target] then BSU._perms[target] = {} end
 		BSU._perms[target][ply] = perm
-	else
+	elseif BSU._perms[target] then
 		BSU._perms[target][ply] = nil
 		if next(BSU._perms[target]) == nil then BSU._perms[target] = nil end
 	end
