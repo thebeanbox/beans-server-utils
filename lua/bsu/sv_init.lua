@@ -22,7 +22,6 @@ include(svBaseDir .. "pp.lua")
 include(svBaseDir .. "commands.lua")
 
 -- send client-side scripts
-AddCSLuaFile(clBaseDir .. "sql.lua")
 AddCSLuaFile(clBaseDir .. "convars.lua")
 AddCSLuaFile(clBaseDir .. "networking.lua")
 AddCSLuaFile(clBaseDir .. "pp.lua")

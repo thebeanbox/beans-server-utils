@@ -25,37 +25,29 @@ end
 
 function entMeta:CPPIGetOwner()
 	local owner = BSU.GetEntityOwner(self)
-	if IsValid(owner) then -- this also excludes stuff owned by the world because IsValid(game.GetWorld()) returns false
+	if owner and owner:IsPlayer() then
 		return owner, CPPI_NOTIMPLEMENTED
 	end
 end
 
 if SERVER then
 	function plyMeta:CPPIGetFriends()
-		local steamids = BSU.GetPlayerPermissionList(self:SteamID64(), BSU.PP_TOOLGUN)
-		local lookup = {}
-		for i = 1, #steamids do
-			lookup[steamids[i]] = true
-		end
-
-		local players = player.GetAll()
 		local friends = {}
-		for _, ply in ipairs(players) do
-			if ply:IsSuperAdmin() then
-				table.insert(friends, ply)
-			elseif lookup[ply:SteamID64()] then
-				table.insert(friends, ply)
+		for _, v in ipairs(BSU.GetPlayerPropPermissionList(self, BSU.PP_TOOLGUN)) do
+			if #plys < 64 then -- return value must have less than or equal to 64 players
+				table.insert(friends, v)
 			end
 		end
-
 		return friends
 	end
 
 	function entMeta:CPPISetOwner(ply)
-		if ply then
+		if ply == nil then
+			BSU.SetEntityOwnerless()
+		elseif isentity(ply) and ply:IsPlayer() then
 			BSU.SetEntityOwner(self, ply)
 		else
-			BSU.SetEntityOwnerless()
+			return false
 		end
 		return true
 	end
@@ -65,25 +57,25 @@ if SERVER then
 	end
 
 	function entMeta:CPPICanTool(ply)
-		return BSU.PlayerHasEntityPermission(ply, self, BSU.PP_TOOLGUN)
+		return BSU.PlayerHasPropPermission(ply, self, BSU.PP_TOOLGUN) ~= false
 	end
 
 	function entMeta:CPPICanPhysgun(ply)
-		return BSU.PlayerHasEntityPermission(ply, self, BSU.PP_PHYSGUN)
+		return BSU.PlayerHasPropPermission(ply, self, BSU.PP_PHYSGUN) ~= false
 	end
 
 	function entMeta:CPPICanPickup(ply)
-		return BSU.PlayerHasEntityPermission(ply, self, BSU.PP_PICKUP)
+		return BSU.PlayerHasPropPermission(ply, self, BSU.PP_GRAVGUN) ~= false
 	end
 
 	entMeta.CPPICanPunt = entMeta.CPPICanPickup
 
 	function entMeta:CPPICanUse(ply)
-		return BSU.PlayerHasEntityPermission(ply, self, BSU.PP_USE)
+		return BSU.PlayerHasPropPermission(ply, self, BSU.PP_USE) ~= false
 	end
 
 	function entMeta:CPPICanDamage(ply)
-		return BSU.PlayerHasEntityPermission(ply, self, BSU.PP_DAMAGE)
+		return BSU.PlayerHasPropPermission(ply, self, BSU.PP_DAMAGE) ~= false
 	end
 
 	entMeta.CPPICanDrive = entMeta.CPPICanUse
@@ -93,6 +85,13 @@ if SERVER then
 	entMeta.CPPICanEditVariable = entMeta.CPPICanTool
 else
 	function plyMeta:CPPIGetFriends()
-		return CPPI_NOTIMPLEMENTED
+		if self ~= LocalPlayer() then return CPPI_NOTIMPLEMENTED end
+		local friends = {}
+		for _, v in ipairs(BSU.GetPlayerPropPermissionList(BSU.PP_TOOLGUN)) do
+			if #plys < 64 then -- return value must have less than or equal to 64 players
+				table.insert(friends, v)
+			end
+		end
+		return friends
 	end
 end

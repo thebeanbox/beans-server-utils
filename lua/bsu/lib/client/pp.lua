@@ -1,7 +1,9 @@
 -- lib/client/pp.lua
 
-function BSU.RegisterPropPermission(steamid, permission)
-	BSU.RemovePropPermission(steamid, permission) -- remove if already existing
+function BSU.SetPropPermission(steamid, permission)
+	BSU.ClearPropPermission(steamid, permission) -- clear if already exists
+
+	if permission <= 0 then return end -- no permission set
 
 	BSU.SQLInsert(BSU.SQL_PP,
 		{
@@ -11,80 +13,88 @@ function BSU.RegisterPropPermission(steamid, permission)
 	)
 end
 
-function BSU.RemovePropPermission(steamid, permission)
-	BSU.SQLDeleteByValues(BSU.SQL_PP, { steamid = BSU.ID64(steamid), permission = permission })
+function BSU.ClearPropPermission(steamid)
+	BSU.SQLDeleteByValues(BSU.SQL_PP, { steamid = BSU.ID64(steamid) })
 end
 
-function BSU.GetPropPermissions(steamid)
-	local query = BSU.SQLSelectByValues(BSU.SQL_PP, { steamid = BSU.ID64(steamid) })
-
-	local perms = {}
-	for _, v in ipairs(query) do
-		table.insert(perms, v.permission)
-	end
-	return perms
+function BSU.GetPropPermission(steamid)
+	local query = BSU.SQLSelectByValues(BSU.SQL_PP, { steamid = BSU.ID64(steamid) })[1]
+	return query and query.permission or 0
 end
 
--- returns a list of steam 64 bit ids the client has set a specific permission
-function BSU.GetPropPermissionPlayers(permission)
-	local query = BSU.SQLSelectByValues(BSU.SQL_PP, { permission = permission })
-
-	local ids = {}
-	for _, v in ipairs(query) do
-		table.insert(ids, v)
-	end
-
-	return ids
+function BSU.CheckPropPermission(steamid, perm)
+	local permission = BSU.GetPropPermission(steamid)
+	return bit.band(permission, perm) == perm
 end
 
-function BSU.GrantPropPermission(ply, perm)
-	if ply:IsBot() then return error("Cannot grant prop permission to a bot") end
-	BSU.RegisterPropPermission(ply:SteamID64(), perm)
-end
+local allPerm = BSU.PP_PHYSGUN + BSU.PP_GRAVGUN + BSU.PP_TOOLGUN + BSU.PP_USE + BSU.PP_DAMAGE
 
-function BSU.RevokePropPermission(ply, perm)
-	if ply:IsBot() then return end
-	BSU.RemovePropPermission(ply:SteamID64(), perm)
-end
+-- returns a table of current players on the server the client has granted the permission to
+function BSU.GetPropPermissionList(perm)
+	perm = perm or allPerm
 
--- send prop protection data to the server (takes a table of steamids or nil for all current players)
-function BSU.SendPPData(steamids)
-	if steamids and next(steamids) == nil then return end
-
-	if not steamids then
-		steamids = {}
-		for _, v in ipairs(player.GetHumans()) do
-			if v ~= LocalPlayer() then
-				table.insert(steamids, v:SteamID64())
-			end
+	local plys = {}
+	for _, v in ipairs(player.GetHumans()) do
+		if bit.band(BSU.GetPropPermission(v:GetSteamID64()), perm) == perm then
+			table.insert(plys, v)
 		end
+	end
+	return plys
+end
+
+-- send permission data to the server (takes a player, table of players, or nil for all current players)
+function BSU.SendPropPermissionData(plys)
+	if isentity(plys) then
+		if not plys:IsPlayer() then return end
+		plys = { plys }
+	elseif istable(plys) then
+		if next(plys) == nil then return end
+	elseif plys == nil then
+		plys = player.GetHumans()
+	else
+		return
 	end
 
 	local data = {}
-
-	for _, v in ipairs(steamids) do
-		local query = BSU.SQLSelectByValues(BSU.SQL_PP, { steamid = BSU.ID64(v) })[1]
-		if query then
-			table.insert(data, query)
+	for _, v in ipairs(plys) do
+		if v ~= LocalPlayer() and not v:IsBot() then -- ignore local player and bots
+			table.insert(data, { v:UserID(), BSU.GetPropPermission(v:SteamID64()) })
 		end
 	end
-
 	if next(data) == nil then return end
 
-	net.Start("bsu_ppdata_init")
+	net.Start("bsu_pp_data")
 		net.WriteUInt(#data, 7) -- max of 127 entries (perfect because this is the max player limit excluding the local player)
-		for _, v in ipairs(data) do
-			net.WriteString(v.steamid)
-			net.WriteUInt(v.permission, 3)
+		for i = 1, #data do
+			net.WriteUInt(data[i][1], 15) -- userid range is 0-32767 (used instead of WriteEntity incase the player at the entindex is changed during transport)
+			net.WriteUInt(data[i][2], 5)
 		end
 	net.SendToServer()
 end
 
--- update prop protection data on the server
-function BSU.SendPPDataUpdate(method, steamid, permission)
-	net.Start("bsu_ppdata_update")
-		net.WriteBool(method) -- true to register data, false to remove data
-		net.WriteString(steamid)
-		net.WriteUInt(permission, 3)
-	net.SendToServer()
+net.Receive("bsu_pp_data", function()
+	local ply = Player(net.ReadUInt(15))
+	if ply:IsPlayer() then
+		BSU.SendPropPermissionData(ply)
+	end
+end)
+
+-- utility functions for easily granting or revoking permissions
+
+function BSU.GrantPropPermission(ply, perm)
+	if ply ~= LocalPlayer() and not ply:IsBot() then -- ignore local player and bots
+		local steamid = ply:SteamID64()
+		local permission = BSU.GetPropPermission(steamid)
+		BSU.SetPropPermission(steamid, bit.bor(permission, perm or allPerm))
+		BSU.SendPropPermissionData(ply)
+	end
+end
+
+function BSU.RevokePropPermission(ply, perm)
+	if ply ~= LocalPlayer() and not ply:IsBot() then -- ignore local player and bots
+		local steamid = ply:SteamID64()
+		local permission = BSU.GetPropPermission(steamid)
+		BSU.SetPropPermission(steamid, bit.bxor(permission, perm or allPerm))
+		BSU.SendPropPermissionData(ply)
+	end
 end

@@ -10,13 +10,12 @@ BSU.PRIV_TOOL   = 4
 BSU.PRIV_CMD    = 5
 BSU.PRIV_TARGET = 6
 
--- prop protection values
-BSU.PP_PHYSGUN   = 0
-BSU.PP_GRAVGUN   = 1
-BSU.PP_TOOLGUN   = 2
-BSU.PP_USE       = 3
-BSU.PP_DAMAGE    = 4
---BSU.PP_NOCOLLIDE = 5
+-- prop protection enums
+BSU.PP_PHYSGUN = 1
+BSU.PP_GRAVGUN = 2
+BSU.PP_TOOLGUN = 4
+BSU.PP_USE     = 8
+BSU.PP_DAMAGE  = 16
 
 -- color values (mainly used for command messages)
 BSU.CLR_ERROR    = Color(255, 127, 0)   -- error messages                        (orange)

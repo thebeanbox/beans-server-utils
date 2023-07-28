@@ -7,7 +7,7 @@ local clBaseDir = BSU.DIR_BASE .. "client/"
 include(BSU.DIR_BASE .. "sql.lua")
 
 -- setup client-side scripts
-include(clBaseDir .. "sql.lua")
+include(clBaseDir .. "convars.lua")
 include(clBaseDir .. "networking.lua")
 include(clBaseDir .. "pp.lua")
 include(clBaseDir .. "commands.lua")
