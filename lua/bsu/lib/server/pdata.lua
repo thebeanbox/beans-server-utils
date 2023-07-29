@@ -41,7 +41,7 @@ function BSU.SetPData(ply, key, value, network)
 	value = tostring(value)
 
 	BSU.RegisterPData(ply:SteamID64(), key, value, network)
-	ply:SetNW2String("bsu_" .. key, network and value or nil)
+	ply:SetNWString("bsu_" .. key, network and value or nil)
 end
 
 -- clears pdata key on a player (or does nothing if it's not set)
@@ -51,7 +51,7 @@ function BSU.ClearPData(ply, key)
 	if not BSU.GetPData(ply, key) then return end
 
 	BSU.RemovePData(ply:SteamID64(), key)
-	ply:SetNW2String("bsu_" .. key, nil)
+	ply:SetNWString("bsu_" .. key, nil)
 end
 
 -- gets a pdata value on a player (or nothing if it's not set)

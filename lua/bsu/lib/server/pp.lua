@@ -54,19 +54,19 @@ end
 function BSU.SetEntityOwnerless(ent)
 	if not ent:IsValid() then error("Entity is invalid") end
 
-	ent:SetNW2Entity("BSU_Owner", nil)
-	ent:SetNW2Entity("BSU_OwnerName", nil)
-	ent:SetNW2Entity("BSU_OwnerID", nil)
+	ent:SetNWEntity("BSU_Owner", nil)
+	ent:SetNWEntity("BSU_OwnerName", nil)
+	ent:SetNWEntity("BSU_OwnerID", nil)
 end
 
 function BSU.SetEntityOwner(ent, owner)
 	if ent:IsPlayer() then error("Entity is invalid") end
 	if not owner:IsPlayer() and not owner:IsWorld() then error("Owner entity is invalid") end
 
-	ent:SetNW2Entity("BSU_Owner", owner)
+	ent:SetNWEntity("BSU_Owner", owner)
 	-- this is so we can still get the name and id of the player after they leave the server
-	ent:SetNW2String("BSU_OwnerName", not owner:IsWorld() and owner:Nick() or "World") -- this is used for the hud
-	ent:SetNW2String("BSU_OwnerID", not owner:IsWorld() and owner:SteamID64() or nil) -- this is used so we can identify the owner and give back ownership if they disconnect and then reconnect
+	ent:SetNWString("BSU_OwnerName", not owner:IsWorld() and owner:Nick() or "World") -- this is used for the hud
+	ent:SetNWString("BSU_OwnerID", not owner:IsWorld() and owner:SteamID64() or nil) -- this is used so we can identify the owner and give back ownership if they disconnect and then reconnect
 end
 
 -- utility function for hooks to know if a player has permission over an entity
