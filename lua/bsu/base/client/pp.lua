@@ -38,7 +38,7 @@ local function addPPMenu()
 		local elems = {}
 
 		local function boxOnChange(self, checked)
-			if self.ply:IsPlayer() then
+			if self.ply:IsValid() then
 				if checked then
 					BSU.GrantPropPermission(self.ply, self.perm)
 				else
