@@ -59,7 +59,7 @@ hook.Add("OnEntityCreated", "BSU_SetOwnerMapEntities", function(ent)
 					BSU.SetEntityOwner(ent, game.GetWorld())
 				else
 					local owner = ent:GetInternalVariable("m_hOwnerEntity") -- seems to always be a player or NULL entity
-					if owner:IsPlayer() then owner = ent:GetInternalVariable("m_hOwner") end
+					if not owner:IsPlayer() then owner = ent:GetInternalVariable("m_hOwner") end
 					if owner and owner:IsPlayer() then
 						BSU.SetEntityOwner(ent, owner)
 					end
