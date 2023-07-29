@@ -98,7 +98,7 @@ function cleanup.Add(ply, type, ent, ...)
 end
 
 BSU._oldCleanupReplaceEntity = BSU._oldCleanupReplaceEntity or cleanup.ReplaceEntity
-function cleanup.ReplaceEntity(from, to)
+function cleanup.ReplaceEntity(from, to, ...)
 	local ret = { BSU._oldCleanupReplaceEntity(from, to, ...) }
 	if ret[1] and isValid(from) and isValid(to) then
 		BSU.ReplaceEntityOwner(from, to)
