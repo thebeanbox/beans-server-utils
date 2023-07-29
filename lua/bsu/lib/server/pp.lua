@@ -52,7 +52,7 @@ function BSU.CheckWorldPropPermission(perm)
 end
 
 function BSU.SetEntityOwnerless(ent)
-	if not ent:IsValid() then error("Entity is invalid") end
+	if not ent:IsValid() or ent:IsPlayer() then error("Entity is invalid") end
 
 	ent:SetNWEntity("BSU_Owner", nil)
 	ent:SetNWEntity("BSU_OwnerName", nil)
@@ -67,6 +67,19 @@ function BSU.SetEntityOwner(ent, owner)
 	-- this is so we can still get the name and id of the player after they leave the server
 	ent:SetNWString("BSU_OwnerName", not owner:IsWorld() and owner:Nick() or "World") -- this is used for the hud
 	ent:SetNWString("BSU_OwnerID", not owner:IsWorld() and owner:SteamID64() or nil) -- this is used so we can identify the owner and give back ownership if they disconnect and then reconnect
+end
+
+function BSU.ReplaceEntityOwner(from, to)
+	if not from:IsValid() or from:IsPlayer() then error("From entity is invalid") end
+	if not to:IsValid() or to:IsPlayer() then error("To entity is invalid") end
+
+	to:SetNWEntity("BSU_Owner", from:GetNWEntity("BSU_Owner"))
+	to:SetNWString("BSU_OwnerName", from:GetNWString("BSU_OwnerName"))
+	to:SetNWString("BSU_OwnerID", from:GetNWString("BSU_OwnerID"))
+
+	from:SetNWEntity("BSU_Owner", nil)
+	from:SetNWEntity("BSU_OwnerName", nil)
+	from:SetNWEntity("BSU_OwnerID", nil)
 end
 
 -- utility function for hooks to know if a player has permission over an entity
