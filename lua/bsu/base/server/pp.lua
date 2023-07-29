@@ -38,7 +38,7 @@ hook.Add("EntityTakeDamage", "BSU_DamagePropPermission", function(ent, dmg)
 	-- option for entities on fire
 	if attacker:GetClass() == "entityflame" then
 		local owner = BSU.GetEntityOwner(ent)
-		if owner and owner:IsWorld() or (owner:IsPlayer() and owner:GetInfoNum("bsu_allow_fire_damage", 0) ~= 0) then
+		if owner and (owner:IsWorld() or (owner:IsPlayer() and owner:GetInfoNum("bsu_allow_fire_damage", 0) ~= 0)) then
 			return
 		end
 	end
