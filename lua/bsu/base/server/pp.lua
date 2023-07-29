@@ -1,16 +1,5 @@
 -- base/server/pp.lua
 
--- set the owner of map entities to the world
-hook.Add("OnEntityCreated", "BSU_SetOwnerMapEntities", function(ent)
-	if ent:IsValid() then
-		timer.Simple(0, function() -- need to wait a tick for CreatedByMap to work correctly
-			if ent:IsValid() and ent:CreatedByMap() then
-				BSU.SetEntityOwner(ent, game.GetWorld())
-			end
-		end)
-	end
-end)
-
 -- request data for this player from the clients
 hook.Add("PlayerInitialSpawn", "BSU_RequestPropPermissionData", function(ply)
 	BSU.RequestPropPermissionData(nil, ply)
@@ -58,6 +47,25 @@ hook.Add("EntityTakeDamage", "BSU_DamagePropPermission", function(ent, dmg)
 
 	if attacker == nil or attacker:IsWorld() or (attacker:IsPlayer() and BSU.PlayerHasPropPermission(attacker, ent, BSU.PP_DAMAGE) == false) then
 		return true -- unlike the GravGun* and Can* hooks, this hook requires true to prevent it
+	end
+end)
+
+-- try set the owner of newly created entities
+hook.Add("OnEntityCreated", "BSU_SetOwnerMapEntities", function(ent)
+	if ent:IsValid() then
+		timer.Simple(0, function() -- need to wait a tick to ensure some data to be available
+			if ent:IsValid() then
+				if ent:CreatedByMap() then
+					BSU.SetEntityOwner(ent, game.GetWorld())
+				else
+					local owner = ent:GetInternalVariable("m_hOwnerEntity") -- seems to always be a player or NULL entity
+					if owner:IsPlayer() then owner = ent:GetInternalVariable("m_hOwner") end
+					if owner and owner:IsPlayer() then
+						BSU.SetEntityOwner(ent, owner)
+					end
+				end
+			end
+		end)
 	end
 end)
 
