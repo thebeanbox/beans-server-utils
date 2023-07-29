@@ -29,7 +29,7 @@ local function chatCommand(ply, text)
 	local name = string.sub(table.remove(split, 1), #(silent and prefixSilent or prefix) + 1)
 	local argStr = table.concat(split, " ")
 
-	if BSU.SafeGetCommandByName(name) then -- check if command exists serverside then run it
+	if BSU.SafeGetCommandByName(ply, name) then -- check if command exists serverside then run it (and player should be able to see and run it)
 		BSU.RunCommand(ply, name, argStr, silent)
 	else -- tell client to try run it
 		BSU.SendRunCommand(ply, name, argStr, silent)

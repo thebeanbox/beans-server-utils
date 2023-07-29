@@ -70,10 +70,15 @@ function BSU.RunCommand(ply, name, argStr, silent)
 	xpcall(cmd:GetFunction(), function(err) BSU.SendChatMsg(ply, BSU.CLR_ERROR, "Command errored with: " .. string.Split(err, ": ")[2]) end, handler)
 end
 
+function BSU.SafeGetCommandByName(ply, name)
+	local cmd = BSU.GetCommandByName(name)
+	if not cmd or (ply:IsValid() and cmd:GetAccess() == BSU.CMD_CONSOLE) then return false end -- command doesn't exist or ply is not console and it is console-only
+	return true
+end
+
 -- make a player run a command but first checks if the command exists and is not console-only
 function BSU.SafeRunCommand(ply, name, argStr, silent)
-	local cmd = BSU.GetCommandByName(name)
-	if not cmd or (ply:IsValid() and cmd:GetAccess() == BSU.CMD_CONSOLE) then BSU.SendConMsg(ply, color_white, "Unknown BSU command: '" .. name .. "'") return end
+	if not BSU.SafeGetCommandByName(ply, name) then BSU.SendConMsg(ply, color_white, "Unknown BSU command: '" .. name .. "'") return end
 	BSU.RunCommand(ply, name, argStr, silent)
 end
 
