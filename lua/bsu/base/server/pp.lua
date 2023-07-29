@@ -73,52 +73,84 @@ end)
 
 local plyMeta = FindMetaTable("Player")
 
-if plyMeta.AddCount then
-	BSU._oldAddCount = BSU._oldAddCount or plyMeta.AddCount
-	function plyMeta:AddCount(str, ent)
-		if isentity(ent) and ent:IsValid() and not ent:IsPlayer() then
-			BSU.SetEntityOwner(ent, self)
-		end
-		BSU._oldAddCount(self, str, ent)
+BSU._oldAddCount = BSU._oldAddCount or plyMeta.AddCount
+function plyMeta:AddCount(str, ent, ...)
+	if isValid(ent) then
+		BSU.SetEntityOwner(ent, self)
 	end
+	return BSU._oldAddCount(self, str, ent, ...)
 end
 
-if plyMeta.AddCleanup then
-	BSU._oldAddCleanup = BSU._oldAddCleanup or plyMeta.AddCleanup
-	function plyMeta:AddCleanup(type, ent)
-		if isentity(ent) and ent:IsValid() and not ent:IsPlayer() then
-			BSU.SetEntityOwner(ent, self)
-		end
-		BSU._oldAddCleanup(self, type, ent)
+BSU._oldAddCleanup = BSU._oldAddCleanup or plyMeta.AddCleanup
+function plyMeta:AddCleanup(type, ent, ...)
+	if isValid(ent) then
+		BSU.SetEntityOwner(ent, self)
 	end
+	return BSU._oldAddCleanup(self, type, ent, ...)
 end
 
-if cleanup.Add then
-	BSU._oldCleanupAdd = BSU._oldCleanupAdd or cleanup.Add
-	function cleanup.Add(ply, type, ent)
-		if isentity(ply) and ply:IsPlayer() and isentity(ent) and ent:IsValid() and not ent:IsPlayer() then
-			BSU.SetEntityOwner(ent, ply)
-		end
-		BSU._oldCleanupAdd(ply, type, ent)
+BSU._oldCleanupAdd = BSU._oldCleanupAdd or cleanup.Add
+function cleanup.Add(ply, type, ent, ...)
+	if isValid(ply) and isValid(ent) then
+		BSU.SetEntityOwner(ent, ply)
 	end
+	return BSU._oldCleanupAdd(ply, type, ent, ...)
 end
 
-if cleanup.ReplaceEntity then
-	BSU._oldCleanupReplaceEntity = BSU._oldCleanupReplaceEntity or cleanup.ReplaceEntity
-	function cleanup.ReplaceEntity(from, to)
-		if isentity(from) and from:IsValid() and not from:IsPlayer() and isentity(to) and to:IsValid() and not to:IsPlayer() then
-			BSU.ReplaceEntityOwner(from, to)
-		end
-		BSU._oldCleanupReplaceEntity(from, to)
+BSU._oldCleanupReplaceEntity = BSU._oldCleanupReplaceEntity or cleanup.ReplaceEntity
+function cleanup.ReplaceEntity(from, to)
+	local ret = { BSU._oldCleanupReplaceEntity(from, to, ...) }
+	if ret[1] and isValid(from) and isValid(to) then
+		BSU.ReplaceEntityOwner(from, to)
 	end
+	return unpack(ret)
 end
 
-if undo.ReplaceEntity then
-	BSU._oldUndoReplaceEntity = BSU._oldUndoReplaceEntity or undo.ReplaceEntity
-	function undo.ReplaceEntity(from, to)
-		if isentity(from) and from:IsValid() and not from:IsPlayer() and isentity(to) and to:IsValid() and not to:IsPlayer() then
-			BSU.ReplaceEntityOwner(from, to)
-		end
-		BSU._oldUndoReplaceEntity(from, to)
+BSU._oldUndoReplaceEntity = BSU._oldUndoReplaceEntity or undo.ReplaceEntity
+function undo.ReplaceEntity(from, to, ...)
+	local ret = { BSU._oldUndoReplaceEntity(from, to, ...) }
+	if ret[1] and isValid(from) and isValid(to) then
+		BSU.ReplaceEntityOwner(from, to)
 	end
+	return unpack(ret)
+end
+
+local currentUndo
+
+BSU._oldUndoCreate = BSU._oldUndoCreate or undo.Create
+function undo.Create(...)
+	currentUndo = { ents = {} }
+	return BSU._oldUndoCreate(...)
+end
+
+BSU._oldUndoAddEntity = BSU._oldUndoAddEntity or undo.AddEntity
+function undo.AddEntity(ent, ...)
+	if currentUndo and isValid(ent) then
+		table.insert(currentUndo.ents, ent)
+	end
+	return BSU._oldUndoAddEntity(ent, ...)
+end
+
+BSU._oldUndoSetPlayer = BSU._oldUndoSetPlayer or undo.SetPlayer
+function undo.SetPlayer(ply, ...)
+	if currentUndo and IsValid(ply) then
+		currentUndo.owner = ply
+	end
+	return BSU._oldUndoSetPlayer(ply, ...)
+end
+
+BSU._oldUndoFinish = BSU._oldUndoFinish or undo.Finish
+function undo.Finish(...)
+	if currentUndo then
+		local ply = currentUndo.owner
+		if isValid(ply) then
+			for _, ent in ipairs(currentUndo.ents) do
+				if isValid(ent) then
+					BSU.SetEntityOwner(ent, ply)
+				end
+			end
+		end
+	end
+	currentUndo = nil
+	return BSU._oldUndoFinish(...)
 end
