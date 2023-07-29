@@ -34,7 +34,7 @@ if SERVER then
 	function plyMeta:CPPIGetFriends()
 		local friends = {}
 		for _, v in ipairs(BSU.GetPlayerPropPermissionList(self, BSU.PP_TOOLGUN)) do
-			if #plys < 64 then -- return value must have less than or equal to 64 players
+			if #friends < 64 then -- return value must have less than or equal to 64 players
 				table.insert(friends, v)
 			end
 		end
