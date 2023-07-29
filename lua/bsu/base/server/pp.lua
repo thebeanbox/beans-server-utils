@@ -63,15 +63,54 @@ end)
 
 -- override some functions to catch players spawning entities and properly set entity owner
 
-BSU._oldCleanupAdd = BSU._oldCleanupAdd or cleanup.Add
-function cleanup.Add(ply, type, ent)
-	BSU.SetEntityOwner(ent, ply)
-	BSU._oldCleanupAdd(ply, type, ent)
+local plyMeta = FindMetaTable("Player")
+
+if plyMeta.AddCount then
+	BSU._oldAddCount = BSU._oldAddCount or plyMeta.AddCount
+	function plyMeta:AddCount(str, ent)
+		if isentity(ent) and ent:IsValid() and not ent:IsPlayer() then
+			BSU.SetEntityOwner(ent, self)
+		end
+		BSU._oldAddCount(self, str, ent)
+	end
 end
 
-local plyMeta = FindMetaTable("Player")
-BSU._oldAddCount = BSU._oldAddCount or plyMeta.AddCount
-function plyMeta:AddCount(str, ent)
-	BSU.SetEntityOwner(ent, self)
-	BSU._oldAddCount(self, str, ent)
+if plyMeta.AddCleanup then
+	BSU._oldAddCleanup = BSU._oldAddCleanup or plyMeta.AddCleanup
+	function plyMeta:AddCleanup(type, ent)
+		if isentity(ent) and ent:IsValid() and not ent:IsPlayer() then
+			BSU.SetEntityOwner(ent, self)
+		end
+		BSU._oldAddCleanup(self, type, ent)
+	end
+end
+
+if cleanup.Add then
+	BSU._oldCleanupAdd = BSU._oldCleanupAdd or cleanup.Add
+	function cleanup.Add(ply, type, ent)
+		if isentity(ply) and ply:IsPlayer() and isentity(ent) and ent:IsValid() and not ent:IsPlayer() then
+			BSU.SetEntityOwner(ent, ply)
+		end
+		BSU._oldCleanupAdd(ply, type, ent)
+	end
+end
+
+if cleanup.ReplaceEntity then
+	BSU._oldCleanupReplaceEntity = BSU._oldCleanupReplaceEntity or cleanup.ReplaceEntity
+	function cleanup.ReplaceEntity(from, to)
+		if isentity(from) and from:IsValid() and not from:IsPlayer() and isentity(to) and to:IsValid() and not to:IsPlayer() then
+			BSU.ReplaceEntityOwner(from, to)
+		end
+		BSU._oldCleanupReplaceEntity(from, to)
+	end
+end
+
+if undo.ReplaceEntity then
+	BSU._oldUndoReplaceEntity = BSU._oldUndoReplaceEntity or undo.ReplaceEntity
+	function undo.ReplaceEntity(from, to)
+		if isentity(from) and from:IsValid() and not from:IsPlayer() and isentity(to) and to:IsValid() and not to:IsPlayer() then
+			BSU.ReplaceEntityOwner(from, to)
+		end
+		BSU._oldUndoReplaceEntity(from, to)
+	end
 end
