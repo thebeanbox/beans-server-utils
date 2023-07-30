@@ -45,7 +45,7 @@ hook.Add("EntityTakeDamage", "BSU_DamagePropPermission", function(ent, dmg)
 
 	if not attacker:IsPlayer() then attacker = BSU.GetEntityOwner(attacker) end
 
-	if attacker == nil or attacker:IsWorld() or (attacker:IsPlayer() and BSU.PlayerHasPropPermission(attacker, ent, BSU.PP_DAMAGE) == false) then
+	if attacker == nil or attacker:IsWorld() or not attacker:IsValid() or BSU.PlayerHasPermission(attacker, ent, BSU.PP_DAMAGE) == false then
 		return true -- unlike the GravGun* and Can* hooks, this hook requires true to prevent it
 	end
 end)
@@ -75,24 +75,24 @@ local plyMeta = FindMetaTable("Player")
 
 BSU._oldAddCount = BSU._oldAddCount or plyMeta.AddCount
 function plyMeta:AddCount(str, ent, ...)
-	if isValid(ent) then
 		BSU.SetEntityOwner(ent, self)
+	if IsValid(ent) then
 	end
 	return BSU._oldAddCount(self, str, ent, ...)
 end
 
 BSU._oldAddCleanup = BSU._oldAddCleanup or plyMeta.AddCleanup
 function plyMeta:AddCleanup(type, ent, ...)
-	if isValid(ent) then
 		BSU.SetEntityOwner(ent, self)
+	if IsValid(ent) then
 	end
 	return BSU._oldAddCleanup(self, type, ent, ...)
 end
 
 BSU._oldCleanupAdd = BSU._oldCleanupAdd or cleanup.Add
 function cleanup.Add(ply, type, ent, ...)
-	if isValid(ply) and isValid(ent) then
 		BSU.SetEntityOwner(ent, ply)
+	if IsValid(ply) and IsValid(ent) then
 	end
 	return BSU._oldCleanupAdd(ply, type, ent, ...)
 end
@@ -100,8 +100,8 @@ end
 BSU._oldCleanupReplaceEntity = BSU._oldCleanupReplaceEntity or cleanup.ReplaceEntity
 function cleanup.ReplaceEntity(from, to, ...)
 	local ret = { BSU._oldCleanupReplaceEntity(from, to, ...) }
-	if ret[1] and isValid(from) and isValid(to) then
 		BSU.ReplaceEntityOwner(from, to)
+	if ret[1] and IsValid(from) and IsValid(to) then
 	end
 	return unpack(ret)
 end
@@ -109,8 +109,8 @@ end
 BSU._oldUndoReplaceEntity = BSU._oldUndoReplaceEntity or undo.ReplaceEntity
 function undo.ReplaceEntity(from, to, ...)
 	local ret = { BSU._oldUndoReplaceEntity(from, to, ...) }
-	if ret[1] and isValid(from) and isValid(to) then
 		BSU.ReplaceEntityOwner(from, to)
+	if ret[1] and IsValid(from) and IsValid(to) then
 	end
 	return unpack(ret)
 end
@@ -125,7 +125,7 @@ end
 
 BSU._oldUndoAddEntity = BSU._oldUndoAddEntity or undo.AddEntity
 function undo.AddEntity(ent, ...)
-	if currentUndo and isValid(ent) then
+	if currentUndo and IsValid(ent) then
 		table.insert(currentUndo.ents, ent)
 	end
 	return BSU._oldUndoAddEntity(ent, ...)
@@ -143,10 +143,10 @@ BSU._oldUndoFinish = BSU._oldUndoFinish or undo.Finish
 function undo.Finish(...)
 	if currentUndo then
 		local ply = currentUndo.owner
-		if isValid(ply) then
+		if IsValid(ply) then
 			for _, ent in ipairs(currentUndo.ents) do
-				if isValid(ent) then
 					BSU.SetEntityOwner(ent, ply)
+				if IsValid(ent) then
 				end
 			end
 		end
