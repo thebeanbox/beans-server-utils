@@ -75,24 +75,24 @@ local plyMeta = FindMetaTable("Player")
 
 BSU._oldAddCount = BSU._oldAddCount or plyMeta.AddCount
 function plyMeta:AddCount(str, ent, ...)
-		BSU.SetEntityOwner(ent, self)
 	if IsValid(ent) then
+		BSU.SetEntityOwner(ent, self)
 	end
 	return BSU._oldAddCount(self, str, ent, ...)
 end
 
 BSU._oldAddCleanup = BSU._oldAddCleanup or plyMeta.AddCleanup
 function plyMeta:AddCleanup(type, ent, ...)
-		BSU.SetEntityOwner(ent, self)
 	if IsValid(ent) then
+		BSU.SetEntityOwner(ent, self)
 	end
 	return BSU._oldAddCleanup(self, type, ent, ...)
 end
 
 BSU._oldCleanupAdd = BSU._oldCleanupAdd or cleanup.Add
 function cleanup.Add(ply, type, ent, ...)
-		BSU.SetEntityOwner(ent, ply)
 	if IsValid(ply) and IsValid(ent) then
+		BSU.SetEntityOwner(ent, ply)
 	end
 	return BSU._oldCleanupAdd(ply, type, ent, ...)
 end
@@ -100,8 +100,8 @@ end
 BSU._oldCleanupReplaceEntity = BSU._oldCleanupReplaceEntity or cleanup.ReplaceEntity
 function cleanup.ReplaceEntity(from, to, ...)
 	local ret = { BSU._oldCleanupReplaceEntity(from, to, ...) }
-		BSU.ReplaceEntityOwner(from, to)
 	if ret[1] and IsValid(from) and IsValid(to) then
+		BSU.ReplaceEntityOwner(from, to)
 	end
 	return unpack(ret)
 end
@@ -109,8 +109,8 @@ end
 BSU._oldUndoReplaceEntity = BSU._oldUndoReplaceEntity or undo.ReplaceEntity
 function undo.ReplaceEntity(from, to, ...)
 	local ret = { BSU._oldUndoReplaceEntity(from, to, ...) }
-		BSU.ReplaceEntityOwner(from, to)
 	if ret[1] and IsValid(from) and IsValid(to) then
+		BSU.ReplaceEntityOwner(from, to)
 	end
 	return unpack(ret)
 end
@@ -145,8 +145,8 @@ function undo.Finish(...)
 		local ply = currentUndo.owner
 		if IsValid(ply) then
 			for _, ent in ipairs(currentUndo.ents) do
-					BSU.SetEntityOwner(ent, ply)
 				if IsValid(ent) then
+					BSU.SetEntityOwner(ent, ply)
 				end
 			end
 		end
