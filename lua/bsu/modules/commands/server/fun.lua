@@ -415,3 +415,168 @@ BSU.SetupCommand("armor", function(cmd)
 	end)
 end)
 BSU.AliasCommand("suit", "armor")
+
+--[[
+	Name: launch 
+	Desc: Launch players
+	Arguments:
+		1. Targets (players, default: self)
+]]
+BSU.SetupCommand("launch", function(cmd)
+	cmd:SetDescription("Launch players")
+	cmd:SetCategory("fun")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local targets = self:GetPlayersArg(1)
+		if targets then
+			targets = self:FilterTargets(targets, nil, true)
+		else
+			targets = { self:GetCaller(true) }
+		end
+
+		for _, v in ipairs(targets) do
+			v:SetVelocity(Vector(0, 0, 5000))
+		end
+
+		if next(targets) ~= nil then
+			self:BroadcastActionMsg("%caller% launched %targets%", { targets = targets })
+		end
+	end)
+end)
+
+--[[
+	Name: respawn 
+	Desc: Respawn players
+	Arguments:
+		1. Targets (players, default: self)
+]]
+BSU.SetupCommand("respawn", function(cmd)
+	cmd:SetDescription("Respawn players")
+	cmd:SetCategory("fun")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local targets = self:GetPlayersArg(1)
+		if targets then
+			targets = self:FilterTargets(targets, nil, true)
+		else
+			targets = { self:GetCaller(true) }
+		end
+
+		for _, v in ipairs(targets) do
+			v:Spawn()
+		end
+
+		if next(targets) ~= nil then
+			self:BroadcastActionMsg("%caller% respawned %targets%", { targets = targets })
+		end
+	end)
+end)
+
+--[[
+	Name: slay 
+	Desc: Slay players
+	Arguments:
+		1. Targets (players, default: self)
+]]
+BSU.SetupCommand("slay", function(cmd)
+	cmd:SetDescription("Slay players")
+	cmd:SetCategory("fun")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local targets = self:GetPlayersArg(1)
+		if targets then
+			targets = self:FilterTargets(targets, nil, true)
+		else
+			targets = { self:GetCaller(true) }
+		end
+
+		for _, v in ipairs(targets) do
+			v:Kill()
+		end
+
+		if next(targets) ~= nil then
+			self:BroadcastActionMsg("%caller% slayed %targets%", { targets = targets })
+		end
+	end)
+end)
+BSU.AliasCommand("kill", "slay")
+
+--[[
+	Name: disintegrate 
+	Desc: Disintegrate players
+	Arguments:
+		1. Targets (players, default: self)
+]]
+BSU.SetupCommand("disintegrate", function(cmd)
+	cmd:SetDescription("Disintegrate players")
+	cmd:SetCategory("fun")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local targets = self:GetPlayersArg(1)
+		if targets then
+			targets = self:FilterTargets(targets, nil, true)
+		else
+			targets = { self:GetCaller(true) }
+		end
+
+		local d = DamageInfo()
+		d:SetDamageType(DMG_DISSOLVE)
+
+		for _, v in ipairs(targets) do
+			d:SetDamage(v:Health())
+			d:SetAttacker(v)
+			v:GodDisable()
+			v:TakeDamageInfo(d)
+		end
+
+		if next(targets) ~= nil then
+			self:BroadcastActionMsg("%caller% disintegrated %targets%", { targets = targets })
+		end
+	end)
+end)
+BSU.AliasCommand("smite", "disintegrate")
+
+--[[
+	Name: explode 
+	Desc: Explode players
+	Arguments:
+		1. Targets (players, default: self)
+]]
+BSU.SetupCommand("explode", function(cmd)
+	cmd:SetDescription("Explode players")
+	cmd:SetCategory("fun")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local targets = self:GetPlayersArg(1)
+		if targets then
+			targets = self:FilterTargets(targets, nil, true)
+		else
+			targets = { self:GetCaller(true) }
+		end
+
+		local d = DamageInfo()
+		d:SetDamageType(DMG_BLAST)
+		d:SetDamage(1)
+
+		for _, v in ipairs(targets) do
+			local explosion = ents.Create("env_explosion")
+			explosion:SetPos(v:GetPos())
+			explosion:Spawn()
+
+			explosion:Fire("Explode")
+			explosion:EmitSound("BaseExplosionEffect.Sound", SNDLVL_GUNFIRE)
+
+			v:GodDisable()
+			v:SetHealth(0)
+			v:SetArmor(0)
+
+			d:SetAttacker(v)
+			v:TakeDamageInfo(d)
+		end
+
+		if next(targets) ~= nil then
+			self:BroadcastActionMsg("%caller% exploded %targets%", { targets = targets })
+		end
+	end)
+end)
+
