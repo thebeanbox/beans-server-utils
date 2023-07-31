@@ -1,7 +1,7 @@
 -- base/server/pp.lua
 
 hook.Add("PlayerInitialSpawn", "BSU_RegainPropOwnership", function(ply)
-	local id = BSU.GetOwnerBySteamID(ply:SteamID()) -- check if props with an owner of the same steamid exists
+	local id = BSU.GetOwnerIDBySteamID(ply:SteamID()) -- check if props with an owner of the same steamid exists
 	if id then BSU.TransferOwnerData(id, ply) end -- regain player's ownership over props after rejoining
 end)
 
