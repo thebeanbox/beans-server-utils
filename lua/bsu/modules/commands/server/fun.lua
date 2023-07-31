@@ -61,7 +61,7 @@ local function ragdollPlayer(ply, owner)
 	local ragdoll = ents.Create("prop_ragdoll")
 	if not IsValid(ragdoll) then return false end
 
-	BSU.SetEntityOwner(ragdoll, owner:IsValid() and owner or game.GetWorld())
+	BSU.SetOwner(ragdoll, owner:IsValid() and owner or game.GetWorld())
 	duplicator.DoGeneric(ragdoll, duplicator.CopyEntTable(ply))
 
 	ragdoll:Spawn()
