@@ -1,8 +1,8 @@
 -- lib/pp.lua (SHARED)
 
 BSU._owners = BSU._owners or {} -- owner data
-BSU._entowners = BSU._entowners or {} -- entity index -> owner id lookup
-BSU._ownerents = BSU._ownerents or {} -- owner id -> entity index lookup lookup
+BSU._entowners = BSU._entowners or {} -- entity index -> userid lookup
+BSU._ownerents = BSU._ownerents or {} -- userid -> entity index lookup lookup
 
 local infoUpdates, entsUpdates = {}, {}
 
@@ -96,7 +96,7 @@ local function clearEntityOwner(entindex)
 end
 
 local function setEntityOwner(entindex, id)
-	if BSU._entowners[entindex] == id then return end -- already owned by this owner id
+	if BSU._entowners[entindex] == id then return end -- already owned by this id
 
 	BSU._entowners[entindex] = id
 	BSU._ownerents[id] = BSU._ownerents[id] or {}
@@ -206,7 +206,7 @@ if SERVER then
 	end
 end
 
--- returns owner id by steamid (prioritizes lower owner ids, nil if no owner with this steamid)
+-- returns userid by steamid (prioritizes lower ids, nil if no owner with this steamid)
 function BSU.GetOwnerIDBySteamID(steamid)
 	local ids = table.GetKeys(BSU._owners)
 	table.sort(ids, function(a, b) return a < b end)
@@ -217,7 +217,23 @@ function BSU.GetOwnerIDBySteamID(steamid)
 	end
 end
 
--- returns owner of the entity (can be a player or the world, nil if entity is ownerless, NULL entity if player is disconnected)
+-- returns table of entities this owner owns (nil if invalid id)
+function BSU.GetOwnerEntities(id)
+	if not BSU._owners[id] then return end
+	local ents = {}
+	for entindex, _ in pairs(BSU._ownerents[id]) do
+		table.insert(ents, Entity(entindex))
+	end
+	return ents
+end
+
+-- returns userid of the entity's owner (-1 if owner is the world, nil if entity is ownerless)
+function BSU.GetOwnerID(ent)
+	if not IsValid(ent) then return end
+	return BSU._entowners[ent:EntIndex()]
+end
+
+-- returns owner of the entity (can be a player or the world, NULL entity if player is disconnected, nil if entity is ownerless)
 function BSU.GetOwner(ent)
 	if not IsValid(ent) then return end
 	local id = BSU._entowners[ent:EntIndex()]
