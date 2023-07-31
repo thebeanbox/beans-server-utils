@@ -217,11 +217,10 @@ function BSU.GetOwnerIDBySteamID(steamid)
 	end
 end
 
--- returns table of entities this owner owns (nil if invalid id)
+-- returns table of entities this owner owns
 function BSU.GetOwnerEntities(id)
-	if not BSU._owners[id] then return end
 	local ents = {}
-	for entindex, _ in pairs(BSU._ownerents[id]) do
+	for entindex, _ in pairs(BSU._ownerents[id] or {}) do
 		table.insert(ents, Entity(entindex))
 	end
 	return ents
