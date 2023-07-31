@@ -55,7 +55,7 @@ hook.Add("player_changename", "BSU_UpdatePlayerDataName", function(data)
 	BSU.SetPlayerData(Player(data.userid), { name = data.newname })
 end)
 
--- update pdata with client data (see BSU.RequestClientInfo)
+-- update pdata with client data
 local function updateClientInfo(_, ply)
 	local os = net.ReadUInt(2)
 	local country = net.ReadString()
@@ -74,7 +74,7 @@ hook.Add("BSU_PlayerReady", "BSU_RequestClientInfo", BSU.RequestClientInfo)
 -- allow players picking up other players
 hook.Add("PhysgunPickup", "BSU_AllowPlayerPhysgunPickup", function(ply, ent)
 	if not ent:IsPlayer() then return end
-	return BSU.PlayerHasPropPermission(ply, ent, BSU.PP_PHYSGUN) ~= false
+	return BSU.PlayerHasPermission(ply, ent, BSU.PP_PHYSGUN) ~= false
 end)
 
 local grabbed = {}

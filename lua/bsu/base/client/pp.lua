@@ -10,7 +10,7 @@ concommand.Add("bsu_reset_permissions", function()
 	))
 end)
 
-local function addPPMenu()
+local function addPropProtectionMenu()
 	spawnmenu.AddToolMenuOption("Utilities", "BSU", "Prop Protection", "Prop Protection", "", "", function(pnl)
 		pnl:ClearControls()
 
@@ -40,9 +40,9 @@ local function addPPMenu()
 		local function boxOnChange(self, checked)
 			if self.ply:IsValid() then
 				if checked then
-					BSU.GrantPropPermission(self.ply, self.perm)
+					BSU.GrantPermission(self.ply, self.perm)
 				else
-					BSU.RevokePropPermission(self.ply, self.perm)
+					BSU.RevokePermission(self.ply, self.perm)
 				end
 			end
 		end
@@ -75,7 +75,7 @@ local function addPPMenu()
 						elem.box = box
 						box.ply = v
 						box.perm = math.pow(2, i - 1)
-						box:SetValue(BSU.CheckPropPermission(v:SteamID64(), box.perm))
+						box:SetValue(BSU.CheckPermission(v:SteamID64(), box.perm))
 						box.OnChange = boxOnChange
 					end
 				end
@@ -86,19 +86,19 @@ local function addPPMenu()
 				v:Remove()
 			end
 		end
-		hook.Add("Think", pnl, update)
+		timer.Create("BSU_UpdatePropProtectionMenu", 1, 0, update)
 
 		pnl:CheckBox("Persist permissions across sessions", "bsu_permission_persist")
 		pnl:CheckBox("Allow props to take fire damage", "bsu_allow_fire_damage")
 	end)
 end
 
-hook.Add("PopulateToolMenu", "BSU_AddPPMenu", addPPMenu)
+hook.Add("PopulateToolMenu", "BSU_AddPropProtectionMenu", addPropProtectionMenu)
 
-local ppHudBackground = Color(0, 0, 0, 75)
+local color_bg = Color(0, 0, 0, 75)
 local hudX, hudY = 37, ScrH() - 180
 
-local showHudWeapons = {
+local showHUDWeapons = {
 	["weapon_physgun"] = true,
 	["gmod_tool"] = true,
 }
@@ -112,44 +112,30 @@ surface.CreateFont(font, {
 	shadow = true
 })
 
-local function drawPPHUD()
-	local activeWeapon = LocalPlayer():GetActiveWeapon()
-	if not IsValid(activeWeapon) then return end
-	if not showHudWeapons[activeWeapon:GetClass()] then return end
+local function drawPropProtectionHUD()
+	local ply = LocalPlayer()
 
-	local trace = util.TraceLine(util.GetPlayerTrace(LocalPlayer()))
+	local wep = ply:GetActiveWeapon()
+	if not wep:IsValid() or not showHUDWeapons[wep:GetClass()] then return end
+
+	local trace = util.TraceLine(util.GetPlayerTrace(ply))
 	if trace.HitNonWorld then
 		local ent = trace.Entity
-		if IsValid(ent) and not ent:IsPlayer() then
-			local owner = BSU.GetEntityOwner(ent)
-			local id, name
-			if IsValid(owner) then
-				id = owner:SteamID()
-				name = owner:Nick()
-			else
-				id = BSU.GetEntityOwnerID(ent)
-				if id then id = util.SteamIDFrom64(id) end
-				name = BSU.GetEntityOwnerName(ent) or "N/A"
-			end
-
-			local text = "Owner: " .. (owner and name .. (owner ~= game.GetWorld() and (not IsValid(owner) or not owner:IsBot()) and id and "<" .. id .. ">" or "") or "N/A") .. "\n" ..
-				ent:GetModel() .. "\n" ..
-				tostring(ent)
-
+		if ent:IsValid() and not ent:IsPlayer() then
+			local name, steamid = BSU.GetOwnerName(ent) or "N/A", BSU.GetOwnerSteamID(ent)
+			local text = "Owner: " .. name .. (steamid and "<" .. steamid .. ">" or "") .. "\n" .. ent:GetModel() .. "\n" .. tostring(ent)
 			surface.SetFont(font)
 			local w, h = surface.GetTextSize(text)
-			draw.RoundedBox(4, hudX, hudY, w + 8, h + 8, ppHudBackground)
+			draw.RoundedBox(4, hudX, hudY, w + 8, h + 8, color_bg)
 			draw.DrawText(text, font, hudX + 4, hudY + 4, color_white, TEXT_ALIGN_LEFT)
 		end
 	end
 end
 
-hook.Add("HUDPaint", "BSU_DrawPPHUD", drawPPHUD)
+hook.Add("HUDPaint", "BSU_DrawPropProtectionHUD", drawPropProtectionHUD)
 
 if not GetConVar("bsu_permission_persist"):GetBool() then
 	RunConsoleCommand("bsu_reset_permissions")
 end
 
-hook.Add("InitPostEntity", "BSU_InitPropPermissionData", function()
-	BSU.SendPropPermissionData()
-end)
+hook.Add("InitPostEntity", "BSU_SendPermissions", BSU.SendPermissions)

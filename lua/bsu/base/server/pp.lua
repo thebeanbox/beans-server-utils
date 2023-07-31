@@ -1,35 +1,45 @@
 -- base/server/pp.lua
 
--- request data for this player from the clients
-hook.Add("PlayerInitialSpawn", "BSU_RequestPropPermissionData", function(ply)
-	BSU.RequestPropPermissionData(nil, ply)
+hook.Add("PlayerInitialSpawn", "BSU_RegainPropOwnership", function(ply)
+	local id = BSU.GetOwnerBySteamID(ply:SteamID()) -- check if props with an owner of the same steamid exists
+	if id then BSU.TransferOwnerData(id, ply) end -- regain player's ownership over props after rejoining
+end)
+
+hook.Add("BSU_ClientReady", "BSU_InitPropProtection", function(ply)
+	BSU.RequestPermissions(nil, ply) -- request all clients to send permission data for this player
+	BSU.SendOwnerData(ply) -- send owner data to the client
+end)
+
+gameevent.Listen("player_changename")
+hook.Add("player_changename", "BSU_UpdateOwnerName", function(data)
+	BSU.SetOwnerInfo(Player(data.userid), "name", data.newname)
 end)
 
 -- physgun checking
-hook.Add("PhysgunPickup", "BSU_PhysgunPropPermission", function(ply, ent) return BSU.PlayerHasPropPermission(ply, ent, BSU.PP_PHYSGUN) end)
+hook.Add("PhysgunPickup", "BSU_PhysgunPermission", function(ply, ent) return BSU.PlayerHasPermission(ply, ent, BSU.PP_PHYSGUN) end)
 
 -- gravgun checking
 local function checkGravgunPermission(ply, ent)
-	return BSU.PlayerHasPropPermission(ply, ent, BSU.PP_GRAVGUN)
+	return BSU.PlayerHasPermission(ply, ent, BSU.PP_GRAVGUN)
 end
 
-hook.Add("GravGunPunt", "BSU_GravgunPropPermission", checkGravgunPermission)
-hook.Add("GravGunPickupAllowed", "BSU_GravgunPropPermission", checkGravgunPermission)
+hook.Add("GravGunPunt", "BSU_GravgunPermission", checkGravgunPermission)
+hook.Add("GravGunPickupAllowed", "BSU_GravgunPermission", checkGravgunPermission)
 
 -- toolgun checking
-hook.Add("CanTool", "BSU_ToolgunPropPermission", function(ply, trace) if IsValid(trace.Entity) then return BSU.PlayerHasPropPermission(ply, trace.Entity, BSU.PP_TOOLGUN) end end)
-hook.Add("CanProperty", "BSU_ToolgunPropPermission", function(ply, _, ent) return BSU.PlayerHasPropPermission(ply, ent, BSU.PP_TOOLGUN) end)
+hook.Add("CanTool", "BSU_ToolgunPermission", function(ply, trace) if IsValid(trace.Entity) then return BSU.PlayerHasPermission(ply, trace.Entity, BSU.PP_TOOLGUN) end end)
+hook.Add("CanProperty", "BSU_ToolgunPermission", function(ply, _, ent) return BSU.PlayerHasPermission(ply, ent, BSU.PP_TOOLGUN) end)
 
 -- use checking
 local function checkUsePermission(ply, ent)
-	return BSU.PlayerHasPropPermission(ply, ent, BSU.PP_USE)
+	return BSU.PlayerHasPermission(ply, ent, BSU.PP_USE)
 end
 
-hook.Add("PlayerUse", "BSU_UsePropPermission", checkUsePermission)
-hook.Add("OnPlayerPhysicsPickup", "BSU_UsePropPermission", checkUsePermission)
+hook.Add("PlayerUse", "BSU_UsePermission", checkUsePermission)
+hook.Add("OnPlayerPhysicsPickup", "BSU_UsePermission", checkUsePermission)
 
 -- damage checking
-hook.Add("EntityTakeDamage", "BSU_DamagePropPermission", function(ent, dmg)
+hook.Add("EntityTakeDamage", "BSU_DamagePermission", function(ent, dmg)
 	if ent:IsPlayer() then return end
 
 	local attacker = dmg:GetAttacker()
@@ -37,13 +47,13 @@ hook.Add("EntityTakeDamage", "BSU_DamagePropPermission", function(ent, dmg)
 
 	-- option for entities on fire
 	if attacker:GetClass() == "entityflame" then
-		local owner = BSU.GetEntityOwner(ent)
+		local owner = BSU.GetOwner(ent)
 		if owner and (owner:IsWorld() or (owner:IsPlayer() and owner:GetInfoNum("bsu_allow_fire_damage", 0) ~= 0)) then
 			return
 		end
 	end
 
-	if not attacker:IsPlayer() then attacker = BSU.GetEntityOwner(attacker) end
+	if not attacker:IsPlayer() then attacker = BSU.GetOwner(attacker) end
 
 	if attacker == nil or attacker:IsWorld() or not attacker:IsValid() or BSU.PlayerHasPermission(attacker, ent, BSU.PP_DAMAGE) == false then
 		return true -- unlike the GravGun* and Can* hooks, this hook requires true to prevent it
@@ -56,12 +66,12 @@ hook.Add("OnEntityCreated", "BSU_SetOwnerMapEntities", function(ent)
 		timer.Simple(0, function() -- need to wait a tick to ensure some data to be available
 			if ent:IsValid() then
 				if ent:CreatedByMap() then
-					BSU.SetEntityOwner(ent, game.GetWorld())
+					BSU.SetOwnerWorld(ent)
 				else
 					local owner = ent:GetInternalVariable("m_hOwnerEntity") -- seems to always be a player or NULL entity
 					if not owner:IsPlayer() then owner = ent:GetInternalVariable("m_hOwner") end
 					if owner and owner:IsPlayer() then
-						BSU.SetEntityOwner(ent, owner)
+						BSU.SetOwner(ent, owner)
 					end
 				end
 			end
@@ -76,7 +86,7 @@ local plyMeta = FindMetaTable("Player")
 BSU._oldAddCount = BSU._oldAddCount or plyMeta.AddCount
 function plyMeta:AddCount(str, ent, ...)
 	if IsValid(ent) then
-		BSU.SetEntityOwner(ent, self)
+		BSU.SetOwner(ent, self)
 	end
 	return BSU._oldAddCount(self, str, ent, ...)
 end
@@ -84,7 +94,7 @@ end
 BSU._oldAddCleanup = BSU._oldAddCleanup or plyMeta.AddCleanup
 function plyMeta:AddCleanup(type, ent, ...)
 	if IsValid(ent) then
-		BSU.SetEntityOwner(ent, self)
+		BSU.SetOwner(ent, self)
 	end
 	return BSU._oldAddCleanup(self, type, ent, ...)
 end
@@ -92,7 +102,7 @@ end
 BSU._oldCleanupAdd = BSU._oldCleanupAdd or cleanup.Add
 function cleanup.Add(ply, type, ent, ...)
 	if IsValid(ply) and IsValid(ent) then
-		BSU.SetEntityOwner(ent, ply)
+		BSU.SetOwner(ent, ply)
 	end
 	return BSU._oldCleanupAdd(ply, type, ent, ...)
 end
@@ -101,7 +111,7 @@ BSU._oldCleanupReplaceEntity = BSU._oldCleanupReplaceEntity or cleanup.ReplaceEn
 function cleanup.ReplaceEntity(from, to, ...)
 	local ret = { BSU._oldCleanupReplaceEntity(from, to, ...) }
 	if ret[1] and IsValid(from) and IsValid(to) then
-		BSU.ReplaceEntityOwner(from, to)
+		BSU.ReplaceOwner(from, to)
 	end
 	return unpack(ret)
 end
@@ -110,7 +120,7 @@ BSU._oldUndoReplaceEntity = BSU._oldUndoReplaceEntity or undo.ReplaceEntity
 function undo.ReplaceEntity(from, to, ...)
 	local ret = { BSU._oldUndoReplaceEntity(from, to, ...) }
 	if ret[1] and IsValid(from) and IsValid(to) then
-		BSU.ReplaceEntityOwner(from, to)
+		BSU.ReplaceOwner(from, to)
 	end
 	return unpack(ret)
 end
@@ -146,7 +156,7 @@ function undo.Finish(...)
 		if IsValid(ply) then
 			for _, ent in ipairs(currentUndo.ents) do
 				if IsValid(ent) then
-					BSU.SetEntityOwner(ent, ply)
+					BSU.SetOwner(ent, ply)
 				end
 			end
 		end
@@ -154,3 +164,11 @@ function undo.Finish(...)
 	currentUndo = nil
 	return BSU._oldUndoFinish(...)
 end
+
+-- clear permissions granted to disconnected players
+gameevent.Listen("player_disconnect")
+hook.Add("player_disconnect", "BSU_ClearPermissionTo", function(data)
+	if data.bot == 0 then -- can't pass "BOT" steamid
+		BSU.ClearPermissionTo(data.networkid)
+	end
+end)

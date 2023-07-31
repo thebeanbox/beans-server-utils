@@ -3,37 +3,52 @@
 -- holds prop protection perms
 BSU._perms = BSU._perms or {}
 
-function BSU.SetPlayerPropPermission(ply, target, perm)
-	if not ply:IsPlayer() then error("Player is invalid") end
-	if not target:IsPlayer() then error("Target is invalid") end
-
+function BSU.SetPermission(plyID, tarID, perm)
+	plyID = BSU.ID64(plyID)
+	tarID = BSU.ID64(tarID)
 	if perm and perm > 0 then
-		if not BSU._perms[target] then BSU._perms[target] = {} end
-		BSU._perms[target][ply] = perm
-	elseif BSU._perms[target] then
-		BSU._perms[target][ply] = nil
-		if next(BSU._perms[target]) == nil then BSU._perms[target] = nil end
+		if not BSU._perms[plyID] then BSU._perms[plyID] = {} end
+		BSU._perms[plyID][tarID] = perm
+	elseif BSU._perms[plyID] then
+		BSU._perms[plyID][tarID] = nil
+		if next(BSU._perms[plyID]) == nil then BSU._perms[plyID] = nil end
 	end
 end
 
-function BSU.GetPlayerPropPermission(ply, target)
-	if not ply:IsPlayer() then error("Player is invalid") end
-	if not target:IsPlayer() then error("Target is invalid") end
-
-	local permission = BSU._perms[ply] and BSU._perms[ply][target] and BSU._perms[ply][target]
+function BSU.GetPermission(plyID, tarID)
+	plyID = BSU.ID64(plyID)
+	tarID = BSU.ID64(tarID)
+	local permission = BSU._perms[plyID] and BSU._perms[plyID][tarID] and BSU._perms[plyID][tarID]
 	return permission or 0
 end
 
--- returns bool if player has permission by the target player
-function BSU.CheckPlayerPropPermission(ply, target, perm)
-	local permission = BSU.GetPlayerPropPermission(ply, target)
+function BSU.CheckPermission(plyID, tarID, perm)
+	local permission = BSU.GetPermission(plyID, tarID)
 	return bit.band(permission, perm) == perm
 end
 
--- returns a table of current players on the server the player has granted the permission to
-function BSU.GetPlayerPropPermissionList(ply, perm)
-	if not ply:IsPlayer() then error("Player is invalid") end
+function BSU.SetPlayerPermission(ply, target, perm)
+	if not ply:IsPlayer() then return end
+	if not target:IsPlayer() then return end
+	return BSU.SetPermission(ply:SteamID64(), target:SteamID64(), perm)
+end
 
+function BSU.GetPlayerPermission(ply, target)
+	if not ply:IsPlayer() then return end
+	if not target:IsPlayer() then return end
+	return BSU.GetPermission(ply:SteamID64(), target:SteamID64())
+end
+
+-- returns bool if player has granted permission to the target player
+function BSU.CheckPlayerPermission(ply, target, perm)
+	if not ply:IsPlayer() then return end
+	if not target:IsPlayer() then return end
+	return BSU.CheckPermission(ply:SteamID64(), target:SteamID64(), perm)
+end
+
+-- returns a table of current players on the server the player has granted the permission to
+function BSU.GetPlayerPermissionList(ply, perm)
+	if not ply:IsPlayer() then return end
 	local plys = {}
 	for k, v in pairs(BSU._perms) do
 		local permission = v[ply]
@@ -44,42 +59,24 @@ function BSU.GetPlayerPropPermissionList(ply, perm)
 	return plys
 end
 
+-- clear permissions granted from the steamid
+function BSU.ClearPermissionFrom(steamid)
+	BSU._perms[BSU.ID64(steamid)] = nil
+end
+
+-- clear permissions granted to the steamid
+function BSU.ClearPermissionTo(steamid)
+	steamid = BSU.ID64(steamid)
+	for _, v in pairs(BSU._perms) do
+		v[steamid] = nil
+	end
+end
+
 local worldPermission = BSU.PP_GRAVGUN + BSU.PP_USE + BSU.PP_DAMAGE
 
 -- returns bool if players have permission on the world
-function BSU.CheckWorldPropPermission(perm)
+function BSU.CheckWorldPermission(perm)
 	return bit.band(worldPermission, perm) == perm
-end
-
-function BSU.SetEntityOwnerless(ent)
-	if not ent:IsValid() or ent:IsPlayer() then error("Entity is invalid") end
-
-	ent:SetNWEntity("BSU_Owner", nil)
-	ent:SetNWEntity("BSU_OwnerName", nil)
-	ent:SetNWEntity("BSU_OwnerID", nil)
-end
-
-function BSU.SetEntityOwner(ent, owner)
-	if ent:IsPlayer() then error("Entity is invalid") end
-	if not owner:IsPlayer() and not owner:IsWorld() then error("Owner entity is invalid") end
-
-	ent:SetNWEntity("BSU_Owner", owner)
-	-- this is so we can still get the name and id of the player after they leave the server
-	ent:SetNWString("BSU_OwnerName", not owner:IsWorld() and owner:Nick() or "World") -- this is used for the hud
-	ent:SetNWString("BSU_OwnerID", not owner:IsWorld() and owner:SteamID64() or nil) -- this is used so we can identify the owner and give back ownership if they disconnect and then reconnect
-end
-
-function BSU.ReplaceEntityOwner(from, to)
-	if not from:IsValid() or from:IsPlayer() then error("From entity is invalid") end
-	if not to:IsValid() or to:IsPlayer() then error("To entity is invalid") end
-
-	to:SetNWEntity("BSU_Owner", from:GetNWEntity("BSU_Owner"))
-	to:SetNWString("BSU_OwnerName", from:GetNWString("BSU_OwnerName"))
-	to:SetNWString("BSU_OwnerID", from:GetNWString("BSU_OwnerID"))
-
-	from:SetNWEntity("BSU_Owner", nil)
-	from:SetNWEntity("BSU_OwnerName", nil)
-	from:SetNWEntity("BSU_OwnerID", nil)
 end
 
 -- utility function for hooks to know if a player has permission over an entity
@@ -87,25 +84,25 @@ end
 --  true  - player has permission (player is superadmin and must have permission)
 --  nil   - player has permission (nil so the hook lets another addon can decide if the player should have permission)
 --  false - player doesn't have permission
-function BSU.PlayerHasPropPermission(ply, ent, perm)
+function BSU.PlayerHasPermission(ply, ent, perm)
 	if ply:IsSuperAdmin() then return true end
 
-	local owner = BSU.GetEntityOwner(ent)
+	local owner = BSU.GetOwner(ent)
 	if owner then ent = owner end
 
 	if ply == ent then return end
 
 	if ent:IsPlayer() then
-		if BSU.CheckPlayerPropPermission(ply, ent, perm) ~= false then return end
+		if BSU.CheckPlayerPermission(ent, ply, perm) ~= false then return end
 	elseif ent:IsWorld() then
-		if BSU.CheckWorldPropPermission(perm) ~= false then return end
+		if BSU.CheckWorldPermission(perm) ~= false then return end
 	end
 
 	return false
 end
 
-function BSU.RequestPropPermissionData(plys, target)
-	net.Start("bsu_pp_data")
+function BSU.RequestPermissions(plys, target)
+	net.Start("bsu_perms")
 		net.WriteUInt(target:UserID(), 15)
 	if plys then
 		net.Send(plys)
@@ -114,13 +111,13 @@ function BSU.RequestPropPermissionData(plys, target)
 	end
 end
 
-net.Receive("bsu_pp_data", function(_, ply)
+net.Receive("bsu_perms", function(_, ply)
 	local total = net.ReadUInt(7)
 	for _ = 1, total do
 		local target = Player(net.ReadUInt(15))
 		local perm = net.ReadUInt(5)
-		if target:IsPlayer() then
-			BSU.SetPlayerPropPermission(ply, target, perm)
+		if ply ~= target and target:IsPlayer() and not target:IsBot() then
+			BSU.SetPlayerPermission(ply, target, perm)
 		end
 	end
 end)

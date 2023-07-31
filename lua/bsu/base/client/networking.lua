@@ -3,7 +3,7 @@
 local function handleRPC()
 	local funcStr = net.ReadString()
 
-	local len = net.ReadInt(16)
+	local len = net.ReadUInt(8)
 	local args = {}
 	for _ = 1, len do
 		local arg = net.ReadType()

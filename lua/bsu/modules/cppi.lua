@@ -24,7 +24,7 @@ function CPPI:GetInterfaceVersion()
 end
 
 function entMeta:CPPIGetOwner()
-	local owner = BSU.GetEntityOwner(self)
+	local owner = BSU.GetOwner(self)
 	if owner and owner:IsPlayer() then
 		return owner, CPPI_NOTIMPLEMENTED
 	end
@@ -33,7 +33,7 @@ end
 if SERVER then
 	function plyMeta:CPPIGetFriends()
 		local friends = {}
-		for _, v in ipairs(BSU.GetPlayerPropPermissionList(self, BSU.PP_TOOLGUN)) do
+		for _, v in ipairs(BSU.GetPlayerPermissionList(self, BSU.PP_TOOLGUN)) do
 			if #friends < 64 then -- return value must have less than or equal to 64 players
 				table.insert(friends, v)
 			end
@@ -43,9 +43,9 @@ if SERVER then
 
 	function entMeta:CPPISetOwner(ply)
 		if ply == nil then
-			BSU.SetEntityOwnerless()
+			BSU.SetOwnerless(self)
 		elseif isentity(ply) and ply:IsPlayer() then
-			BSU.SetEntityOwner(self, ply)
+			BSU.SetOwner(self, ply)
 		else
 			return false
 		end
@@ -57,25 +57,25 @@ if SERVER then
 	end
 
 	function entMeta:CPPICanTool(ply)
-		return BSU.PlayerHasPropPermission(ply, self, BSU.PP_TOOLGUN) ~= false
+		return BSU.PlayerHasPermission(ply, self, BSU.PP_TOOLGUN) ~= false
 	end
 
 	function entMeta:CPPICanPhysgun(ply)
-		return BSU.PlayerHasPropPermission(ply, self, BSU.PP_PHYSGUN) ~= false
+		return BSU.PlayerHasPermission(ply, self, BSU.PP_PHYSGUN) ~= false
 	end
 
 	function entMeta:CPPICanPickup(ply)
-		return BSU.PlayerHasPropPermission(ply, self, BSU.PP_GRAVGUN) ~= false
+		return BSU.PlayerHasPermission(ply, self, BSU.PP_GRAVGUN) ~= false
 	end
 
 	entMeta.CPPICanPunt = entMeta.CPPICanPickup
 
 	function entMeta:CPPICanUse(ply)
-		return BSU.PlayerHasPropPermission(ply, self, BSU.PP_USE) ~= false
+		return BSU.PlayerHasPermission(ply, self, BSU.PP_USE) ~= false
 	end
 
 	function entMeta:CPPICanDamage(ply)
-		return BSU.PlayerHasPropPermission(ply, self, BSU.PP_DAMAGE) ~= false
+		return BSU.PlayerHasPermission(ply, self, BSU.PP_DAMAGE) ~= false
 	end
 
 	entMeta.CPPICanDrive = entMeta.CPPICanUse
@@ -87,7 +87,7 @@ else
 	function plyMeta:CPPIGetFriends()
 		if self ~= LocalPlayer() then return CPPI_NOTIMPLEMENTED end
 		local friends = {}
-		for _, v in ipairs(BSU.GetPlayerPropPermissionList(BSU.PP_TOOLGUN)) do
+		for _, v in ipairs(BSU.GetPlayerPermissionList(BSU.PP_TOOLGUN)) do
 			if #plys < 64 then -- return value must have less than or equal to 64 players
 				table.insert(friends, v)
 			end
