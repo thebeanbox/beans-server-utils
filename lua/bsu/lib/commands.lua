@@ -72,13 +72,34 @@ end
 -- returns table of players via prefixed command argument
 -- returns empty table if failed to retrieve (ex: invalid player name, invalid player steamid, invalid group name, or no prefixes matched)
 local function parsePlayerArg(user, str)
+	local plys = player.GetAll()
+
+	do-- check if the argument matches player names
+		local nameArg = string.lower(parseArgs(str)[1])
+		local found = {}
+
+		for _, v in ipairs(plys) do
+			local name = string.lower(v:GetName())
+			if nameArg == name then -- found exact name
+				return { v }
+			elseif #nameArg >= 3 then -- must be a minimum of 3 characters for partial search
+				if string.find(name, nameArg, 1, true) then
+					table.insert(found, v)
+				end
+			end
+		end
+
+		if next(found) ~= nil then
+			return found
+		end
+	end
+
 	if str == "^" then -- player who ran the command
 		if user:IsValid() then -- user can be NULL if executed from the server console
 			return { user }
 		end
-		return {}
 	elseif str == "*" then -- wildcard (all players)
-		return player.GetAll()
+		return plys
 	else
 		local pre = string.sub(str, 1, 1)
 		local val = string.sub(str, 2)
@@ -86,7 +107,7 @@ local function parsePlayerArg(user, str)
 			val = parseArgs(val)[1]
 			if val then -- get by player name
 				val = string.lower(val)
-				for _, v in ipairs(player.GetAll()) do
+				for _, v in ipairs(plys) do
 					if val == string.lower(v:GetName()) then
 						return { v }
 					end
@@ -97,7 +118,6 @@ local function parsePlayerArg(user, str)
 					return { ent }
 				end
 			end
-			return {}
 		elseif pre == "$" then -- player by steamid
 			val = parseArgs(val)[1]
 			if BSU.IsValidSteamID(val) then
@@ -105,19 +125,17 @@ local function parsePlayerArg(user, str)
 				if ply ~= false and ply:IsValid() then
 					return { ply }
 				end
-				return {}
 			end
 		elseif pre == "#" then -- players by team name
 			val = parseArgs(val)[1]
 
-			local plys = {}
+			local found = {}
 			for _, v in ipairs(player.GetAll()) do
-				if val == team.GetName(v:Team()) then
-					table.insert(plys, v)
+				if val == BSU.GetPlayerData(v).groupid then
+					table.insert(found, v)
 				end
 			end
-
-			return plys
+			return found
 		elseif pre == "!" then -- opposite of next prefix
 			local result = parsePlayerArg(user, val)
 
@@ -128,32 +146,17 @@ local function parsePlayerArg(user, str)
 			end
 
 			-- get all players not in the lookup table
-			local plys = {}
+			local found = {}
 			for _, v in ipairs(player.GetAll()) do
 				if not list[v] then
-					table.insert(plys, v)
+					table.insert(found, v)
 				end
 			end
-
-			return plys
+			return found
 		end
 	end
 
-	-- check if the argument matches player names
-	local nameArg, plys = string.lower(parseArgs(str)[1]), {}
-
-	for _, v in ipairs(player.GetAll()) do
-		local name = string.lower(v:GetName())
-		if nameArg == name then -- found exact name
-			return { v }
-		elseif #nameArg >= 3 then -- must be a minimum of 3 characters for partial search
-			if string.find(name, nameArg, 1, true) then
-				table.insert(plys, v)
-			end
-		end
-	end
-
-	return plys
+	return {}
 end
 
 -- holds command objects
@@ -470,11 +473,11 @@ if SERVER then
 					totalPlys = totalPlys + 1
 				end
 			end
-			if totalPlys == #player.GetAll() then
+			if totalPlys > 1 and totalPlys == #player.GetAll() then
 				table.Add(vars, { BSU.CLR_EVERYONE, "Everyone" })
 			else
 				for k, v in ipairs(arg) do -- expect table arg to be sequential
-					if not istable(v) then continue end -- ignore tables in table arg (can cause weird formatting or infinite recursion)
+					if istable(v) then continue end -- ignore tables in table arg (can cause weird formatting or infinite recursion)
 					if k > 1 then
 						table.Add(vars, { BSU.CLR_TEXT, k < #arg and ", " or (#arg > 2 and ", and " or " and ") })
 					end
