@@ -8,7 +8,7 @@ hook.Add("PlayerDisconnected", "BSU_CreateDisconnectCleanupTimer", function(ply)
 			physObj:EnableMotion(false)
 		end
 	end
-	
+
 	if BSU.GetBanStatus(ply:SteamID()) then
 		for _, ent in ipairs(BSU.GetOwnerEntities(id)) do
 			ent:Remove()
