@@ -82,6 +82,7 @@ end
 function BSU.BanPlayer(ply, reason, duration, admin)
 	if ply:IsBot() then return error("Unable to ban a bot, try kicking") end
 	BSU.BanSteamID(ply:SteamID64(), reason, duration, IsValid(admin) and admin:SteamID64() or nil)
+	hook.Run("BSU_PlayerBanned", ply, reason, duration, admin)
 end
 
 function BSU.SuperBanPlayer(ply, reason, duration, admin)
@@ -103,8 +104,9 @@ function BSU.IPBanPlayer(ply, reason, duration, admin)
 end
 
 function BSU.KickPlayer(ply, reason, admin)
-	game.KickID(ply:UserID(), "(Kicked) " .. (reason or "No reason given"))
 	BSU.RegisterBan(ply:SteamID64(), reason, nil, IsValid(admin) and admin:SteamID64() or nil) -- log it
+	game.KickID(ply:UserID(), "(Kicked) " .. (reason or "No reason given"))
+	hook.Run("BSU_PlayerKicked", ply, reason, admin)
 end
 
 -- formats a ban message that shows ban reason, duration, time left and the date of the ban
