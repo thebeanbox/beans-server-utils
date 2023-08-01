@@ -9,7 +9,7 @@ hook.Add("PlayerDisconnected", "BSU_CreateDisconnectCleanupTimer", function(ply)
 		end
 	end
 
-	timer.Create("BSU_RemoveDisconnected_"..id, GetConVar("bsu_cleanup_time"):GetFloat(), 1, function()
+	timer.Create("BSU_RemoveDisconnected_" .. id, GetConVar("bsu_cleanup_time"):GetFloat(), 1, function()
 		for _, ent in ipairs(BSU.GetOwnerEntities(id)) do
 			ent:Remove()
 		end
@@ -20,8 +20,8 @@ hook.Add("PlayerInitialSpawn", "BSU_RegainPropOwnership", function(ply)
 	local id = BSU.GetOwnerIDBySteamID(ply:SteamID()) -- check if props with an owner of the same steamid exists
 	if id then
 		BSU.TransferOwnerData(id, ply)
-		timer.Remove("BSU_RemoveDisconnected_"..id)
-	end -- regain player's ownership over props after rejoining	
+		timer.Remove("BSU_RemoveDisconnected_" .. id)
+	end -- regain player's ownership over props after rejoining
 end)
 
 hook.Add("BSU_ClientReady", "BSU_InitPropProtection", function(ply)
