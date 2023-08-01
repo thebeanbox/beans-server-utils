@@ -301,6 +301,8 @@ BSU.SetupCommand("freeze", function(cmd)
 		for _, v in ipairs(targets) do
 			if self:CheckExclusive(v, true) then
 				v:AddFlags(FL_FROZEN + FL_GODMODE)
+				v:SetMoveType(MOVETYPE_NONE)
+				v:SetVelocity(-v:GetVelocity())
 				v.bsu_frozen = true
 				self:SetExclusive(v, "frozen")
 				table.insert(frozen, v)
@@ -336,6 +338,7 @@ BSU.SetupCommand("unfreeze", function(cmd)
 			if v:IsFlagSet(FL_FROZEN) then
 				v:RemoveFlags(FL_FROZEN)
 				if not v.bsu_godded then v:RemoveFlags(FL_GODMODE) end
+				v:SetMoveType(MOVETYPE_WALK)
 				v.bsu_frozen = nil
 				self:ClearExclusive(v)
 				table.insert(unfrozen, v)
@@ -343,7 +346,7 @@ BSU.SetupCommand("unfreeze", function(cmd)
 		end
 
 		if next(unfrozen) ~= nil then
-			self:BroadcastActionMsg("%caller% froze %unfrozen%", { unfrozen = unfrozen })
+			self:BroadcastActionMsg("%caller% unfroze %unfrozen%", { unfrozen = unfrozen })
 		end
 	end)
 end)
