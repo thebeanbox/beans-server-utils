@@ -118,10 +118,13 @@ local function parsePlayerArg(user, str)
 					return { ent }
 				end
 			end
-		elseif pre == "$" then -- player by steamid
+		elseif pre == "$" then -- player by userid or steamid
 			val = parseArgs(val)[1]
-			if BSU.IsValidSteamID(val) then
-				local ply = player.GetBySteamID64(BSU.ID64(val))
+			local ply = Player(tonumber(val) or -1)
+			if ply:IsValid() then
+				return { ply }
+			elseif BSU.IsValidSteamID(val) then
+				ply = player.GetBySteamID64(BSU.ID64(val))
 				if ply ~= false and ply:IsValid() then
 					return { ply }
 				end
