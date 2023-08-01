@@ -28,7 +28,7 @@ hook.Add("PlayerInitialSpawn", "BSU_RegainPropOwnership", function(ply)
 	if id then
 		BSU.TransferOwnerData(id, ply)
 		timer.Remove("BSU_RemoveDisconnected_" .. id)
-	end -- regain player's ownership over props after rejoining	
+	end -- regain player's ownership over props after rejoining
 end)
 
 hook.Add("BSU_ClientReady", "BSU_InitPropProtection", function(ply)
