@@ -464,8 +464,17 @@ if SERVER then
 	local function formatArg(ply, target, arg)
 		local vars = {}
 		if istable(arg) then
-			for k, v in ipairs(arg) do -- expect table arg to be sequential
-				if not istable(v) then -- ignore tables in table arg (can cause weird formatting or infinite recursion)
+			local totalPlys = 0
+			for _, v in ipairs(arg) do
+				if isentity(v) and v:IsPlayer() then
+					totalPlys = totalPlys + 1
+				end
+			end
+			if totalPlys == #player.GetAll() then
+				table.Add(vars, { BSU.CLR_EVERYONE, "Everyone" })
+			else
+				for k, v in ipairs(arg) do -- expect table arg to be sequential
+					if not istable(v) then continue end -- ignore tables in table arg (can cause weird formatting or infinite recursion)
 					if k > 1 then
 						table.Add(vars, { BSU.CLR_TEXT, k < #arg and ", " or (#arg > 2 and ", and " or " and ") })
 					end
