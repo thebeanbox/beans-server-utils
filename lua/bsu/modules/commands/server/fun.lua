@@ -50,7 +50,11 @@ local function doSpawn(ply)
 	if data then
 		ply:SetHealth(data.health)
 		ply:SetArmor(data.armor)
-		timer.Simple(0, function() if ply:IsValid() then setWeapons(ply, data.weps, data.activewep) end end)
+		timer.Simple(0, function()
+			if ply:IsValid() and not IsValid(ply.bsu_ragdoll) then
+				setWeapons(ply, data.weps, data.activewep)
+			end
+		end)
 		ply.bsu_spawnInfo = nil
 	end
 end
