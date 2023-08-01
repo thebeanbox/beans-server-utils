@@ -1,26 +1,41 @@
 -- base/server/pp.lua
 
-hook.Add("PlayerDisconnected", "BSU_CreateDisconnectCleanupTimer", function(ply)
-	local id = ply:UserID()
+local function cleanupProps(id)
 	for _, ent in ipairs(BSU.GetOwnerEntities(id)) do
-		local physObj = ent:GetPhysicsObject()
-		if IsValid(physObj) then
-			physObj:EnableMotion(false)
+		ent:Remove()
+	end
+end
+
+hook.Add("BSU_PlayerBanned", "BSU_CleanupBannedPlayerProps", function(ply)
+	cleanupProps(ply:UserID())
+end)
+
+hook.Add("BSU_PlayerKicked", "BSU_CleanupKickedPlayerProps", function(ply)
+	cleanupProps(ply:UserID())
+end)
+
+hook.Add("PlayerDisconnected", "BSU_HandleDisconnectedPlayerProps", function(ply)
+	local id = ply:UserID()
+
+	-- freeze props
+	for _, ent in ipairs(BSU.GetOwnerEntities(id)) do
+		for i = 0, ent:GetPhysicsObjectCount() - 1 do
+			local physobj = ent:GetPhysicsObjectNum(i)
+			if IsValid(physobj) then
+				physobj:EnableMotion(false)
+			end
 		end
 	end
 
-	if BSU.GetBanStatus(ply:SteamID()) then
-		for _, ent in ipairs(BSU.GetOwnerEntities(id)) do
-			ent:Remove()
-		end
-		return
-	end
-
+	-- cleanup after some time
 	timer.Create("BSU_RemoveDisconnected_" .. id, GetConVar("bsu_cleanup_time"):GetFloat(), 1, function()
-		for _, ent in ipairs(BSU.GetOwnerEntities(id)) do
-			ent:Remove()
-		end
+		cleanupProps(id)
 	end)
+
+	-- clear permissions granted to disconnected players
+	if not ply:IsBot() then
+		BSU.ClearPermissionTo(ply:SteamID())
+	end
 end)
 
 hook.Add("PlayerInitialSpawn", "BSU_RegainPropOwnership", function(ply)
@@ -190,11 +205,3 @@ function undo.Finish(...)
 	currentUndo = nil
 	return BSU._oldUndoFinish(...)
 end
-
--- clear permissions granted to disconnected players
-gameevent.Listen("player_disconnect")
-hook.Add("player_disconnect", "BSU_ClearPermissionTo", function(data)
-	if data.bot == 0 then -- can't pass "BOT" steamid
-		BSU.ClearPermissionTo(data.networkid)
-	end
-end)
