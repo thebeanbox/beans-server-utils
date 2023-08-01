@@ -80,15 +80,23 @@ end)
 local grabbed = {}
 
 -- fix glitchy player movement on physgun pickup
-hook.Add("OnPhysgunPickup", "BSU_PlayerPhysgunPickup", function(_, ent)
+hook.Add("OnPhysgunPickup", "BSU_PlayerPhysgunPickup", function(ply, ent)
 	if not ent:IsPlayer() then return end
+
+	-- player unfreezing
+	if BSU.PlayerHasCommandAccess(ply, "unfreeze") then
+		BSU.SafeRunCommand(ply, "unfreeze", "$" .. ent:UserID())
+	end
+
 	ent:SetMoveType(MOVETYPE_NONE)
+	ent:SetVelocity(-ent:GetVelocity())
 	grabbed[ent] = true
 end)
 
 -- allow throwing players across the map on physgun drop
-hook.Add("PhysgunDrop", "BSU_PlayerPhysgunDrop", function(_, ent)
+hook.Add("PhysgunDrop", "BSU_PlayerPhysgunDrop", function(ply, ent)
 	if not ent:IsPlayer() then return end
+
 	ent:SetMoveType(MOVETYPE_WALK)
 	grabbed[ent] = nil
 	if ent.bsu_grabbedVel then
@@ -98,6 +106,11 @@ hook.Add("PhysgunDrop", "BSU_PlayerPhysgunDrop", function(_, ent)
 	ent.bsu_grabbedOldPos = nil
 	ent.bsu_grabbedPos = nil
 	ent.bsu_grabbedVel = nil
+
+	-- player freezing
+	if ply:KeyDown(IN_ATTACK2) and BSU.PlayerHasCommandAccess(ply, "freeze") then
+		BSU.SafeRunCommand(ply, "freeze", "$" .. ent:UserID())
+	end
 end)
 
 -- calculate velocity of grabbed players
