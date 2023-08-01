@@ -22,7 +22,8 @@ end
 -- returns data of the latest ban if they are still banned, otherwise nothing if they aren't currently banned (can take a steam id or ip address)
 function BSU.GetBanStatus(identity)
 	-- correct the argument (steam id to 64 bit) (removing port from ip address)
-	identity = BSU.IsValidSteamID(identity) and BSU.ID64(identity) or BSU.IsValidIP(identity) and BSU.Address(identity)
+	identity = BSU.IsValidSteamID(identity) and BSU.ID64(identity) or BSU.IsValidIP(identity) and BSU.Address(identity) or nil
+	if not identity then return end
 
 	local bans = {}
 	for _, v in ipairs(BSU.GetBansByValues({ identity = identity })) do -- exclude kicks since they're also logged
