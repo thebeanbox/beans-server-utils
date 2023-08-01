@@ -98,11 +98,6 @@ hook.Add("PopulateToolMenu", "BSU_AddPropProtectionMenu", addPropProtectionMenu)
 local color_bg = Color(0, 0, 0, 75)
 local hudX, hudY = 37, ScrH() - 180
 
-local showHUDWeapons = {
-	["weapon_physgun"] = true,
-	["gmod_tool"] = true,
-}
-
 local font = "BSU_PP_HUD"
 surface.CreateFont(font, {
 	font = "Verdana",
@@ -115,8 +110,7 @@ surface.CreateFont(font, {
 local function drawPropProtectionHUD()
 	local ply = LocalPlayer()
 
-	local wep = ply:GetActiveWeapon()
-	if not wep:IsValid() or not showHUDWeapons[wep:GetClass()] then return end
+	if not GetConVar("bsu_show_propinfo"):GetBool() then return end
 
 	local trace = util.TraceLine(util.GetPlayerTrace(ply))
 	if trace.HitNonWorld then
