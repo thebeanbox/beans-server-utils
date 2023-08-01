@@ -114,12 +114,7 @@ BSU.SetupCommand("return", function(cmd)
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetPlayersArg(1)
-		if targets then
-			targets = self:FilterTargets(targets, nil, true)
-		else
-			targets = { self:GetCaller(true) }
-		end
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
 
 		local returned = {}
 		for _, v in ipairs(targets) do

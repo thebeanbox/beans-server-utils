@@ -162,12 +162,7 @@ BSU.SetupCommand("god", function(cmd)
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetPlayersArg(1)
-		if targets then
-			targets = self:FilterTargets(targets, nil, true)
-		else
-			targets = { self:GetCaller(true) }
-		end
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
 
 		local godded = {}
 		for _, v in ipairs(targets) do
@@ -189,19 +184,14 @@ BSU.AliasCommand("build", "god")
 	Name: ungod
 	Desc: Disable godmode on players
 	Arguments:
-		1. Targets (players)
+		1. Targets (players, default: self)
 ]]
 BSU.SetupCommand("ungod", function(cmd)
 	cmd:SetDescription("Enables godmode on a player")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetPlayersArg(1)
-		if targets then
-			targets = self:FilterTargets(targets, nil, true)
-		else
-			targets = { self:GetCaller(true) }
-		end
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
 
 		local ungodded = {}
 		for _, v in ipairs(targets) do
@@ -230,12 +220,7 @@ BSU.SetupCommand("ragdoll", function(cmd)
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetPlayersArg(1)
-		if targets then
-			targets = self:FilterTargets(targets, nil, true)
-		else
-			targets = { self:GetCaller(true) }
-		end
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
 
 		local ragdolled = {}
 		for _, v in ipairs(targets) do
@@ -262,12 +247,7 @@ BSU.SetupCommand("unragdoll", function(cmd)
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetPlayersArg(1)
-		if targets then
-			targets = self:FilterTargets(targets, nil, true)
-		else
-			targets = { self:GetCaller(true) }
-		end
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
 
 		local unragdolled = {}
 		for _, v in ipairs(targets) do
@@ -294,12 +274,7 @@ BSU.SetupCommand("freeze", function(cmd)
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetPlayersArg(1)
-		if targets then
-			targets = self:FilterTargets(targets, nil, true)
-		else
-			targets = { self:GetCaller(true) }
-		end
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
 
 		local frozen = {}
 		for _, v in ipairs(targets) do
@@ -330,12 +305,7 @@ BSU.SetupCommand("unfreeze", function(cmd)
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetPlayersArg(1)
-		if targets then
-			targets = self:FilterTargets(targets, nil, true)
-		else
-			targets = { self:GetCaller(true) }
-		end
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
 
 		local unfrozen = {}
 		for _, v in ipairs(targets) do
@@ -366,15 +336,8 @@ BSU.SetupCommand("health", function(cmd)
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetPlayersArg(1)
-		local amount
-		if targets then
-			targets = self:FilterTargets(targets, nil, true)
-			amount = self:GetNumberArg(2, true)
-		else
-			targets = { self:GetCaller(true) }
-			amount = self:GetNumberArg(1, true)
-		end
+		local targets = self:GetRawStringArg(2) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+		local amount = self:GetRawStringArg(2) and self:GetNumberArg(2, true) or self:GetNumberArg(1, true)
 
 		amount = math.min(math.max(amount, 0), 2 ^ 31 - 1)
 
@@ -400,15 +363,8 @@ BSU.SetupCommand("armor", function(cmd)
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetPlayersArg(1)
-		local amount
-		if targets then
-			targets = self:FilterTargets(targets, nil, true)
-			amount = self:GetNumberArg(2, true)
-		else
-			targets = { self:GetCaller(true) }
-			amount = self:GetNumberArg(1, true)
-		end
+		local targets = self:GetRawStringArg(2) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+		local amount = self:GetRawStringArg(2) and self:GetNumberArg(2, true) or self:GetNumberArg(1, true)
 
 		amount = math.min(math.max(amount, 0), 2 ^ 31 - 1)
 
@@ -434,12 +390,7 @@ BSU.SetupCommand("launch", function(cmd)
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetPlayersArg(1)
-		if targets then
-			targets = self:FilterTargets(targets, nil, true)
-		else
-			targets = { self:GetCaller(true) }
-		end
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
 
 		for _, v in ipairs(targets) do
 			v:SetVelocity(Vector(0, 0, 5000))
@@ -462,12 +413,7 @@ BSU.SetupCommand("respawn", function(cmd)
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetPlayersArg(1)
-		if targets then
-			targets = self:FilterTargets(targets, nil, true)
-		else
-			targets = { self:GetCaller(true) }
-		end
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
 
 		for _, v in ipairs(targets) do
 			v:Spawn()
@@ -490,12 +436,7 @@ BSU.SetupCommand("slay", function(cmd)
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetPlayersArg(1)
-		if targets then
-			targets = self:FilterTargets(targets, nil, true)
-		else
-			targets = { self:GetCaller(true) }
-		end
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
 
 		for _, v in ipairs(targets) do
 			v:Kill()
@@ -519,12 +460,7 @@ BSU.SetupCommand("disintegrate", function(cmd)
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetPlayersArg(1)
-		if targets then
-			targets = self:FilterTargets(targets, nil, true)
-		else
-			targets = { self:GetCaller(true) }
-		end
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
 
 		local d = DamageInfo()
 		d:SetDamageType(DMG_DISSOLVE)
@@ -554,12 +490,7 @@ BSU.SetupCommand("explode", function(cmd)
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetPlayersArg(1)
-		if targets then
-			targets = self:FilterTargets(targets, nil, true)
-		else
-			targets = { self:GetCaller(true) }
-		end
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
 
 		local d = DamageInfo()
 		d:SetDamageType(DMG_BLAST)
