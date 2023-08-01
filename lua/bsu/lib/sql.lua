@@ -87,7 +87,7 @@ end
 
 -- returns every entry in a sql table where a column equals the values
 function BSU.SQLSelectByValues(tbl, values)
-	if next(values) == nil then return end
+	if next(values) == nil then return {} end
 
 	local conditions = {}
 	for k, v in pairs(values) do
