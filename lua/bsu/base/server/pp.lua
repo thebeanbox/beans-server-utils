@@ -1,8 +1,27 @@
 -- base/server/pp.lua
 
+hook.Add("PlayerDisconnected", "BSU_CreateDisconnectCleanupTimer", function(ply)
+	local id = ply:UserID()
+	for _, ent in ipairs(BSU.GetOwnerEntities(id)) do
+		local physObj = ent:GetPhysicsObject()
+		if IsValid(physObj) then
+			physObj:EnableMotion(false)
+		end
+	end
+
+	timer.Create("BSU_RemoveDisconnected_"..id, GetConVar("bsu_cleanup_time"):GetFloat(), 1, function()
+		for _, ent in ipairs(BSU.GetOwnerEntities(id)) do
+			ent:Remove()
+		end
+	end)
+end)
+
 hook.Add("PlayerInitialSpawn", "BSU_RegainPropOwnership", function(ply)
 	local id = BSU.GetOwnerIDBySteamID(ply:SteamID()) -- check if props with an owner of the same steamid exists
-	if id then BSU.TransferOwnerData(id, ply) end -- regain player's ownership over props after rejoining
+	if id then
+		BSU.TransferOwnerData(id, ply)
+		timer.Remove("BSU_RemoveDisconnected_"..id)
+	end -- regain player's ownership over props after rejoining	
 end)
 
 hook.Add("BSU_ClientReady", "BSU_InitPropProtection", function(ply)
