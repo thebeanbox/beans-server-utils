@@ -2,7 +2,7 @@
 
 local function networkPData(ply)
 	for k, v in pairs(BSU.GetAllPData(ply), true) do -- get only networked data
-		ply:SetNWString("bsu_" .. k, v)
+		ply:SetNW2String("bsu_" .. k, v)
 	end
 end
 
