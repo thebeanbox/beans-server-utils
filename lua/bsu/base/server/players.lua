@@ -33,7 +33,6 @@ hook.Add("OnGamemodeLoaded", "BSU_InitializePlayer", function()
 		ply:SetUserGroup(groupData.usergroup or "user")
 
 		ply.bsu_ready = true
-		hook.Run("BSU_PlayerReady", ply)
 	end
 end)
 
@@ -69,7 +68,10 @@ end
 net.Receive("bsu_client_info", updateClientInfo)
 
 -- send request for some client data
-hook.Add("BSU_PlayerReady", "BSU_RequestClientInfo", BSU.RequestClientInfo)
+gameevent.Listen("player_activate")
+hook.Add("player_activate", "BSU_RequestClientInfo", function(data)
+	BSU.RequestClientInfo(Player(data.userid))
+end)
 
 -- allow players picking up other players
 hook.Add("PhysgunPickup", "BSU_AllowPlayerPhysgunPickup", function(ply, ent)
