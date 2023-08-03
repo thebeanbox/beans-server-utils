@@ -35,6 +35,9 @@ local function chatCommand(ply, text)
 		BSU.SendRunCommand(ply, name, argStr, silent)
 	end
 
+	local str = hook.Run("BSU_ChatCommand", ply, name, argStr)
+	if str then return str end
+
 	if silent then return "" end
 end
 
