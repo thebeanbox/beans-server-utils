@@ -130,3 +130,60 @@ BSU.SetupCommand("return", function(cmd)
 		end
 	end)
 end)
+
+--[[
+	Name: nolag 
+	Desc: Freeze all entities. (Usually in the event of extreme lag)
+	Arguments:
+]]
+BSU.SetupCommand("nolag", function(cmd)
+	cmd:SetDescription("Freeze all entities. (Usually in the event of extreme lag)")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		for _, ent in pairs(ents.GetAll()) do
+			if ent:IsValid() then
+				local physObj = ent:GetPhysicsObject()
+				if physObj and physObj:IsValid() then
+					physObj:EnableMotion(false)
+				end
+			end
+		end
+		self:BroadcastActionMsg("%caller% froze all props", {})
+	end)
+end)
+
+--[[
+	Name: cleardecals
+	Desc: Clears all decals
+	Arguments:
+]]
+BSU.SetupCommand("cleardecals", function(cmd)
+	cmd:SetDescription("Clears all decals")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		for _, ply in pairs(players.GetHumans()) do
+			ply:ConCommand("r_cleardecals")
+		end
+
+		self:BroadcastActionMsg("%caller% cleared decals", {})
+	end)
+end)
+
+--[[
+	Name: removeragdolls
+	Desc: Remove all clientside ragdolls
+	Arguments:
+]]
+BSU.SetupCommand("removeragdolls", function(cmd)
+	cmd:SetDescription("Remove all clientside ragdolls")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		BSU.ClientRPC(nil, "game.RemoveRagdolls")
+
+		self:BroadcastActionMsg("%caller% removed ragdolls", {})
+	end)
+end)
+
