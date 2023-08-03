@@ -172,8 +172,11 @@ function BSU.ReplaceOwner(from, to)
 	local id = BSU._entowners[from:EntIndex()]
 	if not id then return end -- is ownerless
 
-	BSU.SetOwnerless(from)
-	BSU.SetOwner(to, id)
+	clearEntityOwner(from:EntIndex())
+	from:RemoveCallOnRemove("BSU_SetOwnerless")
+
+	setEntityOwner(to:EntIndex(), id)
+	to:CallOnRemove("BSU_SetOwnerless", BSU.SetOwnerless)
 end
 
 function BSU.TransferOwnerData(id, owner)
