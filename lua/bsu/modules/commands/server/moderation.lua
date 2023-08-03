@@ -492,3 +492,65 @@ BSU.SetupCommand("cleargrouppriv", function(cmd)
 		})
 	end)
 end)
+
+--[[
+	Name: mute
+	Desc: Prevents a player from speaking in text chat
+	Arguments:
+		1. Name (string)
+]]
+BSU.SetupCommand("mute", function(cmd)
+	cmd:SetDescription("Prevents a player from speaking in text chat")
+	cmd:SetCategory("moderation")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+
+		local muted = {}
+		for _, v in ipairs(targets) do
+			if not v.bsu_muted then
+				v.bsu_muted = true
+				table.insert(muted, v)
+			end
+		end
+
+		if next(muted) ~= nil then
+			self:BroadcastActionMsg("%caller% muted %muted%", {
+				muted = muted
+			})
+		end
+	end)
+end)
+
+--[[
+	Name: unmute
+	Desc: Unmutes a player from text chat, allowing them to speak again
+	Arguments:
+		1. Name (string)
+]]
+BSU.SetupCommand("unmute", function(cmd)
+	cmd:SetDescription("Prevents a player from speaking in text chat")
+	cmd:SetCategory("moderation")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+
+		local unmuted = {}
+		for _, v in ipairs(targets) do
+			if v.bsu_muted then
+				v.bsu_muted = nil
+				table.insert(unmuted, v)
+			end
+		end
+
+		if next(unmuted) ~= nil then
+			self:BroadcastActionMsg("%caller% unmuted %unmuted%", {
+				unmuted = unmuted
+			})
+		end
+	end)
+end)
+
+hook.Add("BSU_ChatCommand", "BSU_PlayerMute", function(ply)
+	if ply.bsu_muted then return "" end
+end)
