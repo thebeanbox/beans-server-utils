@@ -21,7 +21,7 @@ local function chatCommand(ply, text)
 	local prefix, prefixSilent = BSU.CMD_PREFIX, BSU.CMD_PREFIX_SILENT
 
 	if string.sub(text, 1, #prefix) ~= prefix then
-		if string.sub(text, 1, #prefixSilent) ~= prefixSilent then return end
+		if string.sub(text, 1, #prefixSilent) ~= prefixSilent then return hook.Run("BSU_ChatCommand", ply) end
 		silent = true
 	end
 
@@ -35,7 +35,7 @@ local function chatCommand(ply, text)
 		BSU.SendRunCommand(ply, name, argStr, silent)
 	end
 
-	local str = hook.Run("BSU_ChatCommand", ply, name, argStr)
+	local str = hook.Run("BSU_ChatCommand", ply, name, argStr, silent)
 	if str then return str end
 
 	if silent then return "" end
