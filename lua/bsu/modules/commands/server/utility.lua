@@ -163,7 +163,7 @@ BSU.SetupCommand("cleardecals", function(cmd)
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		for _, ply in pairs(players.GetHumans()) do
+		for _, ply in pairs(player.GetHumans()) do
 			ply:ConCommand("r_cleardecals")
 		end
 
