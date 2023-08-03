@@ -529,7 +529,7 @@ end)
 		1. Name (string)
 ]]
 BSU.SetupCommand("unmute", function(cmd)
-	cmd:SetDescription("Prevents a player from speaking in text chat")
+	cmd:SetDescription("Unmutes a player from text chat, allowing them to speak again")
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
