@@ -20,9 +20,9 @@ hook.Add("PlayerDisconnected", "BSU_HandleDisconnectedPlayerProps", function(ply
 	-- freeze props
 	for _, ent in ipairs(BSU.GetOwnerEntities(id)) do
 		for i = 0, ent:GetPhysicsObjectCount() - 1 do
-			local physobj = ent:GetPhysicsObjectNum(i)
-			if IsValid(physobj) then
-				physobj:EnableMotion(false)
+			local physObj = ent:GetPhysicsObjectNum(i)
+			if IsValid(physObj) then
+				physObj:EnableMotion(false)
 			end
 		end
 	end

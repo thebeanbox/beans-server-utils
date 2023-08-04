@@ -380,7 +380,7 @@ end)
 BSU.AliasCommand("suit", "armor")
 
 --[[
-	Name: launch 
+	Name: launch
 	Desc: Launch players
 	Arguments:
 		1. Targets (players, default: self)
@@ -403,7 +403,7 @@ BSU.SetupCommand("launch", function(cmd)
 end)
 
 --[[
-	Name: respawn 
+	Name: respawn
 	Desc: Respawn players
 	Arguments:
 		1. Targets (players, default: self)
@@ -426,7 +426,7 @@ BSU.SetupCommand("respawn", function(cmd)
 end)
 
 --[[
-	Name: slay 
+	Name: slay
 	Desc: Slay players
 	Arguments:
 		1. Targets (players, default: self)
@@ -450,7 +450,7 @@ end)
 BSU.AliasCommand("kill", "slay")
 
 --[[
-	Name: disintegrate 
+	Name: disintegrate
 	Desc: Disintegrate players
 	Arguments:
 		1. Targets (players, default: self)
@@ -462,14 +462,14 @@ BSU.SetupCommand("disintegrate", function(cmd)
 	cmd:SetFunction(function(self)
 		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
 
-		local d = DamageInfo()
-		d:SetDamageType(DMG_DISSOLVE)
+		local dmgInfo = DamageInfo()
+		dmgInfo:SetDamageType(DMG_DISSOLVE)
 
 		for _, v in ipairs(targets) do
-			d:SetDamage(v:Health())
-			d:SetAttacker(v)
+			dmgInfo:SetDamage(v:Health())
+			dmgInfo:SetAttacker(v)
 			v:GodDisable()
-			v:TakeDamageInfo(d)
+			v:TakeDamageInfo(dmgInfo)
 		end
 
 		if next(targets) ~= nil then
@@ -480,7 +480,7 @@ end)
 BSU.AliasCommand("smite", "disintegrate")
 
 --[[
-	Name: explode 
+	Name: explode
 	Desc: Explode players
 	Arguments:
 		1. Targets (players, default: self)
@@ -492,9 +492,9 @@ BSU.SetupCommand("explode", function(cmd)
 	cmd:SetFunction(function(self)
 		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
 
-		local d = DamageInfo()
-		d:SetDamageType(DMG_BLAST)
-		d:SetDamage(1)
+		local dmgInfo = DamageInfo()
+		dmgInfo:SetDamageType(DMG_BLAST)
+		dmgInfo:SetDamage(1)
 
 		for _, v in ipairs(targets) do
 			local explosion = ents.Create("env_explosion")
@@ -508,8 +508,8 @@ BSU.SetupCommand("explode", function(cmd)
 			v:SetHealth(0)
 			v:SetArmor(0)
 
-			d:SetAttacker(v)
-			v:TakeDamageInfo(d)
+			dmgInfo:SetAttacker(v)
+			v:TakeDamageInfo(dmgInfo)
 		end
 
 		if next(targets) ~= nil then
@@ -520,17 +520,17 @@ end)
 
 --[[
 	Name: enter
-	Desc: Forces a player into the vehicle you're looking at
+	Desc: Force a player into the vehicle you're looking at
 	Arguments:
 		1. Target (player, default: self)
 ]]
 BSU.SetupCommand("enter", function(cmd)
-	cmd:SetDescription("Forces a player into the vehicle you're looking at")
+	cmd:SetDescription("Force a player into the vehicle you're looking at")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
 		local target = self:GetRawStringArg(1) and self:GetPlayerArg(1, true) or self:GetCaller(true)
-		
+
 		if not target:InVehicle() then
 			local vehicle = self:GetCaller(true):GetEyeTrace().Entity
 			if not vehicle:IsVehicle() then return end
@@ -543,31 +543,39 @@ end)
 
 --[[
 	Name: eject
-	Desc: Ejects a player from the vehicle they're in
+	Desc: Eject players from the vehicle they're in
 	Arguments:
 		1. Targets (players, default: self)
 ]]
 BSU.SetupCommand("eject", function(cmd)
-	cmd:SetDescription("Ejects a player from the vehicle they're in")
+	cmd:SetDescription("Eject players from the vehicle they're in")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
 		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
 
+		local ejected = {}
 		for _, v in ipairs(targets) do
 			if v:InVehicle() then
 				v:ExitVehicle()
+				table.insert(ejected, v)
 			end
 		end
 
-		if next(targets) ~= nil then
-			self:BroadcastActionMsg("%caller% ejected %targets%", { targets = targets })
+		if next(ejected) ~= nil then
+			self:BroadcastActionMsg("%caller% ejected %ejected%", { ejected = ejected })
 		end
 	end)
 end)
 
+--[[
+	Name: notification
+	Desc: Send a notification to players
+	Arguments:
+		1. Targets (players, default: self)
+]]
 BSU.SetupCommand("notification", function(cmd)
-	cmd:SetDescription("Send a notification to a player")
+	cmd:SetDescription("Send a notification to players")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
@@ -580,61 +588,175 @@ BSU.SetupCommand("notification", function(cmd)
 end)
 BSU.AliasCommand("notify", "notification")
 
+--[[
+	Name: earthquake
+	Desc: Shake the ground for players
+	Arguments:
+		1. Targets (players, default: self)
+]]
 BSU.SetupCommand("earthquake", function(cmd)
-	cmd:SetDescription("Send a earthquake to a player")
+	cmd:SetDescription("Shake the ground for players")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
 		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
-		local duration = self:GetNumberArg(2) or 10
+		local duration = math.min(math.max(self:GetNumberArg(2) or 10, 1), 10)
 
 		BSU.ClientRPC(targets, "util.ScreenShake", Vector(), 100, 100, duration, 0)
+
 		self:BroadcastActionMsg("%caller% shook the ground for %targets% for %duration% seconds.", { targets = targets, duration = duration })
 	end)
 end)
 BSU.AliasCommand("shake", "earthquake")
 
+local function collideOnlyPlayers(_, ent1, ent2)
+	if not ent1:IsPlayer() and not ent2:IsPlayer() then return false end
+end
+
 --[[
-    Name: trainwreck 
-    Desc: Trainwreck players
-    Arguments:
-        1. Targets (players, default: self)
+	Name: bathe
+	Desc: Throw a bathtub at players
+	Arguments:
+		1. Targets (players, default: self)
 ]]
-BSU.SetupCommand("trainwreck", function(cmd)
-    	cmd:SetDescription("Trainwreck players")
-    	cmd:SetCategory("fun")
-    	cmd:SetAccess(BSU.CMD_ADMIN)
-   	cmd:SetFunction(function(self)
-        local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
-        
-        for _,v in ipairs(targets) do
-        	if v.bsu_godded then
-                if not v.bsu_frozen then v:RemoveFlags(FL_GODMODE) end
-                	v.bsu_godded = nil
-            	end
-            	if v:InVehicle() then v:ExitVehicle() end
-            	if v:GetMoveType() == 8 then
-                	v:SetMoveType(2)
-            	end
-            
-            	local train = ents.Create("prop_physics")
-            	train:SetModel("models/props_trainstation/train001.mdl")
-            
-            	train:Spawn()
-            	train:GetPhysicsObject():SetMass(50000)
-            	train:PhysicsInit(SOLID_VPHYSICS)
-            	BSU.SetOwnerWorld(train)
-            
-            	train:SetAngles(Angle(0,90,0))
-            	train:SetPos(v:GetPos()+Vector(750,0,150))
-            	train:GetPhysicsObject():SetVelocity(Vector(-100000, 0, 0))
-            	train:EmitSound("ambient/alarms/train_horn2.wav", 130, 100, 1, 0, 0)
-            
-            	timer.Simple(3, function() train:Remove() end)
-        end
-	if next(targets) ~= nil then
-        	self:BroadcastActionMsg("%caller% trainwrecked %targets%", { targets = targets })
-	end
-    end)
+BSU.SetupCommand("bathe", function(cmd)
+	cmd:SetDescription("Throw a bathtub at players")
+	cmd:SetCategory("fun")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+
+		for _, v in ipairs(targets) do
+			if not v.bsu_frozen then v:RemoveFlags(FL_GODMODE) end
+			if v:InVehicle() then v:ExitVehicle() end
+			if v:GetMoveType() == MOVETYPE_NOCLIP then v:SetMoveType(MOVETYPE_WALK) end
+
+			local bath = ents.Create("prop_physics")
+			BSU.SetOwnerWorld(bath)
+			bath:SetModel("models/props_interiors/BathTub01a.mdl")
+			bath:SetAngles(Angle(0, 180, 0))
+			bath:SetPos(v:GetPos() + Vector(750, 0, 50))
+
+			hook.Add("ShouldCollide", bath, collideOnlyPlayers)
+			bath:SetCustomCollisionCheck(true)
+			bath:Spawn()
+
+			bath:GetPhysicsObject():EnableGravity(false)
+			bath:GetPhysicsObject():SetMass(50000)
+			bath:GetPhysicsObject():SetVelocity(Vector(-100000, 0, 0))
+			bath:EmitSound("Physics.WaterSplash", 130, 100, 1, 0, 0)
+
+			timer.Simple(3, function() if bath:IsValid() then bath:Remove() end end)
+		end
+
+		self:BroadcastActionMsg("%caller% bathed %targets%", { targets = targets })
+	end)
 end)
 
+--[[
+	Name: trainwreck
+	Desc: Throw a train at players
+	Arguments:
+		1. Targets (players, default: self)
+]]
+BSU.SetupCommand("trainwreck", function(cmd)
+	cmd:SetDescription("Throw a train at players")
+	cmd:SetCategory("fun")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+
+		for _, v in ipairs(targets) do
+			if not v.bsu_frozen then v:RemoveFlags(FL_GODMODE) end
+			if v:InVehicle() then v:ExitVehicle() end
+			if v:GetMoveType() == MOVETYPE_NOCLIP then v:SetMoveType(MOVETYPE_WALK) end
+
+			local train = ents.Create("prop_physics")
+			BSU.SetOwnerWorld(train)
+			train:SetModel("models/props_trainstation/train001.mdl")
+			train:SetAngles(Angle(0, 90, 0))
+			train:SetPos(v:GetPos() + Vector(750, 0, 150))
+
+			hook.Add("ShouldCollide", train, collideOnlyPlayers)
+			train:SetCustomCollisionCheck(true)
+			train:Spawn()
+
+			train:GetPhysicsObject():EnableGravity(false)
+			train:GetPhysicsObject():SetMass(50000)
+			train:GetPhysicsObject():SetVelocity(Vector(-100000, 0, 0))
+			train:EmitSound("ambient/alarms/train_horn2.wav", 130, 100, 1, 0, 0)
+
+			timer.Simple(3, function() if train:IsValid() then train:Remove() end end)
+		end
+
+		self:BroadcastActionMsg("%caller% trainwrecked %targets%", { targets = targets })
+	end)
+end)
+
+--[[
+	Name: gimp
+	Desc: Gimps a player in text chat, making them say bizarre things
+	Arguments:
+		1. Targets (players, default: self)
+]]
+BSU.SetupCommand("gimp", function(cmd)
+	cmd:SetDescription("Gimps a player in text chat, making them say bizarre things")
+	cmd:SetCategory("fun")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+
+		local gimped = {}
+		for _, v in ipairs(targets) do
+			if not v.bsu_muted and not v.bsu_gimped then
+				v.bsu_gimped = true
+				table.insert(gimped, v)
+			end
+		end
+
+		if next(gimped) ~= nil then
+			self:BroadcastActionMsg("%caller% gimped %gimped%", {
+				gimped = gimped
+			})
+		end
+	end)
+end)
+
+--[[
+	Name: ungimp
+	Desc: Ungimps a player
+	Arguments:
+		1. Targets (players, default: self)
+]]
+BSU.SetupCommand("ungimp", function(cmd)
+	cmd:SetDescription("Ungimps a player")
+	cmd:SetCategory("fun")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+
+		local ungimped = {}
+		for _, v in ipairs(targets) do
+			if v.bsu_gimped then
+				v.bsu_gimped = nil
+				table.insert(ungimped, v)
+			end
+		end
+
+		if next(ungimped) ~= nil then
+			self:BroadcastActionMsg("%caller% ungimped %ungimped%", {
+				ungimped = ungimped
+			})
+		end
+	end)
+end)
+
+local gimpLines = {
+	"guys",
+	"can you hear me",
+	"hello"
+}
+
+hook.Add("BSU_ChatCommand", "BSU_PlayerGimp", function(ply)
+	if ply.bsu_gimped and not ply.bsu_muted then return gimpLines[math.random(1, #gimpLines)] end
+end)

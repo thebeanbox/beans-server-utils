@@ -132,23 +132,24 @@ BSU.SetupCommand("return", function(cmd)
 end)
 
 --[[
-	Name: nolag 
-	Desc: Freeze all entities. (Usually in the event of extreme lag)
+	Name: nolag
+	Desc: Freeze all entities (usually in the event of extreme lag)
 	Arguments:
 ]]
 BSU.SetupCommand("nolag", function(cmd)
-	cmd:SetDescription("Freeze all entities. (Usually in the event of extreme lag)")
+	cmd:SetDescription("Freeze all entities (usually in the event of extreme lag)")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		for _, ent in pairs(ents.GetAll()) do
-			if ent:IsValid() then
-				local physObj = ent:GetPhysicsObject()
-				if physObj and physObj:IsValid() then
+		for _, ent in ipairs(ents.GetAll()) do
+			for i = 0, ent:GetPhysicsObjectCount() - 1 do
+				local physObj = ent:GetPhysicsObjectNum(i)
+				if IsValid(physObj) then
 					physObj:EnableMotion(false)
 				end
 			end
 		end
+
 		self:BroadcastActionMsg("%caller% froze all props")
 	end)
 end)
@@ -188,30 +189,12 @@ BSU.SetupCommand("removeragdolls", function(cmd)
 end)
 
 --[[
-	Name: cleardecals
-	Desc: Clears all decals
-	Arguments:
-]]
-BSU.SetupCommand("cleardecals", function(cmd)
-	cmd:SetDescription("Clears all decals")
-	cmd:SetCategory("utility")
-	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self)
-		for _, ply in ipairs(player.GetHumans()) do
-			ply:ConCommand("r_cleardecals")
-		end
-
-		self:BroadcastActionMsg("%caller% cleared decals")
-	end)
-end)
-
---[[
 	Name: stopsound
-	Desc: Runs stopsound on all players
+	Desc: Stop sounds globally
 	Arguments:
 ]]
 BSU.SetupCommand("stopsound", function(cmd)
-	cmd:SetDescription("Runs stopsound on all players")
+	cmd:SetDescription("Stop sounds globally")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
@@ -225,12 +208,12 @@ end)
 
 --[[
 	Name: playsound
-	Desc: Plays a sound for every player
+	Desc: Play a sound globally
 	Arguments:
 		1. Sound Path (string)
 ]]
 BSU.SetupCommand("playsound", function(cmd)
-	cmd:SetDescription("Plays a sound for every player")
+	cmd:SetDescription("Play a sound globally")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
