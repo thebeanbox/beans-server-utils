@@ -237,6 +237,6 @@ BSU.SetupCommand("playsound", function(cmd)
 		local path = self:GetStringArg(1, true)
 		BSU.ClientRPC(nil, "surface.PlaySound", path)
 
-		self:BroadcastActionMsg("%caller% cleared decals")
+		self:BroadcastActionMsg("%caller% played sound %path%", {path = path})
 	end)
 end)
