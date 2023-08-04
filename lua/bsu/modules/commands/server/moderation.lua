@@ -554,3 +554,70 @@ end)
 hook.Add("BSU_ChatCommand", "BSU_PlayerMute", function(ply)
 	if ply.bsu_muted then return "" end
 end)
+
+--[[
+	Name: gimp
+	Desc: Gimps a player in text chat, making them say bizarre things
+	Arguments:
+		1. Name (string)
+]]
+BSU.SetupCommand("gimp", function(cmd)
+	cmd:SetDescription("Gimps a player in text chat, making them say bizarre things")
+	cmd:SetCategory("moderation")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+
+		local gimped = {}
+		for _, v in ipairs(targets) do
+			if not v.bsu_muted and not v.bsu_gimped then
+				v.bsu_gimped = true
+				table.insert(gimped, v)
+			end
+		end
+
+		if next(gimped) ~= nil then
+			self:BroadcastActionMsg("%caller% gimped %gimped%", {
+				gimped = gimped
+			})
+		end
+	end)
+end)
+
+--[[
+	Name: ungimp
+	Desc: Ungimps a player in text chat
+	Arguments:
+		1. Name (string)
+]]
+BSU.SetupCommand("ungimp", function(cmd)
+	cmd:SetDescription("Ungimps a player in text chat")
+	cmd:SetCategory("moderation")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+
+		local ungimped = {}
+		for _, v in ipairs(targets) do
+			if v.bsu_gimped then
+				v.bsu_gimped = nil
+				table.insert(ungimped, v)
+			end
+		end
+
+		if next(ungimped) ~= nil then
+			self:BroadcastActionMsg("%caller% ungimped %ungimped%", {
+				ungimped = ungimped
+			})
+		end
+	end)
+end)
+
+local gimpLines = {
+	"guys",
+	"can you hear me",
+}
+
+hook.Add("BSU_ChatCommand", "BSU_PlayerGimp", function(ply)
+	if ply.bsu_gimped and not ply.bsu_muted then return gimpLines[math.random(1, #gimpLines)] end
+end)
