@@ -518,3 +518,51 @@ BSU.SetupCommand("explode", function(cmd)
 	end)
 end)
 
+--[[
+	Name: enter
+	Desc: Forces a player into the vehicle you're looking at
+	Arguments:
+		1. Target (player, default: self)
+]]
+BSU.SetupCommand("enter", function(cmd)
+	cmd:SetDescription("Forces a player into the vehicle you're looking at")
+	cmd:SetCategory("fun")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local target = self:GetRawStringArg(1) and self:GetPlayerArg(1, true) or self:GetCaller(true)
+		
+		if not target:InVehicle() then
+			local vehicle = self:GetCaller(true):GetEyeTrace().Entity
+			if not vehicle:IsVehicle() then return end
+			target:EnterVehicle(vehicle)
+		end
+
+		self:BroadcastActionMsg("%caller% forced %target% into a vehicle", { target = target })
+	end)
+end)
+
+--[[
+	Name: eject
+	Desc: Ejects a player from the vehicle they're in
+	Arguments:
+		1. Targets (players, default: self)
+]]
+BSU.SetupCommand("eject", function(cmd)
+	cmd:SetDescription("Ejects a player from the vehicle they're in")
+	cmd:SetCategory("fun")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+
+		for _, v in ipairs(targets) do
+			if v:InVehicle() then
+				v:ExitVehicle()
+			end
+		end
+
+		if next(targets) ~= nil then
+			self:BroadcastActionMsg("%caller% ejected %targets%", { targets = targets })
+		end
+	end)
+end)
+
