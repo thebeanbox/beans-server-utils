@@ -149,7 +149,7 @@ BSU.SetupCommand("nolag", function(cmd)
 				end
 			end
 		end
-		self:BroadcastActionMsg("%caller% froze all props", {})
+		self:BroadcastActionMsg("%caller% froze all props")
 	end)
 end)
 
@@ -167,7 +167,7 @@ BSU.SetupCommand("cleardecals", function(cmd)
 			ply:ConCommand("r_cleardecals")
 		end
 
-		self:BroadcastActionMsg("%caller% cleared decals", {})
+		self:BroadcastActionMsg("%caller% cleared decals")
 	end)
 end)
 
@@ -183,7 +183,60 @@ BSU.SetupCommand("removeragdolls", function(cmd)
 	cmd:SetFunction(function(self)
 		BSU.ClientRPC(nil, "game.RemoveRagdolls")
 
-		self:BroadcastActionMsg("%caller% removed ragdolls", {})
+		self:BroadcastActionMsg("%caller% removed ragdolls")
 	end)
 end)
 
+--[[
+	Name: cleardecals
+	Desc: Clears all decals
+	Arguments:
+]]
+BSU.SetupCommand("cleardecals", function(cmd)
+	cmd:SetDescription("Clears all decals")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		for _, ply in ipairs(player.GetHumans()) do
+			ply:ConCommand("r_cleardecals")
+		end
+
+		self:BroadcastActionMsg("%caller% cleared decals")
+	end)
+end)
+
+--[[
+	Name: stopsound
+	Desc: Runs stopsound on all players
+	Arguments:
+]]
+BSU.SetupCommand("stopsound", function(cmd)
+	cmd:SetDescription("Runs stopsound on all players")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		for _, ply in ipairs(player.GetHumans()) do
+			ply:ConCommand("stopsound;stopsoundscape")
+		end
+
+		self:BroadcastActionMsg("%caller% stopped all sounds")
+	end)
+end)
+
+--[[
+	Name: playsound
+	Desc: Plays a sound for every player
+	Arguments:
+		1. Sound Path (string)
+]]
+BSU.SetupCommand("playsound", function(cmd)
+	cmd:SetDescription("Plays a sound for every player")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local path = self:GetStringArg(1, true)
+		BSU.ClientRPC(nil, "surface.PlaySound", path)
+
+		self:BroadcastActionMsg("%caller% cleared decals")
+	end)
+end)
