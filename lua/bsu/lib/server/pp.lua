@@ -112,18 +112,18 @@ function BSU.RequestPermissions(plys, target)
 end
 
 net.Receive("bsu_perms", function(_, ply)
-    -- Read the total number of permission updates from the network message (7 bits).
-    local total = net.ReadUInt(7)
-    -- Iterate through each permission update.
-    for _ = 1, total do
-        -- Read the user ID of the target player from the network message (15 bits).
-        local target = Player(net.ReadUInt(15))
-        -- Read the permission value being granted from the network message (5 bits).
-        local perm = net.ReadUInt(5)
-        -- Check if the sender is not the target player, target is a valid player, and not a bot.
-        if ply ~= target and target:IsPlayer() and not target:IsBot() then
-            -- Update the permission setting for the sender and target using BSU.SetPlayerPermission.
-            BSU.SetPlayerPermission(ply, target, perm)
-        end
-    end
+	-- Read the total number of permission updates from the network message (7 bits).
+	local total = net.ReadUInt(7)
+	-- Iterate through each permission update.
+	for _ = 1, total do
+		-- Read the user ID of the target player from the network message (15 bits).
+		local target = Player(net.ReadUInt(15))
+		-- Read the permission value being granted from the network message (5 bits).
+		local perm = net.ReadUInt(5)
+		-- Check if the sender is not the target player, target is a valid player, and not a bot.
+		if ply ~= target and target:IsPlayer() and not target:IsBot() then
+			-- Update the permission setting for the sender and target using BSU.SetPlayerPermission.
+			BSU.SetPlayerPermission(ply, target, perm)
+		end
+	end
 end)
