@@ -527,6 +527,7 @@ if SERVER then
 	-- sends a message in everyone's chat and formats player entities and tables of player entities
 	function objCmdHandler.BroadcastActionMsg(self, msg, args)
 		if self.silent then msg = "(SILENT) " .. msg end
+		args = args or {}
 		for _, v in ipairs(player.GetHumans()) do
 			local val = hook.Run("BSU_ShowActionMessage", self.caller, v, self.silent) -- expects nil for default behavior, 2 for chat, 1 for console, 0 or anything else for hidden
 			if val == nil and (not self.silent or (v:IsSuperAdmin() or v == self.caller)) or val == 2 then
