@@ -566,3 +566,31 @@ BSU.SetupCommand("eject", function(cmd)
 	end)
 end)
 
+BSU.SetupCommand("notification", function(cmd)
+	cmd:SetDescription("Send a notification to a player")
+	cmd:SetCategory("fun")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+		local msg = self:GetMultiStringArg(2)
+
+		BSU.ClientRPC(targets, "notification.AddLegacy", msg, NOTIFY_GENERIC, 5)
+		BSU.ClientRPC(targets, "surface.PlaySound", "buttons/button15.wav")
+	end)
+end)
+BSU.AliasCommand("notify", "notification")
+
+BSU.SetupCommand("earthquake", function(cmd)
+	cmd:SetDescription("Send a earthquake to a player")
+	cmd:SetCategory("fun")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+		local duration = self:GetNumberArg(2) or 10
+
+		BSU.ClientRPC(targets, "util.ScreenShake", Vector(), 100, 100, duration, 0)
+		self:BroadcastActionMsg("%caller% shook the ground for %targets% for %duration% seconds.", { targets = targets, duration = duration })
+	end)
+end)
+BSU.AliasCommand("shake", "earthquake")
+
