@@ -218,8 +218,9 @@ BSU.SetupCommand("playsound", function(cmd)
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
 		local path = self:GetStringArg(1, true)
+
 		BSU.ClientRPC(nil, "surface.PlaySound", path)
 
-		self:BroadcastActionMsg("%caller% played sound %path%", {path = path})
+		self:BroadcastActionMsg("%caller% played sound %path%", { path = path })
 	end)
 end)
