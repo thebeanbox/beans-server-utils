@@ -594,3 +594,47 @@ BSU.SetupCommand("earthquake", function(cmd)
 end)
 BSU.AliasCommand("shake", "earthquake")
 
+--[[
+    Name: trainwreck 
+    Desc: Trainwreck players
+    Arguments:
+        1. Targets (players, default: self)
+]]
+BSU.SetupCommand("trainwreck", function(cmd)
+    	cmd:SetDescription("Trainwreck players")
+    	cmd:SetCategory("fun")
+    	cmd:SetAccess(BSU.CMD_ADMIN)
+   	cmd:SetFunction(function(self)
+        local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+        
+        for _,v in ipairs(targets) do
+        	if v.bsu_godded then
+                if not v.bsu_frozen then v:RemoveFlags(FL_GODMODE) end
+                	v.bsu_godded = nil
+            	end
+            	if v:InVehicle() then v:ExitVehicle() end
+            	if v:GetMoveType() == 8 then
+                	v:SetMoveType(2)
+            	end
+            
+            	local train = ents.Create("prop_physics")
+            	train:SetModel("models/props_trainstation/train001.mdl")
+            
+            	train:Spawn()
+            	train:GetPhysicsObject():SetMass(50000)
+            	train:PhysicsInit(SOLID_VPHYSICS)
+            	BSU.SetOwnerWorld(train)
+            
+            	train:SetAngles(Angle(0,90,0))
+            	train:SetPos(v:GetPos()+Vector(750,0,150))
+            	train:GetPhysicsObject():SetVelocity(Vector(-100000, 0, 0))
+            	train:EmitSound("ambient/alarms/train_horn2.wav", 130, 100, 1, 0, 0)
+            
+            	timer.Simple(3, function() train:Remove() end)
+        end
+	if next(targets) ~= nil then
+        	self:BroadcastActionMsg("%caller% trainwrecked %targets%", { targets = targets })
+	end
+    end)
+end)
+
