@@ -615,6 +615,6 @@ BSU.SetupCommand("ungag", function(cmd)
 	end)
 end)
 
-hook.Add("PlayerCanHearPlayersVoice", "BSU_PlayerGag", function(listener, speaker)
+hook.Add("PlayerCanHearPlayersVoice", "BSU_PlayerGag", function(_, speaker)
 	if speaker.bsu_gagged then return false end
 end)

@@ -260,8 +260,9 @@ BSU.SetupCommand("asay", function(cmd)
 	cmd:SetFunction(function(self)
 		local msg = self:GetMultiStringArg(1, -1, true)
 
-		for k, v in ipairs(player.GetAll()) do
-			if v:IsAdmin() or BSU.CheckPlayerPrivilege(v:SteamID(), BSU.PRIV_MISC, "bsu_see_asay") == true then
+		for _, v in ipairs(player.GetAll()) do
+			local check = BSU.CheckPlayerPrivilege(v:SteamID(), BSU.PRIV_MISC, "bsu_see_asay")
+			if check or (check == nil and v:IsAdmin()) then -- privilege is granting, or there is no privilege set so allow if admin by default
 				BSU.SendChatMsg(v, self:GetCaller(), " to admins: ", color_green, msg)
 			end
 		end
@@ -330,7 +331,6 @@ BSU.SetupCommand("csay", function(cmd)
 end)
 
 hook.Add("PlayerSay", "BSU_CommandShorthand", function(ply, text)
-	
 	if string.sub(text, 1, 3) == "@@@" then
 		BSU.SafeRunCommand(ply, "csay", string.sub(text, 4))
 		return ""
@@ -354,20 +354,26 @@ BSU.SetupCommand("afk", function(cmd)
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ANYONE)
 	cmd:SetFunction(function(self)
-		BSU.PlayerSetAFK(self:GetCaller(true), true)
+		self:GetCaller(true).bsu_afk = true
 		self:BroadcastActionMsg("%caller% is now AFK!")
 	end)
 end)
 
-hook.Add("KeyPress", "BSU_UnAFK", function(ply)
+-- prevent gaining total time while afk
+hook.Add("BSU_PlayerTotalTime", "BSU_PreventAFKTime", function(ply)
+	if ply.bsu_afk then return false end
+end)
+
+-- make not afk if any key presses
+hook.Add("KeyPress", "BSU_ClearAFK", function(ply)
 	if ply.bsu_afk then
-		BSU.PlayerSetAFK(ply, false)
+		ply.bsu_afk = nil
 		BSU.SendChatMsg(nil, ply, " is no longer AFK!")
 	end
-
 	ply.bsu_last_interacted_time = SysTime()
 end)
 
+-- make afk after some time with no key presses
 timer.Create("BSU_CheckAFK", 1, 0, function()
 	for _, ply in ipairs(player.GetHumans()) do
 		if not ply.bsu_last_interacted_time or ply.bsu_afk then continue end

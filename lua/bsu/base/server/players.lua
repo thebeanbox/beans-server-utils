@@ -37,23 +37,20 @@ hook.Add("OnGamemodeLoaded", "BSU_InitializePlayer", function()
 end)
 
 -- update total_time and last_visit pdata values for all connected players
-local function updatePlayerData()
+local function updatePlayerTime()
 	for _, v in ipairs(player.GetAll()) do
 		if not v.bsu_ready then continue end
-		if not v.bsu_afk then
-			local lastTotalTime = tonumber(BSU.GetPData(v, "total_time"))
-			if lastTotalTime then BSU.SetPData(v, "total_time", lastTotalTime + 1, true) end -- increment by 1 sec
+
+		local totalTime = tonumber(BSU.GetPData(v, "total_time")) or 0
+		if hook.Run("BSU_PlayerTotalTime", v, totalTime) ~= false then
+			BSU.SetPData(v, "total_time", totalTime + 1, true) -- increment by 1 sec
 		end
+
 		BSU.SetPData(v, "last_visit", BSU.UTCTime(), true)
 	end
 end
 
-timer.Create("BSU_UpdatePlayerData", 1, 0, updatePlayerData) -- update player data every second
-
--- Marks a player as AFK, preventing them from gaining hours
-function BSU.PlayerSetAFK(ply, isAFK)
-	ply.bsu_afk = isAFK and true or nil
-end
+timer.Create("BSU_UpdatePlayerTime", 1, 0, updatePlayerTime) -- update player time every second
 
 -- updates the name value of sql player data whenever a player's steam name is changed
 gameevent.Listen("player_changename")
