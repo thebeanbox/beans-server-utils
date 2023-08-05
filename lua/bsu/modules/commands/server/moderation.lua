@@ -526,12 +526,12 @@ end)
 
 --[[
 	Name: unmute
-	Desc: Unmutes a player
+	Desc: Unmutes a player, allowing them to speak in text chat
 	Arguments:
 		1. Targets (players, default: self)
 ]]
 BSU.SetupCommand("unmute", function(cmd)
-	cmd:SetDescription("Unmutes a player")
+	cmd:SetDescription("Unmutes a player, allowing them to speak in text chat")
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
@@ -555,4 +555,66 @@ end)
 
 hook.Add("BSU_ChatCommand", "BSU_PlayerMute", function(ply)
 	if ply.bsu_muted then return "" end
+end)
+
+--[[
+	Name: gag
+	Desc: Prevents a player from speaking in voice chat
+	Arguments:
+		1. Targets (players, default: self)
+]]
+BSU.SetupCommand("gag", function(cmd)
+	cmd:SetDescription("Prevents a player from speaking in voice chat")
+	cmd:SetCategory("moderation")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+
+		local gagged = {}
+		for _, v in ipairs(targets) do
+			if not v.bsu_gagged then
+				v.bsu_gagged = true
+				table.insert(gagged, v)
+			end
+		end
+
+		if next(gagged) ~= nil then
+			self:BroadcastActionMsg("%caller% gagged %gagged%", {
+				gagged = gagged
+			})
+		end
+	end)
+end)
+
+--[[
+	Name: ungag
+	Desc: Ungags a player, allowing them to speak in voice chat again
+	Arguments:
+		1. Targets (players, default: self)
+]]
+BSU.SetupCommand("ungag", function(cmd)
+	cmd:SetDescription("Ungags a player, allowing them to speak in voice chat again")
+	cmd:SetCategory("moderation")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+
+		local ungagged = {}
+		for _, v in ipairs(targets) do
+			if v.bsu_gagged then
+				v.bsu_gagged = nil
+				table.insert(ungagged, v)
+			end
+		end
+
+		if next(ungagged) ~= nil then
+			self:BroadcastActionMsg("%caller% ungagged %ungagged%", {
+				ungagged = ungagged
+			})
+		end
+	end)
+end)
+
+hook.Add("PlayerCanHearPlayersVoice", "BSU_PlayerGag", function(listener, speaker)
+	if speaker.bsu_gagged then return false end
 end)
