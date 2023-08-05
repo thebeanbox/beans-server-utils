@@ -580,7 +580,7 @@ BSU.SetupCommand("notification", function(cmd)
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
 		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
-		local msg = self:GetMultiStringArg(2)
+		local msg = self:GetMultiStringArg(2, -1, true)
 
 		BSU.ClientRPC(targets, "notification.AddLegacy", msg, NOTIFY_GENERIC, 5)
 		BSU.ClientRPC(targets, "surface.PlaySound", "buttons/button15.wav")
