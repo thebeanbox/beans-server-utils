@@ -4,13 +4,13 @@ local function teleportPlayer(ply, pos)
 end
 
 --[[
-	Name: teleport
+	Name: send
 	Desc: Teleport players to a target player
 	Arguments:
 		1. Targets (players)
 		2. Target (player)
 ]]
-BSU.SetupCommand("teleport", function(cmd)
+BSU.SetupCommand("send", function(cmd)
 	cmd:SetDescription("Teleports players to a target player")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
@@ -48,6 +48,26 @@ BSU.SetupCommand("teleport", function(cmd)
 
 		if next(teleported) ~= nil then
 			self:BroadcastActionMsg("%caller% teleported %teleported% to %target%", { teleported = teleported, target = targetB })
+		end
+	end)
+end)
+
+--[[
+	Name: teleport
+	Desc: Teleport yourself to your aim position
+	Arguments:
+		there is nothing
+]]
+BSU.SetupCommand("teleport", function(cmd)
+	cmd:SetDescription("Teleport yourself to your aim position")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local ply = self:GetCaller(true)
+		if self:CheckExclusive(ply, true) then
+			local aimPos = ply:GetEyeTrace().HitPos
+
+			teleportPlayer(ply, aimPos)
 		end
 	end)
 end)
