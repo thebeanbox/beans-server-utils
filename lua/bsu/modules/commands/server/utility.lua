@@ -344,4 +344,15 @@ hook.Add("KeyPress", "BSU_UnAFK", function(ply)
 		BSU.PlayerSetAFK(ply, false)
 		BSU.SendChatMsg(nil, ply, " is no longer AFK!")
 	end
+
+	ply.bsu_last_interacted_time = SysTime()
+end)
+
+timer.Create("BSU_CheckAFK", 1, 0, function()
+	for _, ply in ipairs(player.GetHumans()) do
+		if not ply.bsu_last_interacted_time or ply.bsu_afk then continue end
+		if SysTime() > ply.bsu_last_interacted_time + 600 then
+			BSU.SafeRunCommand(ply, "afk")
+		end
+	end
 end)
