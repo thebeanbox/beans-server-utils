@@ -778,6 +778,7 @@ BSU.SetupCommand("spectate", function(cmd)
 		getSpawnInfo(target)
 
 		caller.bsu_spectating = true
+		caller:SetColor(Color(0, 0, 0, 0))
 		caller:Spectate(OBS_MODE_IN_EYE)
 		caller:SpectateEntity(target)
 		caller:StripWeapons()
@@ -804,6 +805,7 @@ BSU.SetupCommand("unspectate", function(cmd)
 			caller.bsu_spectating = nil
 			caller:UnSpectate()
 			doSpawn(caller)
+			caller:SetColor(Color(255, 255, 255, 255))
 		end
 
 		BSU.SendChatMsg(caller, "Stopped spectating")
