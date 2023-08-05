@@ -87,6 +87,7 @@ local function clearEntityOwner(entindex)
 	BSU._ownerents[id][entindex] = nil
 	if id > 0 and not Player(id):IsValid() and next(BSU._ownerents[id]) == nil then
 		BSU._owners[id] = nil -- delete owner data (owner is disconnected player with no props)
+		BSU._ownerents[id] = nil
 	end
 
 	if SERVER then
@@ -111,7 +112,7 @@ end
 local function transferOwnerData(id, id2)
 	local info = BSU._owners[id]
 	if not info then return end -- owner doesn't exist (happens clientside when server transfers owner data and we haven't received any owner data yet)
-	local ents = BSU._ownerents[id]
+	local ents = BSU._ownerents[id] or {}
 
 	BSU._owners[id2] = BSU._owners[id2] or {}
 	BSU._ownerents[id2] = BSU._ownerents[id2] or {}
