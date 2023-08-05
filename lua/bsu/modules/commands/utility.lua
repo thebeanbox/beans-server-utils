@@ -173,7 +173,6 @@ else
 		local isVoteActive = net.ReadBool()
 
 		if not isVoteActive then
-			print("There is nothing")
 			BSU.CurrentVote.isActive = false
 			timer.Create("stopshowing", 10, 1, function()
 				BSU.CurrentVote = nil
@@ -244,7 +243,6 @@ else
 	hook.Add("CreateMove", "BeanBox_GatherInput", function()
 		if not BSU.CurrentVote then return end
 		if not BSU.CurrentVote.isActive then return end
-		print(os.time(), lastVoted + 5)
 		if os.time() < lastVoted + 5 then return end		-- Is under cooldown?
 
 		if input.WasKeyPressed(KEY_1) then
