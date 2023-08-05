@@ -324,6 +324,7 @@ BSU.SetupCommand("unfreeze", function(cmd)
 		end
 	end)
 end)
+BSU.AliasCommand("thaw", "unfreeze")
 
 --[[
 	Name: health
