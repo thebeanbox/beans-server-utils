@@ -246,12 +246,78 @@ BSU.SetupCommand("asay", function(cmd)
 			end
 		end
 
+		BSU.SendChatMsg(self:GetCaller(), self:GetCaller(), " to admins: ", color_green, msg)
+		-- TODO: make this always silent, even when using `!`
+	end)
+end)
+
+--[[
+	Name: psay
+	Desc: Sends a private message to a player
+	Arguments:
+		1. Name (string)
+		2. Message (string)
+]]
+BSU.SetupCommand("psay", function(cmd)
+	cmd:SetDescription("Sends a private message to a player")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ANYONE)
+	cmd:SetFunction(function(self)
+		local target = self:GetPlayerArg(1, true)
+		local msg = self:GetMultiStringArg(2, -1, true)
+
+		BSU.SendChatMsg(target, self:GetCaller(), " to you: ", color_green, msg)
+		BSU.SendChatMsg(self:GetCaller(), "You to ", target, ": ", color_green, msg)
+
+		-- TODO: make this always silent, even when using `!`
+	end)
+end)
+
+--[[
+	Name: tsay
+	Desc: Sends a message to the textbox
+	Arguments:
+		1. Message (string)
+]]
+BSU.SetupCommand("tsay", function(cmd)
+	cmd:SetDescription("Sends a message to the textbox")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local msg = self:GetMultiStringArg(1, -1, true)
+
+		BSU.SendChatMsg(nil, msg)
+		-- TODO: make this always silent, even when using `!`
+	end)
+end)
+
+--[[
+	Name: csay
+	Desc: Sends a message to the center of everyone's screen
+	Arguments:
+		1. Message (string)
+]]
+BSU.SetupCommand("csay", function(cmd)
+	cmd:SetDescription("Sends a message to the center of everyone's screen")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local msg = self:GetMultiStringArg(1, -1, true)
+
+		PrintMessage(HUD_PRINTCENTER, msg)
 		-- TODO: make this always silent, even when using `!`
 	end)
 end)
 
 hook.Add("PlayerSay", "BeanBox_CommandShorthand", function(ply, text)
-	if string.sub(text, 1, 1) == "@" then
+	
+	if string.sub(text, 1, 3) == "@@@" then
+		BSU.SafeRunCommand(ply, "csay", string.sub(text, 4))
+		return ""
+	elseif string.sub(text, 1, 2) == "@@" then
+		BSU.SafeRunCommand(ply, "tsay", string.sub(text, 3))
+		return ""
+	elseif string.sub(text, 1, 1) == "@" then
 		BSU.SafeRunCommand(ply, "asay", string.sub(text, 2))
 		return ""
 	end
