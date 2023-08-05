@@ -11,14 +11,13 @@ end
 local function countOptionVotes()
 	if not BSU.CurrentVote then return end
 	optionVotes = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-	for k, v in pairs(BSU.CurrentVote.votes) do
+	for _, v in pairs(BSU.CurrentVote.votes) do
 		optionVotes[v] = optionVotes[v] + 1
 	end
 end
 
 
 if SERVER then
-	
 	util.AddNetworkString("bsu_vote")
 	util.AddNetworkString("bsu_updateVote")
 
@@ -33,7 +32,6 @@ if SERVER then
 		if not BSU.CurrentVote.isActive then return end
 
 		BSU.CurrentVote.votes = net.ReadTable()			-- CHANGE!!!
-		
 		updateClientVotes()
 	end)
 
@@ -42,7 +40,6 @@ if SERVER then
 	-- Will write nothing if there is no vote happening
 	local function broadcastVote()
 		net.Start("bsu_vote")
-		
 		if BSU.CurrentVote then
 			net.WriteBool(true) -- Yes, there is a vote going on!
 			net.WriteString(BSU.CurrentVote.author)
@@ -96,14 +93,14 @@ if SERVER then
 
 			local title = self:GetStringArg(1, true)
 			local options = {}
-			
+
 			-- Populate options table starting at argument 2
-			for i=2, 11 do
+			for i = 2, 11 do
 				local option = self:GetStringArg(i)
 				if not option then break end
 				table.insert(options, option)
 			end
-			
+
 			self:BroadcastActionMsg("%caller% started a vote \"%title%\"", {title = title})
 
 			BSU.StartVote(self:GetCaller(), title, 60, options, function(vote)
@@ -120,40 +117,38 @@ if SERVER then
 
 else
 
-	local voteBackgroundColor = Color(0,0,0,200)
-	local voteTextColor = Color(255,255,255)
+	local voteBackgroundColor = Color(0, 0, 0, 200)
+	local voteTextColor = Color(255, 255, 255)
 	local currentTotalVotes = 0
 	local currentVote = 0
 	local lastVoted = 0
 
-
-	surface.CreateFont( "VoteTitle", {
+	surface.CreateFont("VoteTitle", {
 		font = "Arial",
 		extended = true,
 		size = 25,
 		weight = 700,
 		antialias = false,
 		shadow = true,
-	} )
-	
-	surface.CreateFont( "VoteAuthor", {
+	})
+
+	surface.CreateFont("VoteAuthor", {
 		font = "Arial",
 		extended = true,
 		size = 20,
 		weight = 600,
 		antialias = false,
 		shadow = true,
-	} )
-	
-	surface.CreateFont( "VoteContent", {
+	})
+
+	surface.CreateFont("VoteContent", {
 		font = "Arial",
 		extended = true,
 		size = 15,
 		weight = 600,
 		antialias = false,
 		shadow = true,
-	} )
-
+	})
 
 	local function updateServerVotes()
 		net.Start("bsu_updateVote")
@@ -176,10 +171,10 @@ else
 
 	net.Receive("bsu_vote", function()
 		local isVoteActive = net.ReadBool()
-		
+
 		if not isVoteActive then
 			print("There is nothing")
-			BSU.CurrentVote.isActive = false 
+			BSU.CurrentVote.isActive = false
 			timer.Create("stopshowing", 10, 1, function()
 				BSU.CurrentVote = nil
 			end)
@@ -223,7 +218,7 @@ else
 		local titleW, _ = surface.GetTextSize(BSU.CurrentVote.title)
 
 		local scrW, scrH = ScrW(), ScrH()
-		local voteW, voteH = math.max(scrW * 0.1, titleW + 20), math.max(scrH * 0.25, 50 + #(BSU.CurrentVote.options) * 38)
+		local voteW, voteH = math.max(scrW * 0.1, titleW + 20), math.max(scrH * 0.25, 50 + #BSU.CurrentVote.options * 38)
 		local voteX, voteY = 10, scrH / 2 - voteH / 2
 		-- MY DOG'S ANGRY!!!!!!!!!!! >:(
 		draw.RoundedBox(10, voteX, voteY, voteW, voteH, voteBackgroundColor)
@@ -238,12 +233,11 @@ else
 			surface.SetDrawColor(54, 154, 247)
 			surface.DrawRect(optX, optY + 20, (voteW - 50) * votePercent, 10)
 			draw.SimpleText(tostring(optionVotes[k]), "VoteContent", optX + voteW - 40, optY + 18, voteTextColor, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-			
+
 			-- Highlight your option
-			if currentVote ~= k then goto skip end
+			if currentVote ~= k then continue end
 			surface.SetDrawColor(255, 150, 0)
 			surface.DrawOutlinedRect(optX - 5, optY - 2, voteW - 15, 37, 2)
-			::skip::
 		end
 	end)
 
