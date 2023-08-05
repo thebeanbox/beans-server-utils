@@ -9,6 +9,7 @@ BSU.PRIV_SWEP   = 3
 BSU.PRIV_TOOL   = 4
 BSU.PRIV_CMD    = 5
 BSU.PRIV_TARGET = 6
+BSU.PRIV_MISC	= 7
 
 -- prop protection enums
 BSU.PP_PHYSGUN = 1

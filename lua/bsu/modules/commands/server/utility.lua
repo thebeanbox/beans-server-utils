@@ -224,3 +224,35 @@ BSU.SetupCommand("playsound", function(cmd)
 		self:BroadcastActionMsg("%caller% played sound %path%", { path = path })
 	end)
 end)
+
+local color_green = Color(0, 255, 0)
+
+--[[
+	Name: asay
+	Desc: Sends a message to admins
+	Arguments:
+		1. Message (string)
+]]
+BSU.SetupCommand("asay", function(cmd)
+	cmd:SetDescription("Sends a message to admins")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ANYONE)
+	cmd:SetFunction(function(self)
+		local msg = self:GetMultiStringArg(1, -1, true)
+
+		for k, v in ipairs(player.GetAll()) do
+			if v:IsAdmin() or BSU.CheckPlayerPrivilege(v:SteamID(), BSU.PRIV_MISC, "bsu_see_asay") == true then
+				BSU.SendChatMsg(v, self:GetCaller(), " to admins: ", color_green, msg)
+			end
+		end
+
+		-- TODO: make this always silent, even when using `!`
+	end)
+end)
+
+hook.Add("PlayerSay", "BeanBox_CommandShorthand", function(ply, text)
+	if string.sub(text, 1, 1) == "@" then
+		BSU.SafeRunCommand(ply, "asay", string.sub(text, 2))
+		return ""
+	end
+end)

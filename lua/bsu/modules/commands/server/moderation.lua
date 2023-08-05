@@ -368,7 +368,8 @@ local privs = {
 	weapon = BSU.PRIV_SWEP,
 	tool = BSU.PRIV_TOOL,
 	command = BSU.PRIV_CMD,
-	cmd = BSU.PRIV_CMD
+	cmd = BSU.PRIV_CMD,
+	misc = BSU.PRIV_MISC,
 }
 
 local function getPrivFromName(name)
@@ -381,7 +382,8 @@ local names = {
 	[BSU.PRIV_SENT] = "entity",
 	[BSU.PRIV_SWEP] = "weapon",
 	[BSU.PRIV_TOOL] = "tool",
-	[BSU.PRIV_CMD] = "command"
+	[BSU.PRIV_CMD] = "command",
+	[BSU.PRIV_MISC] = "misc",
 }
 
 local function getNameFromPriv(priv)
