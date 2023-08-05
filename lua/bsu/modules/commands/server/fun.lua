@@ -760,3 +760,59 @@ local gimpLines = {
 hook.Add("BSU_ChatCommand", "BSU_PlayerGimp", function(ply)
 	if ply.bsu_gimped and not ply.bsu_muted then return gimpLines[math.random(1, #gimpLines)] end
 end)
+
+--[[
+	Name: spectate
+	Desc: Be one with the player
+	Arguments:
+		1. Message (string)
+]]
+BSU.SetupCommand("spectate", function(cmd)
+	cmd:SetDescription("Be one with the player")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local target = self:GetPlayerArg(1, true)
+		local caller = self:GetCaller()
+
+		getSpawnInfo(target)
+
+		caller.bsu_spectating = true
+		caller:Spectate(OBS_MODE_IN_EYE)
+		caller:SpectateEntity(target)
+		caller:StripWeapons()
+
+		BSU.SendChatMsg(caller, "Spectating ", target)
+		-- TODO: make this always silent, even when using `!`
+	end)
+end)
+
+--[[
+	Name: unspectate
+	Desc: Unspectates a player
+	Arguments:
+		1. Message (string)
+]]
+BSU.SetupCommand("unspectate", function(cmd)
+	cmd:SetDescription("Unspectates a player")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local caller = self:GetCaller()
+
+		if caller.bsu_spectating then
+			caller.bsu_spectating = nil
+			caller:UnSpectate()
+			doSpawn(caller)
+		end
+
+		BSU.SendChatMsg(caller, "Stopped spectating")
+		-- TODO: make this always silent, even when using `!`
+	end)
+end)
+
+hook.Add("KeyPress", "BSU_StopSpectating", function(ply)
+	if ply.bsu_spectating then
+		BSU.SafeRunCommand(ply, "unspectate")
+	end
+end)

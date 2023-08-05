@@ -309,7 +309,7 @@ BSU.SetupCommand("csay", function(cmd)
 	end)
 end)
 
-hook.Add("PlayerSay", "BeanBox_CommandShorthand", function(ply, text)
+hook.Add("PlayerSay", "BSU_CommandShorthand", function(ply, text)
 	
 	if string.sub(text, 1, 3) == "@@@" then
 		BSU.SafeRunCommand(ply, "csay", string.sub(text, 4))
