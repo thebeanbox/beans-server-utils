@@ -322,3 +322,26 @@ hook.Add("PlayerSay", "BSU_CommandShorthand", function(ply, text)
 		return ""
 	end
 end)
+
+--[[
+	Name: afk
+	Desc: Marks player as AFK
+	Arguments:
+		1. Message (string)
+]]
+BSU.SetupCommand("afk", function(cmd)
+	cmd:SetDescription("Marks player as AFK")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ANYONE)
+	cmd:SetFunction(function(self)
+		BSU.PlayerSetAFK(self:GetCaller(true), true)
+		self:BroadcastActionMsg("%caller% is now AFK!")
+	end)
+end)
+
+hook.Add("KeyPress", "BSU_UnAFK", function(ply)
+	if ply.bsu_afk then
+		BSU.PlayerSetAFK(ply, false)
+		BSU.SendChatMsg(nil, ply, " is no longer AFK!")
+	end
+end)

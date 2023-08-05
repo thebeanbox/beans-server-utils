@@ -40,13 +40,20 @@ end)
 local function updatePlayerData()
 	for _, v in ipairs(player.GetAll()) do
 		if not v.bsu_ready then continue end
-		local lastTotalTime = tonumber(BSU.GetPData(v, "total_time"))
-		if lastTotalTime then BSU.SetPData(v, "total_time", lastTotalTime + 1, true) end -- increment by 1 sec
+		if not v.bsu_afk then
+			local lastTotalTime = tonumber(BSU.GetPData(v, "total_time"))
+			if lastTotalTime then BSU.SetPData(v, "total_time", lastTotalTime + 1, true) end -- increment by 1 sec
+		end
 		BSU.SetPData(v, "last_visit", BSU.UTCTime(), true)
 	end
 end
 
-timer.Create("BSU_UpdatePlayerData", 1, 0, updatePlayerData) -- update player data every 60 secs
+timer.Create("BSU_UpdatePlayerData", 1, 0, updatePlayerData) -- update player data every second
+
+-- Marks a player as AFK, preventing them from gaining hours
+function BSU.PlayerSetAFK(ply, isAFK)
+	ply.bsu_afk = isAFK and true or nil
+end
 
 -- updates the name value of sql player data whenever a player's steam name is changed
 gameevent.Listen("player_changename")
