@@ -66,7 +66,7 @@ function BSU.SendConsoleMsg(plys, ...)
 
 	for _, v in ipairs(plys) do
 		if v:IsValid() then
-			BSU.ClientRPC(plys, "BSU.SendConsoleMsg", ...)
+			BSU.ClientRPC(v, "BSU.SendConsoleMsg", ...)
 		else
 			MsgC(BSU.FixMsgCArgs(...))
 			MsgN()
