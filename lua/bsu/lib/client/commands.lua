@@ -9,11 +9,11 @@ function BSU.RunCommand(name, argStr, silent)
 
 	local handler = BSU.CommandHandler(ply, name, argStr, silent)
 
-	xpcall(cmd:GetFunction(), function(err) BSU.SendChatMsg(ply, BSU.CLR_ERROR, "Command errored with: " .. string.Split(err, ": ")[2]) end, handler)
+	xpcall(cmd:GetFunction(), function(err) handler:PrintErrorMsg("Command errored with: " .. string.Split(err, ": ")[2]) end, handler)
 end
 
 function BSU.SafeRunCommand(name, argStr, silent)
-	if not BSU.GetCommandByName(name) then BSU.SendConMsg(color_white, "Unknown BSU command: '" .. name .. "'") return end
+	if not BSU.GetCommandByName(name) then BSU.SendConsoleMsg(color_white, "Unknown BSU command: '" .. name .. "'") return end
 	BSU.RunCommand(name, argStr, silent)
 end
 
@@ -33,15 +33,16 @@ net.Receive("bsu_command_run", function()
 end)
 
 local function callback(self)
-	BSU.SendRunCommand(self:GetName(), self:GetRawMultiStringArg(1, -1) or "", self:GetSilent())
+	BSU.SendRunCommand(self:GetName(), self:GetRawMultiStringArg(1) or "", self:GetSilent())
 end
 
-function BSU.RegisterServerCommand(name, description, category)
+function BSU.RegisterServerCommand(name, ...)
 	name = string.lower(name)
 	local cmd = BSU._cmds[name]
 	if cmd and not cmd._serverside then return end -- clientside command already exists
 
-	cmd = BSU.Command(name, description, category, nil, callback)
+	cmd = BSU.Command(name, ...)
+	cmd:SetFunction(callback)
 	cmd._serverside = true
 
 	BSU.RegisterCommand(cmd)

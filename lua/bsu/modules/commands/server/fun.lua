@@ -162,7 +162,7 @@ BSU.SetupCommand("god", function(cmd)
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
 
 		local godded = {}
 		for _, v in ipairs(targets) do
@@ -191,7 +191,7 @@ BSU.SetupCommand("ungod", function(cmd)
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
 
 		local ungodded = {}
 		for _, v in ipairs(targets) do
@@ -220,7 +220,7 @@ BSU.SetupCommand("ragdoll", function(cmd)
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
 
 		local ragdolled = {}
 		for _, v in ipairs(targets) do
@@ -247,7 +247,7 @@ BSU.SetupCommand("unragdoll", function(cmd)
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
 
 		local unragdolled = {}
 		for _, v in ipairs(targets) do
@@ -274,7 +274,7 @@ BSU.SetupCommand("freeze", function(cmd)
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
 
 		local frozen = {}
 		for _, v in ipairs(targets) do
@@ -305,7 +305,7 @@ BSU.SetupCommand("unfreeze", function(cmd)
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
 
 		local unfrozen = {}
 		for _, v in ipairs(targets) do
@@ -337,7 +337,7 @@ BSU.SetupCommand("health", function(cmd)
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(2) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+		local targets = self:GetRawStringArg(2) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
 		local amount = self:GetRawStringArg(2) and self:GetNumberArg(2, true) or self:GetNumberArg(1, true)
 
 		amount = math.min(math.max(amount, 0), 2 ^ 31 - 1)
@@ -364,7 +364,7 @@ BSU.SetupCommand("armor", function(cmd)
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(2) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+		local targets = self:GetRawStringArg(2) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
 		local amount = self:GetRawStringArg(2) and self:GetNumberArg(2, true) or self:GetNumberArg(1, true)
 
 		amount = math.min(math.max(amount, 0), 2 ^ 31 - 1)
@@ -391,7 +391,7 @@ BSU.SetupCommand("launch", function(cmd)
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
 
 		for _, v in ipairs(targets) do
 			v:SetVelocity(Vector(0, 0, 5000))
@@ -414,7 +414,7 @@ BSU.SetupCommand("respawn", function(cmd)
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
 
 		for _, v in ipairs(targets) do
 			v:Spawn()
@@ -437,7 +437,7 @@ BSU.SetupCommand("slay", function(cmd)
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
 
 		for _, v in ipairs(targets) do
 			v:Kill()
@@ -461,7 +461,7 @@ BSU.SetupCommand("disintegrate", function(cmd)
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
 
 		local dmgInfo = DamageInfo()
 		dmgInfo:SetDamageType(DMG_DISSOLVE)
@@ -491,7 +491,7 @@ BSU.SetupCommand("explode", function(cmd)
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
 
 		local dmgInfo = DamageInfo()
 		dmgInfo:SetDamageType(DMG_BLAST)
@@ -553,7 +553,7 @@ BSU.SetupCommand("eject", function(cmd)
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
 
 		local ejected = {}
 		for _, v in ipairs(targets) do
@@ -580,7 +580,7 @@ BSU.SetupCommand("notification", function(cmd)
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
 		local msg = self:GetMultiStringArg(2, -1, true)
 
 		BSU.ClientRPC(targets, "notification.AddLegacy", msg, NOTIFY_GENERIC, 5)
@@ -600,7 +600,7 @@ BSU.SetupCommand("earthquake", function(cmd)
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
 		local duration = math.min(math.max(self:GetNumberArg(2) or 10, 1), 10)
 
 		BSU.ClientRPC(targets, "util.ScreenShake", Vector(), 100, 100, duration, 0)
@@ -625,7 +625,7 @@ BSU.SetupCommand("bathe", function(cmd)
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
 
 		for _, v in ipairs(targets) do
 			if not v.bsu_frozen then v:RemoveFlags(FL_GODMODE) end
@@ -665,7 +665,7 @@ BSU.SetupCommand("trainwreck", function(cmd)
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
 
 		for _, v in ipairs(targets) do
 			if not v.bsu_frozen then v:RemoveFlags(FL_GODMODE) end
@@ -705,7 +705,7 @@ BSU.SetupCommand("gimp", function(cmd)
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
 
 		local gimped = {}
 		for _, v in ipairs(targets) do
@@ -734,7 +734,7 @@ BSU.SetupCommand("ungimp", function(cmd)
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
 
 		local ungimped = {}
 		for _, v in ipairs(targets) do
@@ -772,9 +772,10 @@ BSU.SetupCommand("spectate", function(cmd)
 	cmd:SetDescription("Be one with the player")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetSilent(true)
 	cmd:SetFunction(function(self)
 		local target = self:GetPlayerArg(1, true)
-		local caller = self:GetCaller()
+		local caller = self:GetCaller(true)
 
 		getSpawnInfo(target)
 
@@ -784,8 +785,7 @@ BSU.SetupCommand("spectate", function(cmd)
 		caller:SpectateEntity(target)
 		caller:StripWeapons()
 
-		BSU.SendChatMsg(caller, "Spectating ", target)
-		-- TODO: make this always silent, even when using `!`
+		self:PrintChatMsg("Spectating ", target)
 	end)
 end)
 
@@ -799,8 +799,9 @@ BSU.SetupCommand("unspectate", function(cmd)
 	cmd:SetDescription("Unspectates a player")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetSilent(true)
 	cmd:SetFunction(function(self)
-		local caller = self:GetCaller()
+		local caller = self:GetCaller(true)
 
 		if caller.bsu_spectating then
 			caller.bsu_spectating = nil
@@ -809,8 +810,7 @@ BSU.SetupCommand("unspectate", function(cmd)
 			caller:SetColor(Color(255, 255, 255, 255))
 		end
 
-		BSU.SendChatMsg(caller, "Stopped spectating")
-		-- TODO: make this always silent, even when using `!`
+		self:PrintChatMsg("Stopped spectating")
 	end)
 end)
 

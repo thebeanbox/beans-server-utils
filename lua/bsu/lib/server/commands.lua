@@ -67,19 +67,19 @@ function BSU.RunCommand(ply, name, argStr, silent)
 
 	local handler = BSU.CommandHandler(ply, name, argStr, silent)
 
-	xpcall(cmd:GetFunction(), function(err) BSU.SendChatMsg(ply, BSU.CLR_ERROR, "Command errored with: " .. string.Split(err, ": ")[2]) end, handler)
+	xpcall(cmd:GetFunction(), function(err) handler:PrintErrorMsg("Command errored with: " .. string.Split(err, ": ")[2]) end, handler)
 end
 
 function BSU.SafeGetCommandByName(ply, name)
 	local cmd = BSU.GetCommandByName(name)
-	if not cmd or (ply:IsValid() and cmd:GetAccess() == BSU.CMD_CONSOLE) then return false end -- command doesn't exist or ply is not console and it is console-only
-	return true
+	if not cmd or (ply:IsValid() and cmd:GetAccess() == BSU.CMD_CONSOLE) then return end -- command doesn't exist or ply is not console and it is console-only
+	return cmd
 end
 
 -- make a player run a command but first checks if the command exists and is not console-only
 function BSU.SafeRunCommand(ply, name, argStr, silent)
-	if not BSU.SafeGetCommandByName(ply, name) then BSU.SendConMsg(ply, color_white, "Unknown BSU command: '" .. name .. "'") return end
-	BSU.RunCommand(ply, name, argStr, silent)
+	if not BSU.SafeGetCommandByName(ply, name) then BSU.SendConsoleMsg(ply, color_white, "Unknown BSU command: '" .. name .. "'") return end
+	BSU.RunCommand(ply, name, string.sub(argStr, 1, 255), silent) -- limit arg string length
 end
 
 function BSU.SendRunCommand(ply, name, argStr, silent)

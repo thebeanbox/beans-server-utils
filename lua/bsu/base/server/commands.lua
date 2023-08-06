@@ -29,7 +29,10 @@ local function chatCommand(ply, text)
 	local name = string.sub(table.remove(split, 1), #(silent and prefixSilent or prefix) + 1)
 	local argStr = table.concat(split, " ")
 
-	if BSU.SafeGetCommandByName(ply, name) then -- check if command exists serverside then run it (and player should be able to see and run it)
+	local cmd = BSU.SafeGetCommandByName(ply, name)
+
+	if cmd then -- check if command exists serverside then run it (and player should be able to see and run it)
+		silent = silent or cmd:GetSilent()
 		BSU.RunCommand(ply, name, argStr, silent)
 	else -- tell client to try run it
 		BSU.SendRunCommand(ply, name, argStr, silent)
@@ -55,7 +58,7 @@ hook.Add("BSU_ShowActionMessage", "BSU_OverrideActionMessage", overrideActionMes
 local function sendCommandData(ply)
 	for _, v in ipairs(BSU.GetCommands()) do
 		if v:GetAccess() ~= BSU.CMD_CONSOLE then
-			BSU.ClientRPC(ply, "BSU.RegisterServerCommand", v:GetName(), v:GetDescription(), v:GetCategory())
+			BSU.ClientRPC(ply, "BSU.RegisterServerCommand", v:GetName(), v:GetDescription(), v:GetCategory(), v:GetAccess(), v:GetSilent())
 		end
 	end
 end

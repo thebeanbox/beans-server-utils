@@ -36,24 +36,40 @@ function BSU.LoadModules(dir)
 	end
 end
 
--- send a console message to a player or list of players
--- or set target to NULL to send in the server console
-function BSU.SendConMsg(plys, ...)
-	if plys == NULL then
-		MsgC(BSU.FixMsgCArgs(...))
-		MsgN()
-		return
+-- send a chat message to players (expects a player or NULL entity, or a table that can include both)
+function BSU.SendChatMsg(plys, ...)
+	if not plys then
+		plys = player.GetHumans()
+		table.insert(plys, NULL) -- NULL entity = server console
+	elseif not istable(plys) then
+		plys = { plys }
 	end
-	BSU.ClientRPC(plys, "BSU.SendConMsg", ...)
+
+	for _, v in ipairs(plys) do
+		if v:IsValid() then
+			BSU.ClientRPC(plys, "chat.AddText", ...)
+		else
+			MsgC(BSU.FixMsgCArgs(...))
+			MsgN()
+		end
+	end
 end
 
--- send a chat message to a player or list of players
--- or set target to NULL to send in the server console
-function BSU.SendChatMsg(plys, ...)
-	if plys == NULL then
-		MsgC(BSU.FixMsgCArgs(...))
-		MsgN()
-		return
+-- send a console message to players (expects a player or NULL entity, or a table that can include both)
+function BSU.SendConsoleMsg(plys, ...)
+	if not plys then
+		plys = player.GetHumans()
+		table.insert(plys, NULL) -- NULL entity = server console
+	elseif not istable(plys) then
+		plys = { plys }
 	end
-	BSU.ClientRPC(plys, "chat.AddText", ...)
+
+	for _, v in ipairs(plys) do
+		if v:IsValid() then
+			BSU.ClientRPC(plys, "BSU.SendConsoleMsg", ...)
+		else
+			MsgC(BSU.FixMsgCArgs(...))
+			MsgN()
+		end
+	end
 end

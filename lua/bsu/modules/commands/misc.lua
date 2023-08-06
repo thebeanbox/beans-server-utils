@@ -23,7 +23,7 @@ BSU.SetupCommand("help", function(cmd)
 			table.insert(msg, "\n\n")
 		end
 
-		self:SendConMsg(unpack(msg))
-		self:SendChatMsg("Command help list has been printed to console")
+		self:PrintConsoleMsg(unpack(msg))
+		self:PrintChatMsg("Command help list has been printed to console")
 	end)
 end)

@@ -173,7 +173,7 @@ objCommand.__tostring = function(self) return "BSU Command[" .. self.name .. "]"
 -- command object setters
 
 function objCommand.SetDescription(self, desc)
-	self.description = desc and tostring(desc) or ""
+	self.desc = desc and tostring(desc) or ""
 end
 
 function objCommand.SetCategory(self, category)
@@ -184,12 +184,12 @@ function objCommand.SetAccess(self, access) -- only used serverside, is pointles
 	self.access = access or BSU.CMD_ANYONE
 end
 
-function objCommand.SetFunction(self, func)
-	self.func = func
+function objCommand.SetSilent(self, silent)
+	self.silent = silent
 end
 
-function objCommand.AddArgumentsOption(self, str)
-	table.insert(self.options, str)
+function objCommand.SetFunction(self, func)
+	self.func = func
 end
 
 -- command object getters
@@ -199,7 +199,7 @@ function objCommand.GetName(self)
 end
 
 function objCommand.GetDescription(self)
-	return self.description
+	return self.desc
 end
 
 function objCommand.GetCategory(self)
@@ -210,17 +210,22 @@ function objCommand.GetAccess(self) -- only used serverside, is pointless client
 	return self.access
 end
 
+function objCommand.GetSilent(self)
+	return self.silent
+end
+
 function objCommand.GetFunction(self)
 	return self.func
 end
 
 -- create a command object
-function BSU.Command(name, description, category, access, func)
+function BSU.Command(name, desc, category, access, silent, func)
 	return setmetatable({
 		name = string.lower(name),
-		description = description or "",
+		desc = desc or "",
 		category = category or "misc",
 		access = access or BSU.CMD_ANYONE,
+		silent = silent or false,
 		func = func or function() end
 	}, objCommand)
 end
@@ -235,14 +240,16 @@ function BSU.SetupCommand(name, setup)
 	BSU.RegisterCommand(cmd)
 end
 
-function BSU.AliasCommand(alias, original)
-	local originalCmd = BSU._cmds[string.lower(original)]
+function BSU.AliasCommand(alias, name)
+	name = string.lower(name)
+	local cmd = BSU._cmds[name]
 	local aliasCmd = BSU.Command(
 		alias,
-		"Alias of " .. string.lower(original),
-		originalCmd:GetCategory(),
-		SERVER and originalCmd:GetAccess() or nil,
-		originalCmd:GetFunction()
+		"Alias of " .. name,
+		cmd:GetCategory(),
+		cmd:GetAccess(),
+		cmd:GetSilent(),
+		cmd:GetFunction()
 	)
 	BSU.RegisterCommand(aliasCmd)
 end
@@ -454,10 +461,10 @@ if SERVER then
 		return self:CheckCanTargetSteamID(target:SteamID64(), fail)
 	end
 
-	function objCmdHandler.FilterTargets(self, targets, exclude, fail)
+	function objCmdHandler.FilterTargets(self, targets, fail)
 		local tbl = {}
 		for _, tar in ipairs(targets) do
-			if tar:IsValid() and not (exclude and tar == self.caller) and self:CheckCanTarget(tar) then
+			if tar:IsValid() and self:CheckCanTarget(tar) then
 				table.insert(tbl, tar)
 			end
 		end
@@ -499,7 +506,7 @@ if SERVER then
 		return vars
 	end
 
-	local function formatActionMsg(ply, target, msg, args)
+	function objCmdHandler.FormatMsg(self, ply, target, msg, args)
 		local vars = {}
 		local pos = 1
 
@@ -524,48 +531,63 @@ if SERVER then
 		return unpack(vars)
 	end
 
-	-- sends a message in everyone's chat and formats player entities and tables of player entities
+	-- send a formatted message to players (expects a player or NULL entity, or a table that can include both)
+	function objCmdHandler.SendFormattedMsg(self, plys, msg, args)
+		if not plys then
+			plys = player.GetHumans()
+			table.insert(plys, NULL) -- NULL entity = server console
+		elseif not istable(plys) then
+			plys = { plys }
+		end
+
+		for _, v in ipairs(plys) do
+			BSU.SendChatMsg(v, self:FormatMsg(self.caller, v, msg, args))
+		end
+	end
+
+	-- broadcast a formatted message (intended for command actions)
 	function objCmdHandler.BroadcastActionMsg(self, msg, args)
-		if self.silent then msg = "(SILENT) " .. msg end
+		if not istable(plys) then plys = { plys } end
+		local silent = self.silent or BSU._cmds[self.name].silent
+		if silent then msg = "(SILENT) " .. msg end
 		args = args or {}
+
 		for _, v in ipairs(player.GetHumans()) do
-			local val = hook.Run("BSU_ShowActionMessage", self.caller, v, self.silent) -- expects nil for default behavior, 2 for chat, 1 for console, 0 or anything else for hidden
-			if val == nil and (not self.silent or (v:IsSuperAdmin() or v == self.caller)) or val == 2 then
-				BSU.SendChatMsg(v, formatActionMsg(self.caller, v, msg, args))
-			elseif val == 1 then
-				BSU.SendConMsg(v, formatActionMsg(self.caller, v, msg, args))
-			end -- 0 or anything else for hidden
+			if v:IsValid() then
+				local val = hook.Run("BSU_ShowActionMessage", self.caller, v, silent) -- expects nil for default behavior, 2 for chat, 1 for console, 0 or anything else for hidden
+				if val == nil and (not self.silent or (v:IsSuperAdmin() or v == self.caller)) or val == 2 then
+					BSU.SendChatMsg(v, self:FormatMsg(self.caller, v, msg, args))
+				elseif val == 1 then
+					BSU.SendConsoleMsg(v, self:FormatMsg(self.caller, v, msg, args))
+				end -- 0 or anything else for hidden
+			end
 		end
-		BSU.SendChatMsg(NULL, formatActionMsg(self.caller, NULL, msg, args)) -- send msg to server console
+
+		BSU.SendChatMsg(NULL, self:FormatMsg(self.caller, NULL, msg, args)) -- also send to server console (it doesn't matter if this is SendConsoleMsg instead)
 	end
 end
 
--- sends a message to the player in console (will print into the server console if the command was ran through it)
-function objCmdHandler.SendConMsg(self, ...)
-	if SERVER and self.caller:IsValid() then
-		BSU.SendConMsg(self.caller, ...)
-	else -- cmd was ran through the server console
-		MsgC(...)
-		MsgN()
-	end
-end
-
--- sends a message to the player in chat (will print into the server console if the command was ran through it)
-function objCmdHandler.SendChatMsg(self, ...)
+-- print a message to the caller in chat
+function objCmdHandler.PrintChatMsg(self, ...)
 	if SERVER then
-		if self.caller:IsValid() then -- cmd was ran through the server console
-			BSU.SendChatMsg(self.caller, ...)
-		else -- cmd was ran through the server console
-			MsgC(...)
-			MsgN()
-		end
+		BSU.SendChatMsg(self.caller, ...)
 	else
 		chat.AddText(...)
 	end
 end
 
-function objCmdHandler.SendErrorMsg(self, err)
-	self:SendChatMsg(BSU.CLR_ERROR, err)
+-- print a message to the caller in console
+function objCmdHandler.PrintConsoleMsg(self, ...)
+	if SERVER then
+		BSU.SendConsoleMsg(self.caller, ...)
+	else
+		BSU.SendConsoleMsg(...)
+	end
+end
+
+-- print an error message to the caller
+function objCmdHandler.PrintErrorMsg(self, err)
+	self:PrintChatMsg(BSU.CLR_ERROR, err)
 end
 
 -- used for a command to check if it should process something on a player
@@ -576,7 +598,7 @@ end
 function objCmdHandler.CheckExclusive(self, ply, warn)
 	if not ply.bsu_exclusive then return true end
 	if warn then
-		self:SendErrorMsg((ply == self.caller and "You are " or (ply:Nick() .. " is ")) .. ply.bsu_exclusive .. "!")
+		self:PrintErrorMsg((ply == self.caller and "You are " or (ply:Nick() .. " is ")) .. ply.bsu_exclusive .. "!")
 	end
 	return false
 end

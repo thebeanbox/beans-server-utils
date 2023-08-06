@@ -506,7 +506,7 @@ BSU.SetupCommand("mute", function(cmd)
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
 
 		local muted = {}
 		for _, v in ipairs(targets) do
@@ -535,7 +535,7 @@ BSU.SetupCommand("unmute", function(cmd)
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
 
 		local unmuted = {}
 		for _, v in ipairs(targets) do
@@ -568,7 +568,7 @@ BSU.SetupCommand("gag", function(cmd)
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
 
 		local gagged = {}
 		for _, v in ipairs(targets) do
@@ -597,7 +597,7 @@ BSU.SetupCommand("ungag", function(cmd)
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
 
 		local ungagged = {}
 		for _, v in ipairs(targets) do

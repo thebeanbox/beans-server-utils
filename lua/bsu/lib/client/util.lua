@@ -28,7 +28,7 @@ function BSU.LoadModules(dir)
 end
 
 -- prints a message to console (intended to be called by client RPC)
-function BSU.SendConMsg(...)
+function BSU.SendConsoleMsg(...)
 	MsgC(BSU.FixMsgCArgs(...))
 	MsgN()
 end

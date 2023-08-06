@@ -32,14 +32,14 @@ BSU.SetupCommand("send", function(cmd)
 				table.insert(teleported, targetA)
 			end
 		else
-			targetA = self:FilterTargets(self:GetPlayersArg(1, true), true, true)
+			targetA = self:FilterTargets(self:GetPlayersArg(1, true), true)
 
 			targetB = self:GetPlayerArg(2, true)
 			self:CheckCanTarget(targetB, true)
 
 			local pos = targetB:GetPos()
 			for _, v in ipairs(targetA) do
-				if self:CheckExclusive(v, true) then
+				if v ~= self:GetCaller() and self:CheckExclusive(v, true) then
 					teleportPlayer(v, pos)
 					table.insert(teleported, v)
 				end
@@ -56,7 +56,6 @@ end)
 	Name: teleport
 	Desc: Teleport yourself to your aim position
 	Arguments:
-		there is nothing
 ]]
 BSU.SetupCommand("teleport", function(cmd)
 	cmd:SetDescription("Teleport yourself to your aim position")
@@ -66,7 +65,6 @@ BSU.SetupCommand("teleport", function(cmd)
 		local ply = self:GetCaller(true)
 		if self:CheckExclusive(ply, true) then
 			local aimPos = ply:GetEyeTrace().HitPos
-
 			teleportPlayer(ply, aimPos)
 		end
 	end)
@@ -106,12 +104,12 @@ BSU.SetupCommand("bring", function(cmd)
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:FilterTargets(self:GetPlayersArg(1, true), true, true)
+		local targets = self:FilterTargets(self:GetPlayersArg(1, true), true)
 
 		local pos = self:GetCaller(true):GetPos()
 		local teleported = {}
 		for _, v in ipairs(targets) do
-			if self:CheckExclusive(v, true) then
+			if  v ~= self:GetCaller() and self:CheckExclusive(v, true) then
 				teleportPlayer(v, pos)
 				table.insert(teleported, v)
 			end
@@ -134,7 +132,7 @@ BSU.SetupCommand("return", function(cmd)
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), nil, true) or { self:GetCaller(true) }
+		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
 
 		local returned = {}
 		for _, v in ipairs(targets) do
@@ -245,88 +243,89 @@ BSU.SetupCommand("playsound", function(cmd)
 	end)
 end)
 
-local color_green = Color(0, 255, 0)
-
 --[[
 	Name: asay
-	Desc: Sends a message to admins
+	Desc: Send a message to admins
 	Arguments:
 		1. Message (string)
 ]]
 BSU.SetupCommand("asay", function(cmd)
-	cmd:SetDescription("Sends a message to admins")
+	cmd:SetDescription("Send a message to admins")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ANYONE)
+	cmd:SetSilent(true)
 	cmd:SetFunction(function(self)
 		local msg = self:GetMultiStringArg(1, -1, true)
 
-		for _, v in ipairs(player.GetAll()) do
-			local check = BSU.CheckPlayerPrivilege(v:SteamID(), BSU.PRIV_MISC, "bsu_see_asay")
-			if check or (check == nil and v:IsAdmin()) then -- privilege is granting, or there is no privilege set so allow if admin by default
-				BSU.SendChatMsg(v, self:GetCaller(), " to admins: ", color_green, msg)
+		for _, v in ipairs(player.GetHumans()) do
+			if v ~= self:GetCaller() then
+				local check = BSU.CheckPlayerPrivilege(v:SteamID(), BSU.PRIV_MISC, "bsu_see_asay")
+				-- don't show message if privilege is set revoked, or there is no privilege set and they are not an admin
+				if check == false or check == nil and not v:IsAdmin() then continue end
 			end
+			self:SendFormattedMsg(v, "%caller% to admins: %msg%", { msg = msg })
 		end
 
-		BSU.SendChatMsg(self:GetCaller(), self:GetCaller(), " to admins: ", color_green, msg)
-		-- TODO: make this always silent, even when using `!`
+		self:SendFormattedMsg(NULL, "%caller% to admins: %msg%", { msg = msg }) -- also send to server console
 	end)
 end)
 
 --[[
 	Name: psay
-	Desc: Sends a private message to a player
+	Desc: Send a private message to a player
 	Arguments:
 		1. Name (string)
 		2. Message (string)
 ]]
 BSU.SetupCommand("psay", function(cmd)
-	cmd:SetDescription("Sends a private message to a player")
+	cmd:SetDescription("Send a private message to a player")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ANYONE)
+	cmd:SetSilent(true)
 	cmd:SetFunction(function(self)
 		local target = self:GetPlayerArg(1, true)
 		local msg = self:GetMultiStringArg(2, -1, true)
 
-		BSU.SendChatMsg(target, self:GetCaller(), " to you: ", color_green, msg)
-		BSU.SendChatMsg(self:GetCaller(), "You to ", target, ": ", color_green, msg)
+		if target == self:GetCaller() then return end
 
-		-- TODO: make this always silent, even when using `!`
+		self:SendFormattedMsg({ self:GetCaller(), target }, "%caller% to %target%: %msg%", { target = target, msg = msg })
 	end)
 end)
+BSU.AliasCommand("p", "psay")
 
 --[[
 	Name: tsay
-	Desc: Sends a message to the textbox
+	Desc: Send a message to the textbox
 	Arguments:
 		1. Message (string)
 ]]
 BSU.SetupCommand("tsay", function(cmd)
-	cmd:SetDescription("Sends a message to the textbox")
+	cmd:SetDescription("Send a message to the textbox")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetSilent(true)
 	cmd:SetFunction(function(self)
 		local msg = self:GetMultiStringArg(1, -1, true)
 
 		BSU.SendChatMsg(nil, msg)
-		-- TODO: make this always silent, even when using `!`
 	end)
 end)
 
 --[[
 	Name: csay
-	Desc: Sends a message to the center of everyone's screen
+	Desc: Send a message to the center of everyone's screen
 	Arguments:
 		1. Message (string)
 ]]
 BSU.SetupCommand("csay", function(cmd)
-	cmd:SetDescription("Sends a message to the center of everyone's screen")
+	cmd:SetDescription("Send a message to the center of everyone's screen")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetSilent(true)
 	cmd:SetFunction(function(self)
 		local msg = self:GetMultiStringArg(1, -1, true)
 
 		PrintMessage(HUD_PRINTCENTER, msg)
-		-- TODO: make this always silent, even when using `!`
 	end)
 end)
 
@@ -345,17 +344,22 @@ end)
 
 --[[
 	Name: afk
-	Desc: Marks player as AFK
+	Desc: Mark yourself as afk
 	Arguments:
-		1. Message (string)
+		1. Reason (string)
 ]]
 BSU.SetupCommand("afk", function(cmd)
-	cmd:SetDescription("Marks player as AFK")
+	cmd:SetDescription("Mark yourself as afk")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ANYONE)
+	cmd:SetSilent(true)
 	cmd:SetFunction(function(self)
-		self:GetCaller(true).bsu_afk = true
-		self:BroadcastActionMsg("%caller% is now AFK!")
+		local ply = self:GetCaller(true)
+		local reason = self:GetMultiStringArg(1)
+		ply.bsu_afk = true
+		local msg = { ply, " is now AFK" }
+		if reason then table.Add(msg, { " (", BSU.CLR_PARAM, reason, BSU.CLR_TEXT, ")" }) end
+		BSU.SendChatMsg(nil, unpack(msg))
 	end)
 end)
 
@@ -368,7 +372,7 @@ end)
 hook.Add("KeyPress", "BSU_ClearAFK", function(ply)
 	if ply.bsu_afk then
 		ply.bsu_afk = nil
-		BSU.SendChatMsg(nil, ply, " is no longer AFK!")
+		BSU.SendChatMsg(nil, ply, " is no longer AFK")
 	end
 	ply.bsu_last_interacted_time = SysTime()
 end)
