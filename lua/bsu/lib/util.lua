@@ -15,9 +15,7 @@ function BSU.HexToColor(hex, alpha)
 	return Color(tonumber("0x" .. hex:sub(1, 2)), tonumber("0x" .. hex:sub(3, 4)), tonumber("0x" .. hex:sub(5, 6)), alpha or 255)
 end
 
-function BSU.UTCTime()
-	return os.time()
-end
+BSU.UTCTime = os.time
 
 function BSU.LocalTime()
 	return os.time(os.date("!*t"))
