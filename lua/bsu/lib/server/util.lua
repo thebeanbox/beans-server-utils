@@ -47,7 +47,7 @@ function BSU.SendChatMsg(plys, ...)
 
 	for _, v in ipairs(plys) do
 		if v:IsValid() then
-			BSU.ClientRPC(plys, "chat.AddText", ...)
+			BSU.ClientRPC(v, "chat.AddText", ...)
 		else
 			MsgC(BSU.FixMsgCArgs(...))
 			MsgN()
