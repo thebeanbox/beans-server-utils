@@ -1,7 +1,7 @@
 -- lib/players.lua (SHARED)
 
 function BSU.GetPlayerTotalTime(ply)
-	return tonumber(BSU.GetPData(ply, "total_time")) + BSU.UTCTime() - tonumber(BSU.GetPData(ply, "connect_time"))
+	return tonumber(BSU.GetPData(ply, "total_time"))
 end
 
 function BSU.UTCToPlayerLocalTime(ply, utcTime)
