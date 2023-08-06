@@ -64,7 +64,7 @@ BSU.SetupCommand("banid", function(cmd)
 		local ply = self:GetCaller()
 		BSU.BanSteamID(steamid, reason, duration, ply:IsValid() and ply:SteamID64())
 
-		local name = BSU.GetPlayerDataBySteamID(steamid).name
+		local name = (BSU.GetPlayerDataBySteamID(steamid) or {}).name
 
 		self:BroadcastActionMsg("%caller% banned steamid %steamid%" .. (name and " (%name%)" or "") .. (duration ~= 0 and " for %duration%" or " permanently") .. (reason and " (%reason%)" or ""), {
 			steamid = util.SteamIDFrom64(steamid),
@@ -170,10 +170,10 @@ BSU.SetupCommand("unban", function(cmd)
 		local steamid = self:GetStringArg(1, true)
 		steamid = BSU.ID64(steamid)
 
-		local caller = self:GetCaller()
-		BSU.RevokeSteamIDBan(steamid, caller:IsValid() and caller:SteamID64()) -- this also checks if the steam id is actually banned
+		local ply = self:GetCaller()
+		BSU.RevokeSteamIDBan(steamid, ply:IsValid() and ply:SteamID64()) -- this also checks if the steam id is actually banned
 
-		local name = BSU.GetPlayerDataBySteamID(steamid).name
+		local name = (BSU.GetPlayerDataBySteamID(steamid) or {}).name
 
 		self:BroadcastActionMsg("%caller% unbanned %steamid%" .. (name and " (%name%)" or ""), {
 			steamid = util.SteamIDFrom64(steamid),
@@ -225,10 +225,10 @@ BSU.SetupCommand("superban", function(cmd)
 	cmd:SetFunction(function(self)
 		local target = self:GetPlayerArg(1, true)
 		local ply, silent = self:GetCaller(), self:GetSilent()
-		BSU.RunCommand(ply, "ban", self:GetRawMultiStringArg(1, -1), silent)
+		BSU.SafeRunCommand(ply, "ban", self:GetRawMultiStringArg(1, -1), silent)
 		local ownerID = target:OwnerSteamID64()
 		if ownerID ~= target:SteamID64() then
-			BSU.RunCommand(ply, "banid", ownerID .. " " .. (self:GetRawMultiStringArg(2, -1) or ""), silent)
+			BSU.SafeRunCommand(ply, "banid", ownerID .. " " .. (self:GetRawMultiStringArg(2, -1) or ""), silent)
 		end
 	end)
 end)
@@ -247,8 +247,8 @@ BSU.SetupCommand("superduperban", function(cmd)
 	cmd:SetAccess(BSU.CMD_SUPERADMIN)
 	cmd:SetFunction(function(self)
 		local ply, argStr, silent = self:GetCaller(), self:GetRawMultiStringArg(1, -1) or "", self:GetSilent()
-		BSU.RunCommand(ply, "superban", argStr, silent)
-		BSU.RunCommand(ply, "ipban", argStr, silent)
+		BSU.SafeRunCommand(ply, "superban", argStr, silent)
+		BSU.SafeRunCommand(ply, "ipban", argStr, silent)
 	end)
 end)
 
