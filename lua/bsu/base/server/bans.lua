@@ -48,7 +48,6 @@ local function authedBanCheck(ply)
 		if plyID ~= ownerID then -- this player doesn't own the Garry's Mod license they're using
 			local ownerBan = BSU.GetBanStatus(ownerID)
 			if ownerBan then -- if the owner of the license is banned
-				-- "if you have the audacity to try and ban evade you can enjoy a permaban" -Bonyoze
 				BSU.BanPlayer(ply, string.format("%s (Family share with banned account: %s)", ownerBan.reason or "No reason given", util.SteamIDFrom64(ownerID)), 0, ownerBan.reason)
 			end
 		end

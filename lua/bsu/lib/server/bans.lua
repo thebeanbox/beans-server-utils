@@ -42,20 +42,19 @@ function BSU.GetBanStatus(identity)
 end
 
 -- ban a player by steam id (this adds a new ban entry so it will be the new ban status for this player)
-function BSU.BanSteamID(steamid, reason, duration, adminID)
+function BSU.BanSteamID(steamid, reason, duration, admin)
 	steamid = BSU.ID64(steamid)
-	if adminID then adminID = BSU.ID64(adminID) end
 
-	BSU.RegisterBan(steamid, reason, duration or 0, adminID and BSU.ID64(adminID) or nil)
+	BSU.RegisterBan(steamid, reason, duration or 0, IsValid(admin) and admin:SteamID64() or nil)
 
 	game.KickID(util.SteamIDFrom64(steamid), "(Banned) " .. (reason or "No reason given"))
 end
 
 -- ban a player by ip (this adds a new ban entry so it will be the new ban status for this player)
-function BSU.BanIP(ip, reason, duration, adminID)
+function BSU.BanIP(ip, reason, duration, admin)
 	ip = BSU.Address(ip)
 
-	BSU.RegisterBan(ip, reason, duration or 0, adminID and BSU.ID64(adminID) or nil)
+	BSU.RegisterBan(ip, reason, duration or 0, IsValid(admin) and admin:SteamID64() or nil)
 
 	for _, v in ipairs(player.GetHumans()) do -- try to kick all players with this ip
 		if BSU.Address(v:IPAddress()) == ip then
@@ -65,24 +64,24 @@ function BSU.BanIP(ip, reason, duration, adminID)
 end
 
 -- unban a player by steam id
-function BSU.RevokeSteamIDBan(steamid, adminID)
+function BSU.RevokeSteamIDBan(steamid, admin)
 	local lastBan = BSU.GetBanStatus(steamid)
 	if not lastBan then return error("Steam ID is not currently banned") end
 
-	BSU.SQLUpdateByValues(BSU.SQL_BANS, lastBan, { unbanTime = BSU.UTCTime(), unbanAdmin = adminID and BSU.ID64(adminID) or nil })
+	BSU.SQLUpdateByValues(BSU.SQL_BANS, lastBan, { unbanTime = BSU.UTCTime(), unbanAdmin = IsValid(admin) and admin:SteamID64() or nil })
 end
 
 -- unban a player by ip
-function BSU.RevokeIPBan(ip, adminID)
+function BSU.RevokeIPBan(ip, admin)
 	local lastBan = BSU.GetBanStatus(ip)
 	if not lastBan then return error("IP is not currently banned") end
 
-	BSU.SQLUpdateByValues(BSU.SQL_BANS, lastBan, { unbanTime = BSU.UTCTime(), unbanAdmin = adminID and BSU.ID64(adminID) or nil })
+	BSU.SQLUpdateByValues(BSU.SQL_BANS, lastBan, { unbanTime = BSU.UTCTime(), unbanAdmin = IsValid(admin) and admin:SteamID64() or nil })
 end
 
 function BSU.BanPlayer(ply, reason, duration, admin)
 	if ply:IsBot() then return error("Unable to ban a bot, try kicking") end
-	BSU.BanSteamID(ply:SteamID64(), reason, duration, IsValid(admin) and admin:SteamID64() or nil)
+	BSU.BanSteamID(ply:SteamID64(), reason, duration, admin)
 	hook.Run("BSU_PlayerBanned", ply, reason, duration, admin)
 end
 
@@ -90,7 +89,7 @@ function BSU.SuperBanPlayer(ply, reason, duration, admin)
 	BSU.BanPlayer(ply, reason, duration, admin)
 
 	if ply:IsFullyAuthenticated() and ply:OwnerSteamID64() ~= ply:SteamID64() then
-		BSU.BanSteamID(ply:OwnerSteamID64(), reason, duration, IsValid(admin) and admin:SteamID64() or nil)
+		BSU.BanSteamID(ply:OwnerSteamID64(), reason, duration, admin)
 	end
 end
 
@@ -101,11 +100,11 @@ end
 
 function BSU.IPBanPlayer(ply, reason, duration, admin)
 	if ply:IsBot() then return error("Unable to ip ban a bot, try kicking") end
-	BSU.BanIP(ply:IPAddress(), reason, duration, IsValid(admin) and admin:SteamID64() or nil)
+	BSU.BanIP(ply:IPAddress(), reason, duration, admin)
 end
 
 function BSU.KickPlayer(ply, reason, admin)
-	BSU.RegisterBan(ply:SteamID64(), reason, nil, IsValid(admin) and admin:SteamID64() or nil) -- log it
+	BSU.RegisterBan(ply:SteamID64(), reason, nil, admin) -- log it
 	game.KickID(ply:UserID(), "(Kicked) " .. (reason or "No reason given"))
 	hook.Run("BSU_PlayerKicked", ply, reason, admin)
 end
