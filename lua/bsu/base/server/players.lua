@@ -72,9 +72,8 @@ end
 net.Receive("bsu_client_info", updateClientInfo)
 
 -- send request for some client data
-gameevent.Listen("player_activate")
-hook.Add("player_activate", "BSU_RequestClientInfo", function(data)
-	BSU.RequestClientInfo(Player(data.userid))
+hook.Add("BSU_ClientReady", "BSU_RequestClientInfo", function(ply)
+	BSU.RequestClientInfo(ply)
 end)
 
 -- allow players picking up other players

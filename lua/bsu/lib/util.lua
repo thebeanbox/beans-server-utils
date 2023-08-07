@@ -24,7 +24,7 @@ end
 -- checks if a string is a valid STEAM_0 or 64 bit formatted steam id (also returns if it was 64 bit or not)
 function BSU.IsValidSteamID(steamid)
 	if not isstring(steamid) then return false end
-	if string.match(steamid, "^STEAM_0:%d:%d+$") then
+	if string.match(steamid, "^STEAM_0:[01]:%d+$") then
 		return true, false
 	elseif string.match(steamid, "^%d+$") then
 		return true, true

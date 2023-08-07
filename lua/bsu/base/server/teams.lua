@@ -11,8 +11,7 @@ end
 -- setup teams serverside
 BSU.SetupTeams()
 
--- setup teams clientside on player activate
-gameevent.Listen("player_activate")
-hook.Add("player_activate", "BSU_ClientSetupTeams", function(data)
-	BSU.ClientSetupTeams(Player(data.userid))
+-- setup teams clientside
+hook.Add("BSU_ClientReady", "BSU_ClientSetupTeams", function(ply)
+	BSU.ClientSetupTeams(ply)
 end)
