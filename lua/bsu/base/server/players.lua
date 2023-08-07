@@ -88,10 +88,7 @@ local grabbed = {}
 hook.Add("OnPhysgunPickup", "BSU_PlayerPhysgunPickup", function(ply, ent)
 	if not ent:IsPlayer() then return end
 
-	-- player unfreezing
-	if BSU.PlayerHasCommandAccess(ply, "unfreeze") then
-		BSU.SafeRunCommand(ply, "unfreeze", "$" .. ent:UserID())
-	end
+	hook.Run("BSU_PlayerPhysgunPickup", ply, ent)
 
 	ent:SetMoveType(MOVETYPE_NONE)
 	ent:SetVelocity(-ent:GetVelocity())
@@ -112,10 +109,7 @@ hook.Add("PhysgunDrop", "BSU_PlayerPhysgunDrop", function(ply, ent)
 	ent.bsu_grabbedPos = nil
 	ent.bsu_grabbedVel = nil
 
-	-- player freezing
-	if ply:KeyDown(IN_ATTACK2) and BSU.PlayerHasCommandAccess(ply, "freeze") then
-		BSU.SafeRunCommand(ply, "freeze", "$" .. ent:UserID())
-	end
+	hook.Run("BSU_PlayerPhysgunDrop", ply, ent)
 end)
 
 -- calculate velocity of grabbed players

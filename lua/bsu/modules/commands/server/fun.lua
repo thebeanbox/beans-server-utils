@@ -140,6 +140,17 @@ hook.Add("PlayerDisconnected", "BSU_RemoveRagdoll", function(ply)
 	end
 end)
 
+hook.Add("BSU_PlayerPhysgunDrop", "BSU_PlayerPhysgunFreeze", function(ply, target)
+	if ply:KeyDown(IN_ATTACK2) and BSU.PlayerHasCommandAccess(ply, "freeze") then
+		BSU.SafeRunCommand(ply, "freeze", "$" .. target:UserID())
+	end
+end)
+
+hook.Add("BSU_PlayerPhysgunPickup", "BSU_PlayerPhysgunUnfreeze", function(ply, target)
+	if BSU.PlayerHasCommandAccess(ply, "unfreeze") then
+		BSU.SafeRunCommand(ply, "unfreeze", "$" .. target:UserID())
+	end
+end)
 
 local function block(ply)
 	if ply.bsu_ragdoll or ply.bsu_frozen then return false end
@@ -161,10 +172,9 @@ BSU.SetupCommand("god", function(cmd)
 	cmd:SetDescription("Enables godmode on a player")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
-
+	cmd:SetFunction(function(self, _, targets)
 		local godded = {}
+
 		for _, v in ipairs(targets) do
 			if self:CheckExclusive(v, true) and not v.bsu_godded then
 				v:AddFlags(FL_GODMODE)
@@ -177,6 +187,7 @@ BSU.SetupCommand("god", function(cmd)
 			self:BroadcastActionMsg("%caller% godded %godded%", { godded = godded })
 		end
 	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 BSU.AliasCommand("build", "god")
 
@@ -190,10 +201,9 @@ BSU.SetupCommand("ungod", function(cmd)
 	cmd:SetDescription("Enables godmode on a player")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
-
+	cmd:SetFunction(function(self, _, targets)
 		local ungodded = {}
+
 		for _, v in ipairs(targets) do
 			if self:CheckExclusive(v, true) and v.bsu_godded then
 				if not v.bsu_frozen then v:RemoveFlags(FL_GODMODE) end
@@ -206,6 +216,7 @@ BSU.SetupCommand("ungod", function(cmd)
 			self:BroadcastActionMsg("%caller% ungodded %ungodded%", { ungodded = ungodded })
 		end
 	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 BSU.AliasCommand("pvp", "ungod")
 
@@ -219,12 +230,11 @@ BSU.SetupCommand("ragdoll", function(cmd)
 	cmd:SetDescription("Set players into ragdoll mode")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
-
+	cmd:SetFunction(function(self, caller, targets)
 		local ragdolled = {}
+
 		for _, v in ipairs(targets) do
-			if self:CheckExclusive(v, true) and ragdollPlayer(v, self:GetCaller()) then -- successfully ragdolled
+			if self:CheckExclusive(v, true) and ragdollPlayer(v, caller) then -- successfully ragdolled
 				self:SetExclusive(v, "ragdolled")
 				table.insert(ragdolled, v)
 			end
@@ -234,6 +244,7 @@ BSU.SetupCommand("ragdoll", function(cmd)
 			self:BroadcastActionMsg("%caller% ragdolled %ragdolled%", { ragdolled = ragdolled })
 		end
 	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
 --[[
@@ -246,10 +257,9 @@ BSU.SetupCommand("unragdoll", function(cmd)
 	cmd:SetDescription("Set players out of ragdoll mode")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
-
+	cmd:SetFunction(function(self, _, targets)
 		local unragdolled = {}
+
 		for _, v in ipairs(targets) do
 			if unragdollPlayer(v) then -- successfully unragdolled
 				self:ClearExclusive(v)
@@ -261,6 +271,7 @@ BSU.SetupCommand("unragdoll", function(cmd)
 			self:BroadcastActionMsg("%caller% unragdolled %unragdolled%", { unragdolled = unragdolled })
 		end
 	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
 --[[
@@ -273,10 +284,9 @@ BSU.SetupCommand("freeze", function(cmd)
 	cmd:SetDescription("Make players unable to move")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
-
+	cmd:SetFunction(function(self, _, targets)
 		local frozen = {}
+
 		for _, v in ipairs(targets) do
 			if self:CheckExclusive(v, true) then
 				v:AddFlags(FL_FROZEN + FL_GODMODE)
@@ -292,6 +302,7 @@ BSU.SetupCommand("freeze", function(cmd)
 			self:BroadcastActionMsg("%caller% froze %frozen%", { frozen = frozen })
 		end
 	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
 --[[
@@ -304,10 +315,9 @@ BSU.SetupCommand("unfreeze", function(cmd)
 	cmd:SetDescription("Make players able to move again")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
-
+	cmd:SetFunction(function(self, _, targets)
 		local unfrozen = {}
+
 		for _, v in ipairs(targets) do
 			if v:IsFlagSet(FL_FROZEN) then
 				v:RemoveFlags(FL_FROZEN)
@@ -323,6 +333,7 @@ BSU.SetupCommand("unfreeze", function(cmd)
 			self:BroadcastActionMsg("%caller% unfroze %unfrozen%", { unfrozen = unfrozen })
 		end
 	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 BSU.AliasCommand("thaw", "unfreeze")
 
@@ -336,12 +347,7 @@ BSU.SetupCommand("health", function(cmd)
 	cmd:SetDescription("Set health of players")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(2) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
-		local amount = self:GetRawStringArg(2) and self:GetNumberArg(2, true) or self:GetNumberArg(1, true)
-
-		amount = math.min(math.max(amount, 0), 2 ^ 31 - 1)
-
+	cmd:SetFunction(function(self, _, targets, amount)
 		for _, v in ipairs(targets) do
 			v:SetHealth(amount)
 		end
@@ -350,6 +356,8 @@ BSU.SetupCommand("health", function(cmd)
 			self:BroadcastActionMsg("%caller% set the health of %targets% to %amount%", { targets = targets, amount = amount })
 		end
 	end)
+	cmd:AddPlayersArg("targets", { filter = true })
+	cmd:AddNumberArg("amount", { min = 0, max = 2 ^ 31 - 1 })
 end)
 BSU.AliasCommand("hp", "health")
 
@@ -363,12 +371,7 @@ BSU.SetupCommand("armor", function(cmd)
 	cmd:SetDescription("Set armor of players")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(2) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
-		local amount = self:GetRawStringArg(2) and self:GetNumberArg(2, true) or self:GetNumberArg(1, true)
-
-		amount = math.min(math.max(amount, 0), 2 ^ 31 - 1)
-
+	cmd:SetFunction(function(self, _, targets, amount)
 		for _, v in ipairs(targets) do
 			v:SetArmor(amount)
 		end
@@ -377,6 +380,8 @@ BSU.SetupCommand("armor", function(cmd)
 			self:BroadcastActionMsg("%caller% set the armor of %targets% to %amount%", { targets = targets, amount = amount })
 		end
 	end)
+	cmd:AddPlayersArg("targets", { filter = true })
+	cmd:AddNumberArg("amount", { min = 0, max = 2 ^ 31 - 1 })
 end)
 BSU.AliasCommand("suit", "armor")
 
@@ -390,9 +395,7 @@ BSU.SetupCommand("launch", function(cmd)
 	cmd:SetDescription("Launch players")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
-
+	cmd:SetFunction(function(self, _, targets)
 		for _, v in ipairs(targets) do
 			v:SetVelocity(Vector(0, 0, 5000))
 		end
@@ -401,6 +404,7 @@ BSU.SetupCommand("launch", function(cmd)
 			self:BroadcastActionMsg("%caller% launched %targets%", { targets = targets })
 		end
 	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
 --[[
@@ -413,9 +417,7 @@ BSU.SetupCommand("respawn", function(cmd)
 	cmd:SetDescription("Respawn players")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
-
+	cmd:SetFunction(function(self, _, targets)
 		for _, v in ipairs(targets) do
 			v:Spawn()
 		end
@@ -424,6 +426,7 @@ BSU.SetupCommand("respawn", function(cmd)
 			self:BroadcastActionMsg("%caller% respawned %targets%", { targets = targets })
 		end
 	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
 --[[
@@ -436,9 +439,7 @@ BSU.SetupCommand("slay", function(cmd)
 	cmd:SetDescription("Slay players")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
-
+	cmd:SetFunction(function(self, _, targets)
 		for _, v in ipairs(targets) do
 			v:Kill()
 		end
@@ -447,6 +448,7 @@ BSU.SetupCommand("slay", function(cmd)
 			self:BroadcastActionMsg("%caller% slayed %targets%", { targets = targets })
 		end
 	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 BSU.AliasCommand("kill", "slay")
 
@@ -460,9 +462,7 @@ BSU.SetupCommand("disintegrate", function(cmd)
 	cmd:SetDescription("Disintegrate players")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
-
+	cmd:SetFunction(function(self, _, targets)
 		local dmgInfo = DamageInfo()
 		dmgInfo:SetDamageType(DMG_DISSOLVE)
 
@@ -477,6 +477,7 @@ BSU.SetupCommand("disintegrate", function(cmd)
 			self:BroadcastActionMsg("%caller% disintegrated %targets%", { targets = targets })
 		end
 	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 BSU.AliasCommand("smite", "disintegrate")
 
@@ -490,9 +491,7 @@ BSU.SetupCommand("explode", function(cmd)
 	cmd:SetDescription("Explode players")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
-
+	cmd:SetFunction(function(self, _, targets)
 		local dmgInfo = DamageInfo()
 		dmgInfo:SetDamageType(DMG_BLAST)
 		dmgInfo:SetDamage(1)
@@ -517,6 +516,7 @@ BSU.SetupCommand("explode", function(cmd)
 			self:BroadcastActionMsg("%caller% exploded %targets%", { targets = targets })
 		end
 	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
 --[[
@@ -529,9 +529,7 @@ BSU.SetupCommand("enter", function(cmd)
 	cmd:SetDescription("Force a player into the vehicle you're looking at")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self)
-		local target = self:GetRawStringArg(1) and self:GetPlayerArg(1, true) or self:GetCaller(true)
-
+	cmd:SetFunction(function(self, _, target)
 		if not target:InVehicle() then
 			local vehicle = self:GetCaller(true):GetEyeTrace().Entity
 			if not vehicle:IsVehicle() then return end
@@ -540,6 +538,7 @@ BSU.SetupCommand("enter", function(cmd)
 
 		self:BroadcastActionMsg("%caller% forced %target% into a vehicle", { target = target })
 	end)
+	cmd:AddPlayerArg("target", { default = "^", check = true })
 end)
 
 --[[
@@ -552,10 +551,9 @@ BSU.SetupCommand("eject", function(cmd)
 	cmd:SetDescription("Eject players from the vehicle they're in")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
-
+	cmd:SetFunction(function(self, _, targets)
 		local ejected = {}
+
 		for _, v in ipairs(targets) do
 			if v:InVehicle() then
 				v:ExitVehicle()
@@ -567,6 +565,7 @@ BSU.SetupCommand("eject", function(cmd)
 			self:BroadcastActionMsg("%caller% ejected %ejected%", { ejected = ejected })
 		end
 	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
 --[[
@@ -579,13 +578,12 @@ BSU.SetupCommand("notification", function(cmd)
 	cmd:SetDescription("Send a notification to players")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
-		local msg = self:GetMultiStringArg(2, -1, true)
-
+	cmd:SetFunction(function(_, _, targets, msg)
 		BSU.ClientRPC(targets, "notification.AddLegacy", msg, NOTIFY_GENERIC, 5)
 		BSU.ClientRPC(targets, "surface.PlaySound", "buttons/button15.wav")
 	end)
+	cmd:AddPlayersArg("targets", { filter = true })
+	cmd:AddStringArg("message", { multi = true })
 end)
 BSU.AliasCommand("notify", "notification")
 
@@ -599,14 +597,12 @@ BSU.SetupCommand("earthquake", function(cmd)
 	cmd:SetDescription("Shake the ground for players")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
-		local duration = math.min(math.max(self:GetNumberArg(2) or 10, 1), 10)
-
+	cmd:SetFunction(function(self, _, targets, duration)
 		BSU.ClientRPC(targets, "util.ScreenShake", Vector(), 100, 100, duration, 0)
-
-		self:BroadcastActionMsg("%caller% shook the ground for %targets% for %duration% seconds.", { targets = targets, duration = duration })
+		self:BroadcastActionMsg("%caller% shook the ground for %targets% for %duration% second" .. (duration ~= 1 and "s" or ""), { targets = targets, duration = duration })
 	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
+	cmd:AddNumberArg("duration", { default = "10", min = 1, max = 10, allowtime = true })
 end)
 BSU.AliasCommand("shake", "earthquake")
 
@@ -624,9 +620,7 @@ BSU.SetupCommand("bathe", function(cmd)
 	cmd:SetDescription("Throw a bathtub at players")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
-
+	cmd:SetFunction(function(self, _, targets)
 		for _, v in ipairs(targets) do
 			if not v.bsu_frozen then v:RemoveFlags(FL_GODMODE) end
 			if v:InVehicle() then v:ExitVehicle() end
@@ -652,6 +646,7 @@ BSU.SetupCommand("bathe", function(cmd)
 
 		self:BroadcastActionMsg("%caller% bathed %targets%", { targets = targets })
 	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
 --[[
@@ -664,9 +659,7 @@ BSU.SetupCommand("trainwreck", function(cmd)
 	cmd:SetDescription("Throw a train at players")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
-
+	cmd:SetFunction(function(self, _, targets)
 		for _, v in ipairs(targets) do
 			if not v.bsu_frozen then v:RemoveFlags(FL_GODMODE) end
 			if v:InVehicle() then v:ExitVehicle() end
@@ -692,6 +685,7 @@ BSU.SetupCommand("trainwreck", function(cmd)
 
 		self:BroadcastActionMsg("%caller% trainwrecked %targets%", { targets = targets })
 	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
 --[[
@@ -704,10 +698,9 @@ BSU.SetupCommand("gimp", function(cmd)
 	cmd:SetDescription("Gimps a player in text chat, making them say bizarre things")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
-
+	cmd:SetFunction(function(self, _, targets)
 		local gimped = {}
+
 		for _, v in ipairs(targets) do
 			if not v.bsu_muted and not v.bsu_gimped then
 				v.bsu_gimped = true
@@ -716,11 +709,10 @@ BSU.SetupCommand("gimp", function(cmd)
 		end
 
 		if next(gimped) ~= nil then
-			self:BroadcastActionMsg("%caller% gimped %gimped%", {
-				gimped = gimped
-			})
+			self:BroadcastActionMsg("%caller% gimped %gimped%", { gimped = gimped })
 		end
 	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
 --[[
@@ -733,9 +725,7 @@ BSU.SetupCommand("ungimp", function(cmd)
 	cmd:SetDescription("Ungimps a player")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self)
-		local targets = self:GetRawStringArg(1) and self:FilterTargets(self:GetPlayersArg(1, true), true) or { self:GetCaller(true) }
-
+	cmd:SetFunction(function(self, _, targets)
 		local ungimped = {}
 		for _, v in ipairs(targets) do
 			if v.bsu_gimped then
@@ -745,11 +735,10 @@ BSU.SetupCommand("ungimp", function(cmd)
 		end
 
 		if next(ungimped) ~= nil then
-			self:BroadcastActionMsg("%caller% ungimped %ungimped%", {
-				ungimped = ungimped
-			})
+			self:BroadcastActionMsg("%caller% ungimped %ungimped%", { ungimped = ungimped })
 		end
 	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
 local gimpLines = {
@@ -773,10 +762,7 @@ BSU.SetupCommand("spectate", function(cmd)
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetSilent(true)
-	cmd:SetFunction(function(self)
-		local target = self:GetPlayerArg(1, true)
-		local caller = self:GetCaller(true)
-
+	cmd:SetFunction(function(self, caller, target)
 		getSpawnInfo(target)
 
 		caller.bsu_spectating = true
@@ -787,6 +773,8 @@ BSU.SetupCommand("spectate", function(cmd)
 
 		self:PrintChatMsg("Spectating ", target)
 	end)
+	cmd:SetValidCaller(true)
+	cmd:AddPlayerArg("target", { check = true })
 end)
 
 --[[
@@ -800,9 +788,7 @@ BSU.SetupCommand("unspectate", function(cmd)
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetSilent(true)
-	cmd:SetFunction(function(self)
-		local caller = self:GetCaller(true)
-
+	cmd:SetFunction(function(self, caller)
 		if caller.bsu_spectating then
 			caller.bsu_spectating = nil
 			caller:UnSpectate()
@@ -812,6 +798,7 @@ BSU.SetupCommand("unspectate", function(cmd)
 
 		self:PrintChatMsg("Stopped spectating")
 	end)
+	cmd:SetValidCaller(true)
 end)
 
 hook.Add("KeyPress", "BSU_StopSpectating", function(ply)

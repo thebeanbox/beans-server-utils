@@ -1,9 +1,5 @@
 local desc_color = Color(180, 180, 180)
 
---[[
-	Name: help
-	Desc: Show a list of all available BSU commands
-]]
 BSU.SetupCommand("help", function(cmd)
 	cmd:SetDescription("Show a list of all available BSU commands")
 	cmd:SetAccess(BSU.CMD_CONSOLE)

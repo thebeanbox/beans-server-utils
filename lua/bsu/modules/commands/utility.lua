@@ -113,6 +113,10 @@ if SERVER then
 				self:BroadcastActionMsg("The vote has ended! The winner is \"%winner%\"", {winner = winner})
 			end)
 		end)
+		cmd:AddStringArg("title")
+		for i = 1, 10 do
+			cmd:AddStringArg("option " .. i, { optional = true })
+		end
 	end)
 
 else
