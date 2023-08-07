@@ -840,7 +840,7 @@ function BSU.CommandHandler(caller, cmd, argStr, silent)
 	return setmetatable({
 		caller = caller,
 		cmd = cmd,
-		args = parseArgs(argStr, true),
+		args = argStr and parseArgs(argStr, true) or "",
 		silent = silent or false
 	}, objCmdHandler)
 end
