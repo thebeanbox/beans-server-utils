@@ -8,6 +8,7 @@ concommand.Add("bsu_reset_permissions", function()
 			permission INTEGER NOT NULL
 		]]
 	))
+	hook.Run("BSU_ResetPermissions")
 end)
 
 local function addPropProtectionMenu()
@@ -29,10 +30,12 @@ local function addPropProtectionMenu()
 		label:SetText("[ Players ]")
 		label:SetColor(color_black)
 		local icons = { "wrench", "wrench_orange", "wand", "ruby", "gun" }
+		local tips = { "Physgun", "Gravgun", "Toolgun/Properties", "Use (E)", "Damage" }
 		for i = 1, 5 do
-			local icon = top:Add("DImage")
+			local icon = top:Add("DImageButton")
 			icon:SetSize(16, 16)
 			icon:SetImage(string.format("icon16/%s.png", icons[i]))
+			icon:SetTooltip(tips[i])
 		end
 
 		local elems = {}
@@ -53,7 +56,7 @@ local function addPropProtectionMenu()
 			for _, v in ipairs(player.GetHumans()) do
 				if v == LocalPlayer() then continue end
 				local oldElem = oldElems[v]
-				if oldElem then
+				if oldElem:IsValid() then
 					oldElem.name:SetText(v:Nick()) -- incase name changed
 					elems[v] = oldElem
 					oldElems[v] = nil
@@ -70,9 +73,10 @@ local function addPropProtectionMenu()
 					name:SetText(v:Nick())
 					name:SetColor(color_black)
 
+					elem.boxes = {}
 					for i = 1, 5 do
 						local box = elem:Add("DCheckBox")
-						elem.box = box
+						elem.boxes[i] = box
 						box.ply = v
 						box.perm = math.pow(2, i - 1)
 						box:SetValue(BSU.CheckPermission(v:SteamID64(), box.perm))
@@ -86,7 +90,17 @@ local function addPropProtectionMenu()
 				v:Remove()
 			end
 		end
+
 		timer.Create("BSU_UpdatePropProtectionMenu", 1, 0, update)
+
+		hook.Add("BSU_ResetPermissions", "BSU_UpdatePropProtectionMenu", function()
+			for _, v in pairs(elems) do
+				v:Remove()
+			end
+			update()
+		end)
+
+		update()
 
 		pnl:CheckBox("Persist permissions across sessions", "bsu_permission_persist")
 		pnl:CheckBox("Allow props to take fire damage", "bsu_allow_fire_damage")
