@@ -1,15 +1,17 @@
 -- lib/client/commands.lua
 
-function BSU.RunCommand(name, argStr, silent)
-	local ply = LocalPlayer()
+local function run(cmd, handler)
+	cmd:GetFunction()(handler, handler:GetCaller(), handler:GetArgs())
+end
 
+function BSU.RunCommand(name, argStr, silent)
 	name = string.lower(name)
 	local cmd = BSU._cmds[name]
 	if not cmd then error("Command '" .. name .. "' does not exist") end
 
-	local handler = BSU.CommandHandler(ply, name, argStr, silent)
+	local handler = BSU.CommandHandler(LocalPlayer(), cmd, argStr, silent)
 
-	xpcall(cmd:GetFunction(), function(err) handler:PrintErrorMsg("Command errored with: " .. string.Split(err, ": ")[2]) end, handler)
+	xpcall(run, function(err) handler:PrintErrorMsg("Command errored with: " .. string.Split(err, ": ")[2]) end, cmd, handler)
 end
 
 function BSU.SafeRunCommand(name, argStr, silent)
@@ -33,16 +35,17 @@ net.Receive("bsu_command_run", function()
 end)
 
 local function callback(self)
-	BSU.SendRunCommand(self:GetName(), self:GetRawMultiStringArg(1) or "", self:GetSilent())
+	BSU.SendRunCommand(self.cmd.name, table.concat(self.args, " "), self.silent)
 end
 
-function BSU.RegisterServerCommand(name, ...)
+function BSU.RegisterServerCommand(name, desc, category, args)
 	name = string.lower(name)
 	local cmd = BSU._cmds[name]
 	if cmd and not cmd._serverside then return end -- clientside command already exists
 
-	cmd = BSU.Command(name, ...)
-	cmd:SetFunction(callback)
+	cmd = BSU.Command(name, desc, category)
+	cmd.args = args
+	cmd.func = callback
 	cmd._serverside = true
 
 	BSU.RegisterCommand(cmd)

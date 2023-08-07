@@ -58,7 +58,7 @@ hook.Add("BSU_ShowActionMessage", "BSU_OverrideActionMessage", overrideActionMes
 local function sendCommandData(ply)
 	for _, v in ipairs(BSU.GetCommands()) do
 		if v:GetAccess() ~= BSU.CMD_CONSOLE then
-			BSU.ClientRPC(ply, "BSU.RegisterServerCommand", v:GetName(), v:GetDescription(), v:GetCategory(), v:GetAccess(), v:GetSilent())
+			BSU.ClientRPC(ply, "BSU.RegisterServerCommand", v:GetName(), v:GetDescription(), v:GetCategory(), v:GetArgs())
 		end
 	end
 end

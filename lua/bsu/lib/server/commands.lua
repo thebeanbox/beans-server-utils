@@ -54,30 +54,36 @@ function BSU.PlayerHasCommandAccess(ply, name)
 	return access == BSU.CMD_SUPERADMIN and ply:IsSuperAdmin()
 end
 
+local function run(cmd, handler)
+	cmd:GetFunction()(handler, handler:GetCaller(cmd:GetValidCaller()), handler:GetArgs())
+end
+
 -- make a player run a command (does nothing if they do not have access to the command)
 function BSU.RunCommand(ply, name, argStr, silent)
 	name = string.lower(name)
 	local cmd = BSU._cmds[name]
-	if not cmd then error("Command '" .. name .. "' does not exist") end
+	if not cmd then error("command does not exist") end
 
 	if not BSU.PlayerHasCommandAccess(ply, name) then
 		BSU.SendChatMsg(ply, BSU.CLR_ERROR, "You don't have permission to use this command")
 		return
 	end
 
-	local handler = BSU.CommandHandler(ply, name, argStr, silent)
+	local handler = BSU.CommandHandler(ply, cmd, argStr, silent)
 
-	xpcall(cmd:GetFunction(), function(err) handler:PrintErrorMsg("Command errored with: " .. string.Split(err, ": ")[2]) end, handler)
+	xpcall(run, function(err) handler:PrintErrorMsg("Command errored with: " .. string.Split(err, ": ")[2]) end, cmd, handler)
 end
 
 function BSU.SafeGetCommandByName(ply, name)
-	local cmd = BSU.GetCommandByName(name)
+	name = string.lower(name)
+	local cmd = BSU._cmds[name]
 	if not cmd or (ply:IsValid() and cmd:GetAccess() == BSU.CMD_CONSOLE) then return end -- command doesn't exist or ply is not console and it is console-only
 	return cmd
 end
 
 -- make a player run a command but first checks if the command exists and is not console-only
 function BSU.SafeRunCommand(ply, name, argStr, silent)
+	name = string.lower(name)
 	if not BSU.SafeGetCommandByName(ply, name) then BSU.SendConsoleMsg(ply, color_white, "Unknown BSU command: '" .. name .. "'") return end
 	BSU.RunCommand(ply, name, string.sub(argStr, 1, 255), silent) -- limit arg string length
 end

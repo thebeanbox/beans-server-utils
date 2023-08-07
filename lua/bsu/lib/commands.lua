@@ -180,12 +180,16 @@ function objCommand.SetCategory(self, category)
 	self.category = category and string.lower(category) or "misc"
 end
 
-function objCommand.SetAccess(self, access) -- only used serverside, is pointless clientside but kept for shared scripts
+function objCommand.SetAccess(self, access)
 	self.access = access or BSU.CMD_ANYONE
 end
 
 function objCommand.SetSilent(self, silent)
 	self.silent = silent
+end
+
+function objCommand.SetValidCaller(self, validcaller)
+	self.validcaller = validcaller
 end
 
 function objCommand.SetFunction(self, func)
@@ -206,7 +210,7 @@ function objCommand.GetCategory(self)
 	return self.category
 end
 
-function objCommand.GetAccess(self) -- only used serverside, is pointless clientside but kept for shared scripts
+function objCommand.GetAccess(self)
 	return self.access
 end
 
@@ -214,20 +218,84 @@ function objCommand.GetSilent(self)
 	return self.silent
 end
 
+function objCommand.GetValidCaller(self)
+	return self.validcaller
+end
+
 function objCommand.GetFunction(self)
 	return self.func
 end
 
+function objCommand.GetArgs(self)
+	return self.args
+end
+
+-- command object add arguments
+
+function objCommand.AddStringArg(self, name, data)
+	data = data or {}
+	table.insert(self.args, {
+		kind = 0,
+		name = string.lower(name),
+		optional = data.optional or false,
+		default = data.default,
+		multi = data.multi or false,
+		autocomplete = data.autocomplete or {}
+	})
+end
+
+function objCommand.AddNumberArg(self, name, data)
+	data = data or {}
+	table.insert(self.args, {
+		kind = 1,
+		name = string.lower(name),
+		optional = data.optional or false,
+		default = data.default,
+		min = data.min,
+		max = data.max,
+		allowtime = data.allowtime or false,
+		autocomplete = data.autocomplete or {}
+	})
+end
+
+function objCommand.AddPlayerArg(self, name, data)
+	data = data or {}
+	table.insert(self.args, {
+		kind = 2,
+		name = string.lower(name),
+		optional = data.optional or false,
+		default = data.default,
+		check = data.check or false
+	})
+end
+
+function objCommand.AddPlayersArg(self, name, data)
+	data = data or {}
+	table.insert(self.args, {
+		kind = 3,
+		name = string.lower(name),
+		optional = data.optional or false,
+		default = data.default,
+		filter = data.filter or false
+	})
+end
+
+
 -- create a command object
-function BSU.Command(name, desc, category, access, silent, func)
-	return setmetatable({
+function BSU.Command(name, desc, category, access, silent, validcaller, func)
+	local cmd = setmetatable({
 		name = string.lower(name),
 		desc = desc or "",
 		category = category or "misc",
 		access = access or BSU.CMD_ANYONE,
 		silent = silent or false,
-		func = func or function() end
+		validcaller = validcaller or false,
+		func = func or function() end,
+		args = {}
 	}, objCommand)
+	cmd.__index = cmd
+	cmd.__tostring = objCommand.__tostring
+	return cmd
 end
 
 function BSU.RegisterCommand(cmd)
@@ -243,15 +311,11 @@ end
 function BSU.AliasCommand(alias, name)
 	name = string.lower(name)
 	local cmd = BSU._cmds[name]
-	local aliasCmd = BSU.Command(
-		alias,
-		"Alias of " .. name,
-		cmd:GetCategory(),
-		cmd:GetAccess(),
-		cmd:GetSilent(),
-		cmd:GetFunction()
-	)
-	BSU.RegisterCommand(aliasCmd)
+	if getmetatable(cmd) ~= objCommand then error("invalid command, is it already an alias?") end
+	BSU.RegisterCommand(setmetatable({
+		name = alias,
+		desc = "Alias of " .. name,
+	}, cmd))
 end
 
 function BSU.GetCommands()
@@ -302,16 +366,12 @@ local objCmdHandler = {}
 objCmdHandler.__index = objCmdHandler
 objCmdHandler.__tostring = function(self) return "BSU Command Handler[" .. self.name .. "]" end
 
-function objCmdHandler.GetName(self)
-	return self.name
-end
-
-function objCmdHandler.GetSilent(self)
-	return self.silent
+function objCmdHandler.GetCommand(self)
+	return self.cmd
 end
 
 function objCmdHandler.GetCaller(self, fail)
-	if fail and not self.caller:IsValid() then
+	if SERVER and fail and not self.caller:IsValid() then
 		error("Unable to find player who called the command (was ran from server console?)")
 	end
 	return self.caller
@@ -446,6 +506,174 @@ function objCmdHandler.GetPlayersArg(self, n, fail)
 	end
 end
 
+local function stringTimeToMins(str)
+	if str == nil then return end
+	str = string.gsub(str, "%s", "")
+	if str == "" then return end
+
+	local mins = 0
+	local pos = string.find(str, "%a")
+	while pos do
+		local char = string.sub(str, pos, pos)
+		local num = tonumber(string.sub(str, 1, pos - 1))
+		if not num then return end
+
+		local multiplier
+		if char == "h" then
+			multiplier = 60
+		elseif char == "d" then
+			multiplier = 60 * 24
+		elseif char == "w" then
+			multiplier = 60 * 24 * 7
+		elseif char == "y" then
+			multiplier = 60 * 24 * 365
+		else
+			return
+		end
+
+		str = string.sub(str, pos + 1)
+		pos = string.find(str, "%a")
+		mins = mins + num * multiplier
+	end
+
+	if str ~= "" then
+		local num = tonumber(str)
+		if not num then return end
+		mins = mins + num
+	end
+
+	return mins
+end
+
+local function getStringArg(args, n, multi)
+	if multi then
+		local str
+		for i = n, #args do
+			local arg = args[i]
+			if arg then
+				if str then
+					str = str .. " " .. arg
+				else
+					str = arg
+				end
+			else
+				break
+			end
+		end
+		if str then
+			return table.concat(parseArgs(str), " ")
+		else
+			return nil, "expected string, found nothing"
+		end
+	else
+		local arg = args[n]
+		if arg then
+			return parseArgs(arg)[1]
+		else
+			return nil, "expected string, found nothing"
+		end
+	end
+end
+
+local function getNumberArg(arg, allowtime)
+	if arg then
+		local num = allowtime and stringTimeToMins(arg) or tonumber(arg)
+		if num then
+			return num
+		else
+			return nil, "failed to interpret argument as a number"
+		end
+	else
+		return nil, "expected number, got nothing"
+	end
+end
+
+local function getPlayerArg(arg, caller)
+	if arg then
+		local plys = parsePlayerArg(caller, arg)
+		if #plys == 1 then
+			local ply = plys[1]
+			if ply:IsValid() then
+				return ply
+			else
+				return nil, "target was invalid"
+			end
+		else
+			if next(plys) == nil then
+				return nil, "failed to find a target"
+			else
+				return nil, "received too many targets"
+			end
+		end
+	else
+		return nil, "expected target, found nothing"
+	end
+end
+
+local function getPlayersArg(arg, caller)
+	if arg then
+		local plys = parsePlayerArg(caller, arg)
+		if next(plys) ~= nil then
+			return plys
+		else
+			return nil, "failed to find any targets"
+		end
+	else
+		return nil, "expected targets, found nothing"
+	end
+end
+
+function objCmdHandler.GetArgs(self)
+	local args = {}
+
+	local n = 1
+	for k, v in ipairs(self.cmd.args) do
+		if v.kind == 0 then -- string
+			local arg, err = getStringArg(self.args, n, v.multi)
+			if v.default then arg, err = v.default end
+			if err then
+				if not v.optional then errorBadArgument(n, err) end
+				n = n - 1
+			end
+			args[k] = arg
+		elseif v.kind == 1 then -- number
+			local arg, err = getNumberArg(self.args[n] or v.default, v.allowtime)
+			if err then
+				if not v.optional then errorBadArgument(n, err) end
+				n = n - 1
+			end
+			if arg then
+				if v.min then arg = math.max(arg, v.min) end
+				if v.max then arg = math.min(arg, v.max) end
+			end
+			args[k] = arg
+		elseif v.kind == 2 then -- player
+			local arg, err = getPlayerArg(self.args[n] or v.default, self.caller)
+			if err then
+				if not v.optional then errorBadArgument(n, err) end
+				n = n - 1
+			end
+			if SERVER and arg and v.check then arg = self:CheckCanTarget(arg, not v.optional) and arg or nil end
+			args[k] = arg
+		elseif v.kind == 3 then -- players
+			local arg, err = getPlayersArg(self.args[n] or v.default, self.caller)
+			if err then
+				if not v.optional then errorBadArgument(n, err) end
+				n = n - 1
+			end
+			if SERVER and arg and v.filter then arg = self:FilterTargets(arg, not v.optional) end
+			args[k] = arg
+		end
+		n = n + 1
+	end
+
+	return unpack(args, 1, #self.cmd.args)
+end
+
+function objCmdHandler.GetSilent(self)
+	return self.silent
+end
+
 if SERVER then
 	function objCmdHandler.CheckCanTargetSteamID(self, targetID, fail)
 		targetID = BSU.ID64(targetID)
@@ -548,7 +776,7 @@ if SERVER then
 	-- broadcast a formatted message (intended for command actions)
 	function objCmdHandler.BroadcastActionMsg(self, msg, args)
 		if not istable(plys) then plys = { plys } end
-		local silent = self.silent or BSU._cmds[self.name].silent
+		local silent = self.silent or BSU._cmds[self.cmd.name].silent
 		if silent then msg = "(SILENT) " .. msg end
 		args = args or {}
 
@@ -608,11 +836,11 @@ function objCmdHandler.ClearExclusive(self, ply)
 end
 
 -- create a command handler object
-function BSU.CommandHandler(caller, name, argStr, silent)
+function BSU.CommandHandler(caller, cmd, argStr, silent)
 	return setmetatable({
 		caller = caller,
-		name = name,
-		args = parseArgs(argStr or "", true),
+		cmd = cmd,
+		args = parseArgs(argStr, true),
 		silent = silent or false
 	}, objCmdHandler)
 end
