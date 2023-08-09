@@ -806,3 +806,42 @@ hook.Add("KeyPress", "BSU_StopSpectating", function(ply)
 		BSU.SafeRunCommand(ply, "unspectate")
 	end
 end)
+
+--[[
+	Name: ignite
+	Desc: Light a player on fire
+	Arguments:
+		1. Targets (players, default: self)
+]]
+BSU.SetupCommand("ignite", function(cmd)
+	cmd:SetDescription("Light a player on fire")
+	cmd:SetCategory("fun")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self, _, targets, duration)
+		for _, ply in ipairs(targets) do
+			ply:Ignite(duration)
+		end
+	self:BroadcastActionMsg("%caller% ignited %targets% for %duration% seconds", { targets = targets, duration = duration })
+	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
+	cmd:AddNumberArg("duration", { default = "10", min = 1, max = 60, allowtime = true })
+end)
+
+--[[
+	Name: unignite
+	Desc: Extinguishes a player on fire
+	Arguments:
+		1. Targets (players, default: self)
+]]
+BSU.SetupCommand("unignite", function(cmd)
+	cmd:SetDescription("Extinguishes a player on fire")
+	cmd:SetCategory("fun")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self, _, targets)
+		for _, ply in ipairs(targets) do
+			ply:Extinguish()
+		end
+	self:BroadcastActionMsg("%caller% extinguished %targets%", { targets = targets })
+	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
+end)
