@@ -46,17 +46,16 @@ function BSU.CheckPlayerPermission(ply, target, perm)
 	return BSU.CheckPermission(ply:SteamID64(), target:SteamID64(), perm)
 end
 
--- returns a table of current players on the server the player has granted the permission to
-function BSU.GetPlayerPermissionList(ply, perm)
-	if not ply:IsPlayer() then return end
-	local plys = {}
-	for k, v in pairs(BSU._perms) do
-		local permission = v[ply]
-		if permission and bit.band(permission, perm) == perm then
-			table.insert(plys, k)
+-- returns a table of current players on the server who are friends with the player, including admins (uses the toolgun permission)
+function BSU.GetPlayerFriends(ply)
+	if not ply:IsPlayer() then return {} end
+	local friends = {}
+	for _, v in ipairs(player.GetHumans()) do
+		if v:IsAdmin() or BSU.CheckPlayerPermission(ply, v, BSU.PP_TOOLGUN) then
+			table.insert(friends, v)
 		end
 	end
-	return plys
+	return friends
 end
 
 -- clear permissions granted from the steamid

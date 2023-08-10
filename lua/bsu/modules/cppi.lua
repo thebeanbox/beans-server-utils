@@ -32,13 +32,7 @@ end
 
 if SERVER then
 	function plyMeta:CPPIGetFriends()
-		local friends = {}
-		for _, v in ipairs(BSU.GetPlayerPermissionList(self, BSU.PP_TOOLGUN)) do
-			if #friends < 64 then -- return value must have less than or equal to 64 players
-				table.insert(friends, v)
-			end
-		end
-		return friends
+		return BSU.GetPlayerFriends(self)
 	end
 
 	function entMeta:CPPISetOwner(ply)
@@ -86,12 +80,6 @@ if SERVER then
 else
 	function plyMeta:CPPIGetFriends()
 		if self ~= LocalPlayer() then return CPPI_NOTIMPLEMENTED end
-		local friends = {}
-		for _, v in ipairs(BSU.GetPlayerPermissionList(BSU.PP_TOOLGUN)) do
-			if #plys < 64 then -- return value must have less than or equal to 64 players
-				table.insert(friends, v)
-			end
-		end
-		return friends
+		return BSU.GetPlayerFriends()
 	end
 end
