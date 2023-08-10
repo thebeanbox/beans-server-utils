@@ -929,7 +929,9 @@ BSU.SetupCommand("unjail", function(cmd)
 		for _, v in ipairs(targets) do
 			if v.bsu_jailed then
 				for _, ent in ipairs(v.bsu_jailed.entities or {}) do
-					ent:Remove()
+					if ent:IsValid() then
+						ent:Remove()
+					end
 				end
 				v.bsu_jailed = nil
 
