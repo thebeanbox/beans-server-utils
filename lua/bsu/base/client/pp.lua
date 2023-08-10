@@ -56,7 +56,7 @@ local function addPropProtectionMenu()
 			for _, v in ipairs(player.GetHumans()) do
 				if v == LocalPlayer() then continue end
 				local oldElem = oldElems[v]
-				if oldElem:IsValid() then
+				if oldElem and oldElem:IsValid() then
 					oldElem.name:SetText(v:Nick()) -- incase name changed
 					elems[v] = oldElem
 					oldElems[v] = nil
