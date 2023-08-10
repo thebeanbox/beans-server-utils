@@ -845,3 +845,116 @@ BSU.SetupCommand("unignite", function(cmd)
 	end)
 	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
+
+local jailTemplate = {
+	{ ang = Angle(0, 0, 0), pos = Vector(0, 0, -10), mdl = "models/props_junk/wood_pallet001a.mdl" },
+	{ ang = Angle(0, 0, 0), pos = Vector(0, 0, 115), mdl = "models/props_junk/wood_pallet001a.mdl" },
+
+	{ ang = Angle(0, 0, 0), pos = Vector(-30, 0, 35), mdl = "models/props_c17/fence01b.mdl" },
+	{ ang = Angle(0, 0, 0), pos = Vector( 30, 0, 35), mdl = "models/props_c17/fence01b.mdl" },
+
+	{ ang = Angle(0, 90, 0), pos = Vector(0, -35, 50), mdl = "models/props_wasteland/interior_fence002e.mdl" },
+	{ ang = Angle(0, 90, 0), pos = Vector(0, -35, 50), mdl = "models/props_wasteland/interior_fence001g.mdl" },
+	{ ang = Angle(0, 90, 0), pos = Vector(0,  35, 50), mdl = "models/props_wasteland/interior_fence002e.mdl" },
+	{ ang = Angle(0, 90, 0), pos = Vector(0,  35, 50), mdl = "models/props_wasteland/interior_fence001g.mdl" },
+}
+local jailMin = Vector(-30, -35, -10)
+local jailMax = Vector( 30,  35, 115)
+
+--[[
+	Name: jail
+	Desc: Prosecutes a player
+	Arguments:
+		1. Targets (players, default: self)
+		2. Duration (time)
+]]
+BSU.SetupCommand("jail", function(cmd)
+	cmd:SetDescription("Prosecutes a player")
+	cmd:SetCategory("fun")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self, _, targets, duration)
+		local jailed = {}
+
+		for _, v in ipairs(targets) do
+			if self:CheckExclusive(v, true) then
+				self:SetExclusive(v, "jailed")
+
+				local createdEntities = {}
+				for k, ent in ipairs(jailTemplate) do
+					local newEntity = ents.Create("prop_physics")
+					newEntity:SetModel(ent.mdl)
+					newEntity:SetPos(v:GetPos() + ent.pos)
+					newEntity:SetAngles(ent.ang)
+					BSU.SetOwnerWorld(newEntity)
+					newEntity:Spawn()
+
+					local physObj = newEntity:GetPhysicsObject()
+					if physObj:IsValid() then
+						physObj:EnableMotion(false)
+					end
+
+					createdEntities[k] = newEntity
+				end
+
+				v.bsu_jailed = {
+					origin = v:GetPos(),
+					entities = createdEntities,
+				}
+
+				table.insert(jailed, v)
+			end
+		end
+
+		if next(jailed) ~= nil then
+			self:BroadcastActionMsg("%caller% jailed %jailed%", { jailed = jailed })
+		end
+	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
+	cmd:AddNumberArg("duration", { default = "0", allowtime = true })
+end)
+
+--[[
+	Name: unjail
+	Desc: Unjails player
+	Arguments:
+		1. Targets (players, default: self)
+]]
+BSU.SetupCommand("unjail", function(cmd)
+	cmd:SetDescription("Unjails player")
+	cmd:SetCategory("fun")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self, caller, targets)
+		local unjailed = {}
+
+		for _, v in ipairs(targets) do
+			if v.bsu_jailed then
+				for _, ent in ipairs(v.bsu_jailed.entities or {}) do
+					ent:Remove()
+				end
+				v.bsu_jailed = nil
+
+				self:ClearExclusive(v)
+				table.insert(unjailed, v)
+			end
+		end
+
+		if next(unjailed) ~= nil then
+			self:BroadcastActionMsg("%caller% unjailed %unjailed%", { unjailed = unjailed })
+		end
+	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
+end)
+
+hook.Add("Tick", "BSU_Jailed", function()
+	for _, ply in ipairs(player.GetAll()) do
+		if not ply.bsu_jailed then goto skip end
+		local pos = ply:GetPos()
+
+		local withinJail = pos:WithinAABox(ply.bsu_jailed.origin + jailMin, ply.bsu_jailed.origin + jailMax)
+		if not withinJail then
+			ply:SetPos(ply.bsu_jailed.origin)
+		end
+
+		::skip::
+	end
+end)
