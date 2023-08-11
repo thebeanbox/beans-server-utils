@@ -104,7 +104,7 @@ function BSU.IPBanPlayer(ply, reason, duration, admin)
 end
 
 function BSU.KickPlayer(ply, reason, admin)
-	BSU.RegisterBan(ply:SteamID64(), reason, nil, admin) -- log it
+	BSU.RegisterBan(ply:SteamID64(), reason, nil, IsValid(admin) and admin:SteamID64() or nil) -- log it
 	game.KickID(ply:UserID(), "(Kicked) " .. (reason or "No reason given"))
 	hook.Run("BSU_PlayerKicked", ply, reason, admin)
 end
