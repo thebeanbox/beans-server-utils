@@ -851,7 +851,7 @@ local jailTemplate = {
 	{ ang = Angle(0, 0, 0), pos = Vector(0, 0, 115), mdl = "models/props_junk/wood_pallet001a.mdl" },
 
 	{ ang = Angle(0, 0, 0), pos = Vector(-30, 0, 35), mdl = "models/props_c17/fence01b.mdl" },
-	{ ang = Angle(0, 0, 0), pos = Vector( 30, 0, 35), mdl = "models/props_c17/fence01b.mdl" },
+	{ ang = Angle(0, 0, 0), pos = Vector(30, 0, 35), mdl = "models/props_c17/fence01b.mdl" },
 
 	{ ang = Angle(0, 90, 0), pos = Vector(0, -35, 50), mdl = "models/props_wasteland/interior_fence002e.mdl" },
 	{ ang = Angle(0, 90, 0), pos = Vector(0, -35, 50), mdl = "models/props_wasteland/interior_fence001g.mdl" },
@@ -859,7 +859,7 @@ local jailTemplate = {
 	{ ang = Angle(0, 90, 0), pos = Vector(0,  35, 50), mdl = "models/props_wasteland/interior_fence001g.mdl" },
 }
 local jailMin = Vector(-30, -35, -10)
-local jailMax = Vector( 30,  35, 115)
+local jailMax = Vector(30,  35, 115)
 
 --[[
 	Name: jail
@@ -872,7 +872,7 @@ BSU.SetupCommand("jail", function(cmd)
 	cmd:SetDescription("Prosecutes a player")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self, _, targets, duration)
+	cmd:SetFunction(function(self, _, targets, _duration)
 		local jailed = {}
 
 		for _, v in ipairs(targets) do
@@ -923,7 +923,7 @@ BSU.SetupCommand("unjail", function(cmd)
 	cmd:SetDescription("Unjails player")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self, caller, targets)
+	cmd:SetFunction(function(self, _, targets)
 		local unjailed = {}
 
 		for _, v in ipairs(targets) do
@@ -949,14 +949,12 @@ end)
 
 hook.Add("Tick", "BSU_Jailed", function()
 	for _, ply in ipairs(player.GetAll()) do
-		if not ply.bsu_jailed then goto skip end
-		local pos = ply:GetPos()
-
-		local withinJail = pos:WithinAABox(ply.bsu_jailed.origin + jailMin, ply.bsu_jailed.origin + jailMax)
-		if not withinJail then
-			ply:SetPos(ply.bsu_jailed.origin)
+		if ply.bsu_jailed then
+			local pos = ply:GetPos()
+			local withinJail = pos:WithinAABox(ply.bsu_jailed.origin + jailMin, ply.bsu_jailed.origin + jailMax)
+			if not withinJail then
+				ply:SetPos(ply.bsu_jailed.origin)
+			end
 		end
-
-		::skip::
 	end
 end)
