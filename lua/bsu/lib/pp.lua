@@ -83,7 +83,6 @@ local function clearEntityOwner(entindex)
 	if not id then return end -- already ownerless
 
 	BSU._entowners[entindex] = nil
-	BSU._ownerents[id] = BSU._ownerents[id] or {}
 	BSU._ownerents[id][entindex] = nil
 	if id > 0 and not Player(id):IsValid() and next(BSU._ownerents[id]) == nil then
 		BSU._owners[id] = nil -- delete owner data (owner is disconnected player with no props)
@@ -98,6 +97,7 @@ end
 
 local function setEntityOwner(entindex, id)
 	if BSU._entowners[entindex] == id then return end -- already owned by this id
+	clearEntityOwner(entindex)
 
 	BSU._entowners[entindex] = id
 	BSU._ownerents[id] = BSU._ownerents[id] or {}
