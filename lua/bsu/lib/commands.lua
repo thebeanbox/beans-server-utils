@@ -129,16 +129,18 @@ local function parsePlayerArg(user, str)
 					return { ply }
 				end
 			end
-		elseif pre == "#" then -- players by team name
+		elseif pre == "#" then -- players by group id
 			val = parseArgs(val)[1]
 
 			local found = {}
-			for _, v in ipairs(player.GetAll()) do
+			for _, v in ipairs(plys) do
 				if val == BSU.GetPlayerData(v).groupid then
 					table.insert(found, v)
 				end
 			end
 			return found
+		elseif pre == "?" then -- random player
+			return { plys[math.random(1, #plys)] }
 		elseif pre == "!" then -- opposite of next prefix
 			local result = parsePlayerArg(user, val)
 
@@ -150,7 +152,7 @@ local function parsePlayerArg(user, str)
 
 			-- get all players not in the lookup table
 			local found = {}
-			for _, v in ipairs(player.GetAll()) do
+			for _, v in ipairs(plys) do
 				if not list[v] then
 					table.insert(found, v)
 				end
