@@ -1,5 +1,5 @@
 BSU.SetupCommand("nothing", function(cmd)
-	cmd:SetDescription("Do nothing to a player")
+	cmd:SetDescription("Do nothing to players")
 	cmd:SetFunction(function(self, _, targets)
 		self:BroadcastActionMsg("%caller% did nothing to %targets%", { targets = targets })
 	end)
@@ -7,9 +7,7 @@ BSU.SetupCommand("nothing", function(cmd)
 end)
 
 BSU.SetupCommand("afk", function(cmd)
-	cmd:SetDescription("Mark yourself as afk")
-	cmd:SetCategory("utility")
-	cmd:SetAccess(BSU.CMD_ANYONE)
+	cmd:SetDescription("Set yourself as afk")
 	cmd:SetSilent(true)
 	cmd:SetFunction(function(_, caller, reason)
 		caller.bsu_afk = true
