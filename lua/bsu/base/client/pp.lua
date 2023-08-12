@@ -1,6 +1,7 @@
 --- base/client/pp.lua
 
 concommand.Add("bsu_reset_permissions", function()
+	-- easiest way is to delete the table and recreate it
 	BSU.SQLQuery("DROP TABLE IF EXISTS %s", BSU.EscOrNULL(BSU.SQL_PP, true))
 	BSU.SQLCreateTable(BSU.SQL_PP, string.format(
 		[[
@@ -8,6 +9,7 @@ concommand.Add("bsu_reset_permissions", function()
 			permission INTEGER NOT NULL
 		]]
 	))
+	BSU.SendPermissions() -- tell the server we updated our perms for everyone
 	hook.Run("BSU_ResetPermissions")
 end)
 
