@@ -1,11 +1,3 @@
---[[
-	Name: ban
-	Desc: Ban a player
-	Arguments:
-		1. Target   (player)
-		2. Duration (number) (optional)
-		3. Reason   (string) (optional)
-]]
 BSU.SetupCommand("ban", function(cmd)
 	cmd:SetDescription("Ban a player")
 	cmd:SetCategory("moderation")
@@ -25,14 +17,6 @@ BSU.SetupCommand("ban", function(cmd)
 	cmd:AddStringArg("reason", { optional = true, multi = true })
 end)
 
---[[
-	Name: banid
-	Desc: Ban a player by steamid
-	Arguments:
-		1. Steam ID (string)
-		2. Duration (number) (optional)
-		3. Reason   (string) (optional)
-]]
 BSU.SetupCommand("banid", function(cmd)
 	cmd:SetDescription("Ban a player by steamid")
 	cmd:SetCategory("moderation")
@@ -57,14 +41,6 @@ BSU.SetupCommand("banid", function(cmd)
 	cmd:AddStringArg("reason", { optional = true, multi = true })
 end)
 
---[[
-	Name: ipban
-	Desc: IP ban a player
-	Arguments:
-		1. Target   (player)
-		2. Duration (number) (optional)
-		3. Reason   (string) (optional)
-]]
 BSU.SetupCommand("ipban", function(cmd)
 	cmd:SetDescription("IP ban a player")
 	cmd:SetCategory("moderation")
@@ -83,14 +59,6 @@ BSU.SetupCommand("ipban", function(cmd)
 	cmd:AddStringArg("reason", { optional = true, multi = true })
 end)
 
---[[
-	Name: banip
-	Desc: Ban a player by ip
-	Arguments:
-		1. IP Address (string)
-		2. Duration   (number) (optional)
-		3. Reason     (string) (optional)
-]]
 BSU.SetupCommand("banip", function(cmd)
 	cmd:SetDescription("Ban a player by ip")
 	cmd:SetCategory("moderation")
@@ -120,12 +88,6 @@ BSU.SetupCommand("banip", function(cmd)
 	cmd:AddStringArg("reason", { optional = true, multi = true })
 end)
 
---[[
-	Name: unban
-	Desc: Unban a player
-	Arguments:
-		1. Steam ID (string)
-]]
 BSU.SetupCommand("unban", function(cmd)
 	cmd:SetDescription("Unban a player")
 	cmd:SetCategory("moderation")
@@ -146,12 +108,6 @@ BSU.SetupCommand("unban", function(cmd)
 	cmd:AddStringArg("steamid")
 end)
 
---[[
-	Name: unbanip
-	Desc: Unban a player by ip
-	Arguments:
-		1. IP Address (string)
-]]
 BSU.SetupCommand("unbanip", function(cmd)
 	cmd:SetDescription("Unban a player by ip")
 	cmd:SetCategory("moderation")
@@ -174,14 +130,6 @@ BSU.SetupCommand("unbanip", function(cmd)
 	cmd:AddStringArg("ip")
 end)
 
---[[
-	Name: superban
-	Desc: Equivalent to the ban command, except it will also ban the account that owns the game license if the player is using Steam Family Sharing
-	Arguments:
-		1. Target   (player)
-		2. Duration (number) (optional)
-		3. Reason   (string) (optional)
-]]
 BSU.SetupCommand("superban", function(cmd)
 	cmd:SetDescription("Equivalent to the ban command, except it will also ban the account that owns the game license if the player is using Steam Family Sharing")
 	cmd:SetCategory("moderation")
@@ -206,14 +154,6 @@ BSU.SetupCommand("superban", function(cmd)
 	cmd:AddStringArg("reason", { optional = true, multi = true })
 end)
 
---[[
-	Name: superduperban
-	Desc: Equivalent to the superban command, except it will also ip ban the player
-	Arguments:
-		1. Target   (player)
-		2. Duration (number) (optional)
-		3. Reason   (string) (optional)
-]]
 BSU.SetupCommand("superduperban", function(cmd)
 	cmd:SetDescription("Equivalent to the superban command, except it will also ip ban the player")
 	cmd:SetCategory("moderation")
@@ -240,13 +180,6 @@ BSU.SetupCommand("superduperban", function(cmd)
 	cmd:AddStringArg("reason", { optional = true, multi = true })
 end)
 
---[[
-	Name: kick
-	Desc: Kick a player
-	Arguments:
-		1. Target (player)
-		2. Reason (string) (optional)
-]]
 BSU.SetupCommand("kick", function(cmd)
 	cmd:SetDescription("Kick a player")
 	cmd:SetCategory("moderation")
@@ -264,13 +197,6 @@ BSU.SetupCommand("kick", function(cmd)
 	cmd:AddStringArg("reason", { optional = true, multi = true })
 end)
 
---[[
-	Name: setgroup
-	Desc: Set the group of a player
-	Arguments:
-		1. Target (player)
-		2. Group ID (string)
-]]
 BSU.SetupCommand("setgroup", function(cmd)
 	cmd:SetDescription("Set the group of a player")
 	cmd:SetCategory("moderation")
@@ -290,13 +216,6 @@ BSU.SetupCommand("setgroup", function(cmd)
 	cmd:AddStringArg("group", { multi = true })
 end)
 
---[[
-	Name: setteam
-	Desc: Set the team of a player
-	Arguments:
-		1. Target (player)
-		2. Team Index (number) (optional, resets team to the group team if not set)
-]]
 BSU.SetupCommand("setteam", function(cmd)
 	cmd:SetDescription("Set the team of a player")
 	cmd:SetCategory("moderation")
@@ -322,12 +241,6 @@ BSU.SetupCommand("setteam", function(cmd)
 	cmd:AddStringArg("team", { multi = true })
 end)
 
---[[
-	Name: resetteam
-	Desc: Reset the team of a player to use their group's team instead
-	Arguments:
-		1. Target (Player)
-]]
 BSU.SetupCommand("resetteam", function(cmd)
 	cmd:SetDescription("Reset the team of a player to use their group's team instead")
 	cmd:SetCategory("moderation")
@@ -374,14 +287,6 @@ local function getNameFromPriv(priv)
 	return names[priv]
 end
 
---[[
-	Name: addgrouppriv
-	Desc: Set a group to have access to a privilege
-	Arguments:
-		1. Group ID (number)
-		2. Name (string)
-		3. Value (string)
-]]
 BSU.SetupCommand("grantgrouppriv", function(cmd)
 	cmd:SetDescription("Set a group to have access to a privilege")
 	cmd:SetCategory("moderation")
@@ -410,14 +315,6 @@ BSU.SetupCommand("grantgrouppriv", function(cmd)
 	cmd:AddStringArg("value")
 end)
 
---[[
-	Name: revokegrouppriv
-	Desc: Set a group to not have access to a privilege
-	Arguments:
-		1. Group ID (number)
-		2. Name (string)
-		3. Value (string)
-]]
 BSU.SetupCommand("revokegrouppriv", function(cmd)
 	cmd:SetDescription("Set a group to not have access to a privilege")
 	cmd:SetCategory("moderation")
@@ -446,14 +343,6 @@ BSU.SetupCommand("revokegrouppriv", function(cmd)
 	cmd:AddStringArg("value")
 end)
 
---[[
-	Name: cleargrouppriv
-	Desc: Remove an existing group privilege (will then use whatever the default accessibility is for the group)
-	Arguments:
-		1. Group ID (number)
-		2. Name (string)
-		3. Value (string)
-]]
 BSU.SetupCommand("cleargrouppriv", function(cmd)
 	cmd:SetDescription("Remove an existing group privilege (will use whatever the default access settings are)")
 	cmd:SetCategory("moderation")
@@ -482,12 +371,6 @@ BSU.SetupCommand("cleargrouppriv", function(cmd)
 	cmd:AddStringArg("value")
 end)
 
---[[
-	Name: mute
-	Desc: Prevents a player from speaking in text chat
-	Arguments:
-		1. Targets (players, default: self)
-]]
 BSU.SetupCommand("mute", function(cmd)
 	cmd:SetDescription("Prevents a player from speaking in text chat")
 	cmd:SetCategory("moderation")
@@ -511,12 +394,6 @@ BSU.SetupCommand("mute", function(cmd)
 	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
---[[
-	Name: unmute
-	Desc: Unmutes a player, allowing them to speak in text chat
-	Arguments:
-		1. Targets (players, default: self)
-]]
 BSU.SetupCommand("unmute", function(cmd)
 	cmd:SetDescription("Unmutes a player, allowing them to speak in text chat")
 	cmd:SetCategory("moderation")
@@ -544,12 +421,6 @@ hook.Add("BSU_ChatCommand", "BSU_PlayerMute", function(ply)
 	if ply.bsu_muted then return "" end
 end)
 
---[[
-	Name: gag
-	Desc: Prevents a player from speaking in voice chat
-	Arguments:
-		1. Targets (players, default: self)
-]]
 BSU.SetupCommand("gag", function(cmd)
 	cmd:SetDescription("Prevents a player from speaking in voice chat")
 	cmd:SetCategory("moderation")
@@ -573,12 +444,6 @@ BSU.SetupCommand("gag", function(cmd)
 	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
---[[
-	Name: ungag
-	Desc: Ungags a player, allowing them to speak in voice chat again
-	Arguments:
-		1. Targets (players, default: self)
-]]
 BSU.SetupCommand("ungag", function(cmd)
 	cmd:SetDescription("Ungags a player, allowing them to speak in voice chat again")
 	cmd:SetCategory("moderation")

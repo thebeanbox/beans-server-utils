@@ -167,14 +167,8 @@ hook.Add("PlayerSpawnVehicle", "BSU_BlockPlayer", block)
 hook.Add("PlayerSpawnNPC", "BSU_BlockPlayer", block)
 hook.Add("CanPlayerSuicide", "BSU_BlockPlayer", block)
 
---[[
-	Name: god
-	Desc: Enable godmode on players
-	Arguments:
-		1. Targets (players, default: self)
-]]
 BSU.SetupCommand("god", function(cmd)
-	cmd:SetDescription("Enables godmode on a player")
+	cmd:SetDescription("Enable godmode on a player")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self, _, targets)
@@ -196,14 +190,8 @@ BSU.SetupCommand("god", function(cmd)
 end)
 BSU.AliasCommand("build", "god")
 
---[[
-	Name: ungod
-	Desc: Disable godmode on players
-	Arguments:
-		1. Targets (players, default: self)
-]]
 BSU.SetupCommand("ungod", function(cmd)
-	cmd:SetDescription("Enables godmode on a player")
+	cmd:SetDescription("Disable godmode on a player")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self, _, targets)
@@ -225,12 +213,6 @@ BSU.SetupCommand("ungod", function(cmd)
 end)
 BSU.AliasCommand("pvp", "ungod")
 
---[[
-	Name: ragdoll
-	Desc: Set players into ragdoll mode
-	Arguments:
-		1. Targets (players, default: self)
-]]
 BSU.SetupCommand("ragdoll", function(cmd)
 	cmd:SetDescription("Set players into ragdoll mode")
 	cmd:SetCategory("fun")
@@ -252,12 +234,6 @@ BSU.SetupCommand("ragdoll", function(cmd)
 	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
---[[
-	Name: unragdoll
-	Desc: Set players out of ragdoll mode
-	Arguments:
-		1. Targets (players, default: self)
-]]
 BSU.SetupCommand("unragdoll", function(cmd)
 	cmd:SetDescription("Set players out of ragdoll mode")
 	cmd:SetCategory("fun")
@@ -279,12 +255,6 @@ BSU.SetupCommand("unragdoll", function(cmd)
 	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
---[[
-	Name: freeze
-	Desc: Make players unable to move
-	Arguments:
-		1. Targets (players, default: self)
-]]
 BSU.SetupCommand("freeze", function(cmd)
 	cmd:SetDescription("Make players unable to move")
 	cmd:SetCategory("fun")
@@ -310,12 +280,6 @@ BSU.SetupCommand("freeze", function(cmd)
 	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
---[[
-	Name: unfreeze
-	Desc: Make players able to move again
-	Arguments:
-		1. Targets (players, default: self)
-]]
 BSU.SetupCommand("unfreeze", function(cmd)
 	cmd:SetDescription("Make players able to move again")
 	cmd:SetCategory("fun")
@@ -342,12 +306,6 @@ BSU.SetupCommand("unfreeze", function(cmd)
 end)
 BSU.AliasCommand("thaw", "unfreeze")
 
---[[
-	Name: health
-	Desc: Set health of players
-	Arguments:
-		1. Targets (players, default: self)
-]]
 BSU.SetupCommand("health", function(cmd)
 	cmd:SetDescription("Set health of players")
 	cmd:SetCategory("fun")
@@ -366,12 +324,6 @@ BSU.SetupCommand("health", function(cmd)
 end)
 BSU.AliasCommand("hp", "health")
 
---[[
-	Name: armor
-	Desc: Set armor of players
-	Arguments:
-		1. Targets (players, default: self)
-]]
 BSU.SetupCommand("armor", function(cmd)
 	cmd:SetDescription("Set armor of players")
 	cmd:SetCategory("fun")
@@ -390,12 +342,6 @@ BSU.SetupCommand("armor", function(cmd)
 end)
 BSU.AliasCommand("suit", "armor")
 
---[[
-	Name: launch
-	Desc: Launch players
-	Arguments:
-		1. Targets (players, default: self)
-]]
 BSU.SetupCommand("launch", function(cmd)
 	cmd:SetDescription("Launch players")
 	cmd:SetCategory("fun")
@@ -412,12 +358,6 @@ BSU.SetupCommand("launch", function(cmd)
 	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
---[[
-	Name: respawn
-	Desc: Respawn players
-	Arguments:
-		1. Targets (players, default: self)
-]]
 BSU.SetupCommand("respawn", function(cmd)
 	cmd:SetDescription("Respawn players")
 	cmd:SetCategory("fun")
@@ -434,12 +374,6 @@ BSU.SetupCommand("respawn", function(cmd)
 	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
---[[
-	Name: slay
-	Desc: Slay players
-	Arguments:
-		1. Targets (players, default: self)
-]]
 BSU.SetupCommand("slay", function(cmd)
 	cmd:SetDescription("Slay players")
 	cmd:SetCategory("fun")
@@ -457,12 +391,6 @@ BSU.SetupCommand("slay", function(cmd)
 end)
 BSU.AliasCommand("kill", "slay")
 
---[[
-	Name: disintegrate
-	Desc: Disintegrate players
-	Arguments:
-		1. Targets (players, default: self)
-]]
 BSU.SetupCommand("disintegrate", function(cmd)
 	cmd:SetDescription("Disintegrate players")
 	cmd:SetCategory("fun")
@@ -486,12 +414,6 @@ BSU.SetupCommand("disintegrate", function(cmd)
 end)
 BSU.AliasCommand("smite", "disintegrate")
 
---[[
-	Name: explode
-	Desc: Explode players
-	Arguments:
-		1. Targets (players, default: self)
-]]
 BSU.SetupCommand("explode", function(cmd)
 	cmd:SetDescription("Explode players")
 	cmd:SetCategory("fun")
@@ -524,12 +446,6 @@ BSU.SetupCommand("explode", function(cmd)
 	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
---[[
-	Name: enter
-	Desc: Force a player into the vehicle you're looking at
-	Arguments:
-		1. Target (player, default: self)
-]]
 BSU.SetupCommand("enter", function(cmd)
 	cmd:SetDescription("Force a player into the vehicle you're looking at")
 	cmd:SetCategory("fun")
@@ -546,12 +462,6 @@ BSU.SetupCommand("enter", function(cmd)
 	cmd:AddPlayerArg("target", { default = "^", check = true })
 end)
 
---[[
-	Name: eject
-	Desc: Eject players from the vehicle they're in
-	Arguments:
-		1. Targets (players, default: self)
-]]
 BSU.SetupCommand("eject", function(cmd)
 	cmd:SetDescription("Eject players from the vehicle they're in")
 	cmd:SetCategory("fun")
@@ -573,12 +483,6 @@ BSU.SetupCommand("eject", function(cmd)
 	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
---[[
-	Name: notification
-	Desc: Send a notification to players
-	Arguments:
-		1. Targets (players, default: self)
-]]
 BSU.SetupCommand("notification", function(cmd)
 	cmd:SetDescription("Send a notification to players")
 	cmd:SetCategory("fun")
@@ -592,12 +496,6 @@ BSU.SetupCommand("notification", function(cmd)
 end)
 BSU.AliasCommand("notify", "notification")
 
---[[
-	Name: earthquake
-	Desc: Shake the ground for players
-	Arguments:
-		1. Targets (players, default: self)
-]]
 BSU.SetupCommand("earthquake", function(cmd)
 	cmd:SetDescription("Shake the ground for players")
 	cmd:SetCategory("fun")
@@ -615,12 +513,6 @@ local function collideOnlyPlayers(_, ent1, ent2)
 	if not ent1:IsPlayer() and not ent2:IsPlayer() then return false end
 end
 
---[[
-	Name: bathe
-	Desc: Throw a bathtub at players
-	Arguments:
-		1. Targets (players, default: self)
-]]
 BSU.SetupCommand("bathe", function(cmd)
 	cmd:SetDescription("Throw a bathtub at players")
 	cmd:SetCategory("fun")
@@ -654,12 +546,6 @@ BSU.SetupCommand("bathe", function(cmd)
 	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
---[[
-	Name: trainwreck
-	Desc: Throw a train at players
-	Arguments:
-		1. Targets (players, default: self)
-]]
 BSU.SetupCommand("trainwreck", function(cmd)
 	cmd:SetDescription("Throw a train at players")
 	cmd:SetCategory("fun")
@@ -693,14 +579,8 @@ BSU.SetupCommand("trainwreck", function(cmd)
 	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
---[[
-	Name: gimp
-	Desc: Gimps a player in text chat, making them say bizarre things
-	Arguments:
-		1. Targets (players, default: self)
-]]
 BSU.SetupCommand("gimp", function(cmd)
-	cmd:SetDescription("Gimps a player in text chat, making them say bizarre things")
+	cmd:SetDescription("Gimp players in text chat, making them say bizarre things")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self, _, targets)
@@ -720,14 +600,8 @@ BSU.SetupCommand("gimp", function(cmd)
 	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
---[[
-	Name: ungimp
-	Desc: Ungimps a player
-	Arguments:
-		1. Targets (players, default: self)
-]]
 BSU.SetupCommand("ungimp", function(cmd)
-	cmd:SetDescription("Ungimps a player")
+	cmd:SetDescription("Ungimp players")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self, _, targets)
@@ -756,70 +630,8 @@ hook.Add("BSU_ChatCommand", "BSU_PlayerGimp", function(ply)
 	if ply.bsu_gimped and not ply.bsu_muted then return gimpLines[math.random(1, #gimpLines)] end
 end)
 
---[[
-	Name: spectate
-	Desc: Be one with the player
-	Arguments:
-		1. Message (string)
-]]
-BSU.SetupCommand("spectate", function(cmd)
-	cmd:SetDescription("Be one with the player")
-	cmd:SetCategory("utility")
-	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetSilent(true)
-	cmd:SetFunction(function(self, caller, target)
-		getSpawnInfo(target)
-
-		caller.bsu_spectating = true
-		caller:SetColor(Color(0, 0, 0, 0))
-		caller:Spectate(OBS_MODE_IN_EYE)
-		caller:SpectateEntity(target)
-		caller:StripWeapons()
-
-		self:PrintChatMsg("Spectating ", target)
-	end)
-	cmd:SetValidCaller(true)
-	cmd:AddPlayerArg("target", { check = true })
-end)
-
---[[
-	Name: unspectate
-	Desc: Unspectates a player
-	Arguments:
-		1. Message (string)
-]]
-BSU.SetupCommand("unspectate", function(cmd)
-	cmd:SetDescription("Unspectates a player")
-	cmd:SetCategory("utility")
-	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetSilent(true)
-	cmd:SetFunction(function(self, caller)
-		if caller.bsu_spectating then
-			caller.bsu_spectating = nil
-			caller:UnSpectate()
-			doSpawn(caller)
-			caller:SetColor(Color(255, 255, 255, 255))
-		end
-
-		self:PrintChatMsg("Stopped spectating")
-	end)
-	cmd:SetValidCaller(true)
-end)
-
-hook.Add("KeyPress", "BSU_StopSpectating", function(ply)
-	if ply.bsu_spectating then
-		BSU.SafeRunCommand(ply, "unspectate")
-	end
-end)
-
---[[
-	Name: ignite
-	Desc: Light a player on fire
-	Arguments:
-		1. Targets (players, default: self)
-]]
 BSU.SetupCommand("ignite", function(cmd)
-	cmd:SetDescription("Light a player on fire")
+	cmd:SetDescription("Light players on fire")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self, _, targets, duration)
@@ -832,14 +644,8 @@ BSU.SetupCommand("ignite", function(cmd)
 	cmd:AddNumberArg("duration", { default = "10", min = 1, max = 60, allowtime = true })
 end)
 
---[[
-	Name: unignite
-	Desc: Extinguishes a player on fire
-	Arguments:
-		1. Targets (players, default: self)
-]]
 BSU.SetupCommand("unignite", function(cmd)
-	cmd:SetDescription("Extinguishes a player on fire")
+	cmd:SetDescription("Extinguish players on fire")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self, _, targets)
@@ -866,15 +672,8 @@ local jailTemplate = {
 local jailMin = Vector(-30, -35, -10)
 local jailMax = Vector(30,  35, 115)
 
---[[
-	Name: jail
-	Desc: Prosecutes a player
-	Arguments:
-		1. Targets (players, default: self)
-		2. Duration (time)
-]]
 BSU.SetupCommand("jail", function(cmd)
-	cmd:SetDescription("Prosecutes a player")
+	cmd:SetDescription("Prosecute players")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self, _, targets, _duration)
@@ -918,14 +717,8 @@ BSU.SetupCommand("jail", function(cmd)
 	cmd:AddNumberArg("duration", { default = "0", allowtime = true })
 end)
 
---[[
-	Name: unjail
-	Desc: Unjails player
-	Arguments:
-		1. Targets (players, default: self)
-]]
 BSU.SetupCommand("unjail", function(cmd)
-	cmd:SetDescription("Unjails player")
+	cmd:SetDescription("Unjail players")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self, _, targets)

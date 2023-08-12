@@ -3,13 +3,6 @@ local function teleportPlayer(ply, pos)
 	ply:SetPos(pos)
 end
 
---[[
-	Name: send
-	Desc: Teleport players to a target player
-	Arguments:
-		1. Targets (players)
-		2. Target (player)
-]]
 BSU.SetupCommand("send", function(cmd)
 	cmd:SetDescription("Teleports players to a target player")
 	cmd:SetCategory("utility")
@@ -31,11 +24,6 @@ BSU.SetupCommand("send", function(cmd)
 	cmd:AddPlayerArg("target", { check = true })
 end)
 
---[[
-	Name: teleport
-	Desc: Teleport yourself to your aim position
-	Arguments:
-]]
 BSU.SetupCommand("teleport", function(cmd)
 	cmd:SetDescription("Teleport yourself to your aim position")
 	cmd:SetCategory("utility")
@@ -50,12 +38,6 @@ BSU.SetupCommand("teleport", function(cmd)
 end)
 BSU.AliasCommand("tp", "teleport")
 
---[[
-	Name: goto
-	Desc: Teleport yourself to a player
-	Arguments:
-		1. Target (player)
-]]
 BSU.SetupCommand("goto", function(cmd)
 	cmd:SetDescription("Teleports yourself to a player")
 	cmd:SetCategory("utility")
@@ -70,12 +52,6 @@ BSU.SetupCommand("goto", function(cmd)
 	cmd:AddPlayerArg("target", { check = true })
 end)
 
---[[
-	Name: bring
-	Desc: Teleport players to yourself
-	Arguments:
-		1. Targets (players)
-]]
 BSU.SetupCommand("bring", function(cmd)
 	cmd:SetDescription("Teleports yourself to a player")
 	cmd:SetCategory("utility")
@@ -99,12 +75,6 @@ BSU.SetupCommand("bring", function(cmd)
 	cmd:AddPlayersArg("targets", { filter = true })
 end)
 
---[[
-	Name: return
-	Desc: Return players to their original position
-	Arguments:
-		1. Targets (players, default: self)
-]]
 BSU.SetupCommand("return", function(cmd)
 	cmd:SetDescription("Return a player or multiple players to their original position")
 	cmd:SetCategory("utility")
@@ -127,11 +97,6 @@ BSU.SetupCommand("return", function(cmd)
 	cmd:AddPlayersArg("targets", { filter = true })
 end)
 
---[[
-	Name: nolag
-	Desc: Freeze all entities on the map
-	Arguments:
-]]
 BSU.SetupCommand("nolag", function(cmd)
 	cmd:SetDescription("Freeze all entities on the map")
 	cmd:SetCategory("utility")
@@ -150,11 +115,6 @@ BSU.SetupCommand("nolag", function(cmd)
 	end)
 end)
 
---[[
-	Name: cleardecals
-	Desc: Clear all decals
-	Arguments:
-]]
 BSU.SetupCommand("cleardecals", function(cmd)
 	cmd:SetDescription("Clear all decals")
 	cmd:SetCategory("utility")
@@ -168,11 +128,6 @@ BSU.SetupCommand("cleardecals", function(cmd)
 	end)
 end)
 
---[[
-	Name: removeragdolls
-	Desc: Remove all clientside ragdolls
-	Arguments:
-]]
 BSU.SetupCommand("removeragdolls", function(cmd)
 	cmd:SetDescription("Remove all clientside ragdolls")
 	cmd:SetCategory("utility")
@@ -184,11 +139,6 @@ BSU.SetupCommand("removeragdolls", function(cmd)
 	end)
 end)
 
---[[
-	Name: stopsound
-	Desc: Stop sounds globally
-	Arguments:
-]]
 BSU.SetupCommand("stopsound", function(cmd)
 	cmd:SetDescription("Stop sounds globally")
 	cmd:SetCategory("utility")
@@ -202,12 +152,6 @@ BSU.SetupCommand("stopsound", function(cmd)
 	end)
 end)
 
---[[
-	Name: playsound
-	Desc: Play a sound globally
-	Arguments:
-		1. Sound Path (string)
-]]
 BSU.SetupCommand("playsound", function(cmd)
 	cmd:SetDescription("Play a sound globally")
 	cmd:SetCategory("utility")
@@ -219,12 +163,50 @@ BSU.SetupCommand("playsound", function(cmd)
 	cmd:AddStringArg("sound path")
 end)
 
---[[
-	Name: asay
-	Desc: Send a message to admins
-	Arguments:
-		1. Message (string)
-]]
+BSU.SetupCommand("spectate", function(cmd)
+	cmd:SetDescription("Be one with a player")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetSilent(true)
+	cmd:SetFunction(function(self, caller, target)
+		getSpawnInfo(target)
+
+		caller.bsu_spectating = true
+		caller:SetColor(Color(0, 0, 0, 0))
+		caller:Spectate(OBS_MODE_IN_EYE)
+		caller:SpectateEntity(target)
+		caller:StripWeapons()
+
+		self:PrintChatMsg("Spectating ", target)
+	end)
+	cmd:SetValidCaller(true)
+	cmd:AddPlayerArg("target", { check = true })
+end)
+
+BSU.SetupCommand("unspectate", function(cmd)
+	cmd:SetDescription("Unspectate a player")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetSilent(true)
+	cmd:SetFunction(function(self, caller)
+		if caller.bsu_spectating then
+			caller.bsu_spectating = nil
+			caller:UnSpectate()
+			doSpawn(caller)
+			caller:SetColor(Color(255, 255, 255, 255))
+		end
+
+		self:PrintChatMsg("Stopped spectating")
+	end)
+	cmd:SetValidCaller(true)
+end)
+
+hook.Add("KeyPress", "BSU_StopSpectating", function(ply)
+	if ply.bsu_spectating then
+		BSU.SafeRunCommand(ply, "unspectate")
+	end
+end)
+
 BSU.SetupCommand("asay", function(cmd)
 	cmd:SetDescription("Send a message to admins")
 	cmd:SetCategory("utility")
@@ -245,13 +227,6 @@ BSU.SetupCommand("asay", function(cmd)
 	cmd:AddStringArg("message", { multi = true })
 end)
 
---[[
-	Name: psay
-	Desc: Send a private message to a player
-	Arguments:
-		1. Name (string)
-		2. Message (string)
-]]
 BSU.SetupCommand("psay", function(cmd)
 	cmd:SetDescription("Send a private message to a player")
 	cmd:SetCategory("utility")
@@ -266,12 +241,6 @@ BSU.SetupCommand("psay", function(cmd)
 end)
 BSU.AliasCommand("p", "psay")
 
---[[
-	Name: tsay
-	Desc: Send a message to the textbox
-	Arguments:
-		1. Message (string)
-]]
 BSU.SetupCommand("tsay", function(cmd)
 	cmd:SetDescription("Send a message to the textbox")
 	cmd:SetCategory("utility")
@@ -283,12 +252,6 @@ BSU.SetupCommand("tsay", function(cmd)
 	cmd:AddStringArg("message", { multi = true })
 end)
 
---[[
-	Name: csay
-	Desc: Send a message to the center of everyone's screen
-	Arguments:
-		1. Message (string)
-]]
 BSU.SetupCommand("csay", function(cmd)
 	cmd:SetDescription("Send a message to the center of everyone's screen")
 	cmd:SetCategory("utility")
@@ -310,50 +273,5 @@ hook.Add("PlayerSay", "BSU_CommandShorthand", function(ply, text)
 	elseif string.sub(text, 1, 1) == "@" then
 		BSU.SafeRunCommand(ply, "asay", string.sub(text, 2))
 		return ""
-	end
-end)
-
---[[
-	Name: afk
-	Desc: Mark yourself as afk
-	Arguments:
-		1. Reason (string)
-]]
-BSU.SetupCommand("afk", function(cmd)
-	cmd:SetDescription("Mark yourself as afk")
-	cmd:SetCategory("utility")
-	cmd:SetAccess(BSU.CMD_ANYONE)
-	cmd:SetSilent(true)
-	cmd:SetFunction(function(_, caller, reason)
-		caller.bsu_afk = true
-		local msg = { caller, " is now AFK" }
-		if reason then table.Add(msg, { " (", BSU.CLR_PARAM, reason, BSU.CLR_TEXT, ")" }) end
-		BSU.SendChatMsg(nil, unpack(msg))
-	end)
-	cmd:SetValidCaller(true)
-	cmd:AddStringArg("reason", { optional = true, multi = true })
-end)
-
--- prevent gaining total time while afk
-hook.Add("BSU_PlayerTotalTime", "BSU_PreventAFKTime", function(ply)
-	if ply.bsu_afk then return false end
-end)
-
--- make not afk if any key presses
-hook.Add("KeyPress", "BSU_ClearAFK", function(ply)
-	if ply.bsu_afk then
-		ply.bsu_afk = nil
-		BSU.SendChatMsg(nil, ply, " is no longer AFK")
-	end
-	ply.bsu_last_interacted_time = SysTime()
-end)
-
--- make afk after some time with no key presses
-timer.Create("BSU_CheckAFK", 1, 0, function()
-	for _, ply in ipairs(player.GetHumans()) do
-		if not ply.bsu_last_interacted_time or ply.bsu_afk then continue end
-		if SysTime() > ply.bsu_last_interacted_time + 600 then
-			BSU.SafeRunCommand(ply, "afk")
-		end
 	end
 end)
