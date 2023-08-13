@@ -72,18 +72,38 @@ end
 -- returns table of players via prefixed command argument
 -- returns empty table if failed to retrieve (ex: invalid player name, invalid player steamid, invalid group name, or no prefixes matched)
 local function parsePlayerArg(user, str)
+	str = string.Trim(parseArgs(str or "")[1] or "")
+	if str == "" then return {} end
+
+	local strs = string.Split(str, ",")
+	if #strs > 1 then
+		local list = {} -- lookup table of players so we don't get duplicates
+		for _, v in ipairs(strs) do
+			local result = parsePlayerArg(user, v)
+			for _, vv in ipairs(result) do
+				list[vv] = true
+			end
+		end
+
+		local found = {}
+		for k, _ in pairs(list) do
+			table.insert(found, k)
+		end
+		return found
+	end
+
 	local plys = player.GetAll()
 
 	do-- check if the argument matches player names
-		local nameArg = string.lower(parseArgs(str)[1])
+		local find = string.lower(str)
 		local found = {}
 
 		for _, v in ipairs(plys) do
 			local name = string.lower(v:GetName())
-			if nameArg == name then -- found exact name
+			if name == find then -- found exact name
 				return { v }
-			elseif #nameArg >= 3 then -- must be a minimum of 3 characters for partial search
-				if string.find(name, nameArg, 1, true) then
+			elseif #find >= 3 then -- must be a minimum of 3 characters for partial search
+				if string.find(name, find, 1, true) then
 					table.insert(found, v)
 				end
 			end
@@ -98,28 +118,21 @@ local function parsePlayerArg(user, str)
 		if user:IsValid() then -- user can be NULL if executed from the server console
 			return { user }
 		end
+	elseif str == "?" then -- random player
+		return { plys[math.random(1, #plys)] }
 	elseif str == "*" then -- wildcard (all players)
 		return plys
 	else
 		local pre = string.sub(str, 1, 1)
 		local val = string.sub(str, 2)
-		if pre == "@" then -- specific player
-			val = parseArgs(val)[1]
-			if val then -- get by player name
-				val = string.lower(val)
-				for _, v in ipairs(plys) do
-					if val == string.lower(v:GetName()) then
-						return { v }
-					end
-				end
-			elseif user:IsValid() then -- get by eye trace
+		if pre == "@" then -- player by eye trace
+			if user:IsValid() then
 				local ent = user:GetEyeTrace().Entity
 				if ent:IsPlayer() then
 					return { ent }
 				end
 			end
 		elseif pre == "$" then -- player by userid or steamid
-			val = parseArgs(val)[1]
 			local ply = Player(tonumber(val) or -1)
 			if ply:IsValid() then
 				return { ply }
@@ -130,8 +143,6 @@ local function parsePlayerArg(user, str)
 				end
 			end
 		elseif pre == "#" then -- players by group id
-			val = parseArgs(val)[1]
-
 			local found = {}
 			for _, v in ipairs(plys) do
 				if val == BSU.GetPlayerData(v).groupid then
@@ -139,15 +150,13 @@ local function parsePlayerArg(user, str)
 				end
 			end
 			return found
-		elseif pre == "?" then -- random player
-			return { plys[math.random(1, #plys)] }
 		elseif pre == "!" then -- opposite of next prefix
 			local result = parsePlayerArg(user, val)
 
 			-- create lookup table from result
 			local list = {}
-			for i = 1, #result do
-				list[result[i]] = true
+			for _, v in ipairs(result) do
+				list[v] = true
 			end
 
 			-- get all players not in the lookup table
