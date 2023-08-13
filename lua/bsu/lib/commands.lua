@@ -143,6 +143,7 @@ local function parsePlayerArg(user, str)
 				end
 			end
 		elseif pre == "#" then -- players by group id
+			val = string.lower(val)
 			local found = {}
 			for _, v in ipairs(plys) do
 				if val == BSU.GetPlayerData(v).groupid then
