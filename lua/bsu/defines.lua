@@ -9,7 +9,7 @@ BSU.PRIV_SWEP   = 3
 BSU.PRIV_TOOL   = 4
 BSU.PRIV_CMD    = 5
 BSU.PRIV_TARGET = 6
-BSU.PRIV_MISC	= 7
+BSU.PRIV_MISC	  = 7
 
 -- prop protection enums
 BSU.PP_PHYSGUN = 1
@@ -27,7 +27,10 @@ BSU.CLR_EVERYONE = Color(0, 130, 130)   -- when targeting all plys on the server
 BSU.CLR_CONSOLE  = Color(0, 0, 0)       -- server console name                   (black)
 BSU.CLR_MISC     = Color(255, 255, 255) -- other (just used for non-player ents) (white)
 
-BSU.CMD_PREFIX = "!"
+BSU.CMD_CONCMD        = "bsu"
+BSU.CMD_CONCMD_SILENT = "sbsu"
+
+BSU.CMD_PREFIX        = "!"
 BSU.CMD_PREFIX_SILENT = "/"
 
 if SERVER then
