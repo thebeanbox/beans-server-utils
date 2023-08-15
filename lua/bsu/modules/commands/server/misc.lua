@@ -6,6 +6,39 @@ BSU.SetupCommand("nothing", function(cmd)
 	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
+BSU.SetupCommand("bot", function(cmd)
+	cmd:SetDescription("Spawn bots into the server")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self, _, amount)
+		amount = math.min(amount, game.MaxPlayers() - player.GetCount())
+
+		if amount > 0 then
+			for _ = 1, amount do
+				RunConsoleCommand("bot")
+			end
+
+			self:BroadcastActionMsg("%caller% spawned %amount% bot" .. (amount ~= 1 and "s" or ""), { amount = amount })
+		end
+	end)
+	cmd:AddNumberArg("amount", { default = "1", min = 1, max = 128 })
+end)
+
+BSU.SetupCommand("kickbots", function(cmd)
+	cmd:SetDescription("Kick all bots from the server")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		local bots = player.GetBots()
+
+		if #bots > 0 then
+			for _, v in ipairs(bots) do
+				v:Kick()
+			end
+
+			self:BroadcastActionMsg("%caller% kicked all bots")
+		end
+	end)
+end)
+
 BSU.SetupCommand("afk", function(cmd)
 	cmd:SetDescription("Set yourself as afk")
 	cmd:SetSilent(true)
