@@ -736,7 +736,7 @@ if SERVER then
 			end
 		elseif isentity(arg) then
 			if arg:IsPlayer() then
-				table.Add(vars, arg == ply and (arg == target and { BSU.CLR_SELF, "Yourself" } or { BSU.CLR_SELF, "Themself" }) or { arg })
+				table.Add(vars, arg == ply and (arg == target and { BSU.CLR_SELF, "Yourself" } or { BSU.CLR_SELF, "Themself" }) or { team.GetColor(arg:Team()), arg:Nick() })
 			else
 				table.Add(vars, { BSU.CLR_MISC, tostring(arg) })
 			end
@@ -757,7 +757,7 @@ if SERVER then
 			if arg ~= nil then
 				table.Add(vars, formatArg(ply, target, arg))
 			elseif name == "caller" then
-				table.Add(vars, ply:IsValid() and (ply == target and { BSU.CLR_SELF, "You" } or { ply }) or { BSU.CLR_CONSOLE, "(Console)" })
+				table.Add(vars, ply:IsValid() and (ply == target and { BSU.CLR_SELF, "You" } or { team.GetColor(ply:Team()), ply:Nick() }) or { BSU.CLR_CONSOLE, "(Console)" })
 			end
 
 			pos = pos + #pre + #name + 2
