@@ -41,9 +41,7 @@ if SERVER then
 	BSU.SQL_PDATA         = "bsu_pdata"
 	BSU.SQL_BANS          = "bsu_bans"
 	BSU.SQL_GROUP_PRIVS   = "bsu_grp_privs"
-	BSU.SQL_PLAYER_PRIVS  = "bsu_ply_privs"
 	BSU.SQL_GROUP_LIMITS  = "bsu_grp_limits"
-	BSU.SQL_PLAYER_LIMITS = "bsu_ply_limits"
 
 	-- command access values
 	BSU.CMD_CONSOLE    = 0 -- access only via the server console (command is also not networked to client)

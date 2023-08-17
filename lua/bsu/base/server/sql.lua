@@ -125,25 +125,6 @@ BSU.SQLCreateTable(BSU.SQL_GROUP_PRIVS, string.format(
 ))
 
 --[[
-	Player Privileges
-
-	steamid - (text) steam 64 bit id of the player
-	type    - (text) privilege type
-	value   - (text) privilege value
-	granted - (bool) grant or restrict the privilege
-]]
-
-BSU.SQLCreateTable(BSU.SQL_PLAYER_PRIVS, string.format(
-	[[
-		steamid TEXT NOT NULL REFERENCES %s(steamid),
-		type INTEGER NOT NULL,
-		value TEXT NOT NULL,
-		granted BOOLEAN NOT NULL CHECK (granted in (0, 1))
-	]],
-		BSU.EscOrNULL(BSU.SQL_PLAYERS, true)
-))
-
---[[
 	Group Limits
 
 	groupid - (text) id of the group
@@ -158,21 +139,4 @@ BSU.SQLCreateTable(BSU.SQL_GROUP_LIMITS, string.format(
 		amount INTEGER NOT NULL
 	]],
 		BSU.EscOrNULL(BSU.SQL_GROUPS, true)
-))
-
---[[
-	Player Limits
-
-	steamid - (text) steam 64 bit id of the player
-	name    - (text) name of the limit
-	amount  - (int)  max spawn amount
-]]
-
-BSU.SQLCreateTable(BSU.SQL_PLAYER_LIMITS, string.format(
-	[[
-		steamid TEXT NOT NULL REFERENCES %s(steamid),
-		name TEXT NOT NULL UNIQUE,
-		amount INTEGER NOT NULL
-	]],
-		BSU.EscOrNULL(BSU.SQL_PLAYERS, true)
 ))
