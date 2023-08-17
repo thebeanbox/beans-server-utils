@@ -1,9 +1,12 @@
 -- lib/util.lua (SHARED)
 -- useful functions for both server and client
 
+local color_sv_log = Color(0, 100, 255)
+local color_cl_log = Color(255, 100, 0)
+
 -- prints a message into console formatted like "[BSU] bla bla bla" (color depends on realm)
 function BSU.Log(msg)
-	MsgC(SERVER and Color(0, 100, 255) or Color(255, 100, 0), "[BSU] ", Color(255, 255, 255), msg .. "\n")
+	MsgC(SERVER and color_sv_log or color_cl_log, "[BSU] ", color_white, msg .. "\n")
 end
 
 function BSU.ColorToHex(color)
@@ -19,6 +22,16 @@ BSU.UTCTime = os.time
 
 function BSU.LocalTime()
 	return os.time(os.date("!*t"))
+end
+
+function BSU.SteamIDTo3(steamid)
+	local y, z = string.match(steamid, "^STEAM_0:([01]):(%d+)$")
+	return bit.lshift(z, 1) + y
+end
+
+function BSU.SteamIDFrom3(id3)
+	local y, z = bit.band(id3, 1), bit.rshift(id3, 1)
+	return string.format("STEAM_0:%d:%d", y, z)
 end
 
 -- checks if a string is a valid STEAM_0 or 64 bit formatted steam id (also returns if it was 64 bit or not)
