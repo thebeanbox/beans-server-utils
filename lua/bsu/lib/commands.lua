@@ -642,10 +642,13 @@ function objCmdHandler.GetArgs(self)
 	for k, v in ipairs(self.cmd.args) do
 		if v.kind == 0 then -- string
 			local arg, err = getStringArg(self.args, n, v.multi)
-			if v.default then arg, err = v.default end
 			if err then
-				if not v.optional then errorBadArgument(n, err) end
-				n = n - 1
+				if v.default then
+					arg = v.default
+				else
+					if not v.optional then errorBadArgument(n, err) end
+					n = n - 1
+				end
 			end
 			args[k] = arg
 		elseif v.kind == 1 then -- number
