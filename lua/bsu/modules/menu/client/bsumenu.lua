@@ -63,8 +63,6 @@ local function createBSUMenu()
 	hook.Run("BSU_BSUMenuPostInit", bsuMenu)
 end
 
-hook.Add("BSU_Init", "BSU_MenuInitialize", createBSUMenu)
-
 BSU.SetupCommand("menu", function(cmd)
 	cmd:SetDescription("Opens the menu")
 	cmd:SetCategory("utility")
