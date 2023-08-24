@@ -63,7 +63,7 @@ local function createBSUMenu()
 	hook.Run("BSU_BSUMenuPostInit", bsuMenu)
 end
 
-hook.Add("OnGamemodeLoaded", "BSU_MenuInitialize", createBSUMenu)
+hook.Add("BSU_Init", "BSU_MenuInitialize", createBSUMenu)
 
 BSU.SetupCommand("menu", function(cmd)
 	cmd:SetDescription("Opens the menu")
@@ -74,5 +74,17 @@ BSU.SetupCommand("menu", function(cmd)
 		BSU.BSUMenu:Center()
 		BSU.BSUMenu:Show()
 		BSU.BSUMenu:MakePopup()
+	end)
+end)
+
+BSU.SetupCommand("menuregen", function(cmd)
+	cmd:SetDescription("Regenerates the menu")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ANYONE)
+	cmd:SetFunction(function(self, caller)
+		if BSU.BSUMenu then
+			BSU.BSUMenu:Remove()
+		end
+		createBSUMenu()
 	end)
 end)
