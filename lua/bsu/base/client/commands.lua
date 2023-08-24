@@ -13,7 +13,7 @@ local function autoComplete(_, argStr)
 	else
 		local result, names = {}, {}
 
-		for _, v in ipairs(BSU.GetCommandNames()) do
+		for _, v in ipairs(BSU.GetAllCommandNames()) do
 			if name == string.sub(v, 1, #name) then
 				table.insert(names, v)
 			end

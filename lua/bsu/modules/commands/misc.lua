@@ -11,7 +11,6 @@ BSU.SetupCommand("help", function(cmd)
 			table.Add(msg, { color_white, "[" .. string.upper(v) .. "]:" })
 
 			local cmds = BSU.GetCommandsByCategory(v)
-			table.sort(cmds, function(a, b) return a:GetName() < b:GetName() end)
 
 			for _, vv in ipairs(cmds) do
 				table.Add(msg, { color_white, "\n\t" .. vv:GetName(), desc_color, "\n\t- " .. vv:GetDescription() })
