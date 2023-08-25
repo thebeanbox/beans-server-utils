@@ -61,7 +61,7 @@ end)
 hook.Add("KeyPress", "BSU_ClearAFK", function(ply)
 	if ply.bsu_afk then
 		ply.bsu_afk = nil
-		BSU.SendChatMsg(nil, ply, " is no longer AFK")
+		BSU.SendChatMsg(nil, ply, BSU.CLR_TEXT, " is no longer AFK")
 	end
 	ply.bsu_last_interacted_time = SysTime()
 end)
