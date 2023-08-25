@@ -44,7 +44,7 @@ BSU.SetupCommand("afk", function(cmd)
 	cmd:SetSilent(true)
 	cmd:SetFunction(function(_, caller, reason)
 		caller.bsu_afk = true
-		local msg = { caller, " is now AFK" }
+		local msg = { caller, BSU.CLR_TEXT, " is now AFK" }
 		if reason then table.Add(msg, { " (", BSU.CLR_PARAM, reason, BSU.CLR_TEXT, ")" }) end
 		BSU.SendChatMsg(nil, unpack(msg))
 	end)
