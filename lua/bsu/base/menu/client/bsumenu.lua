@@ -25,6 +25,7 @@ function bsuMenu:Init()
 	self:ShowCloseButton(true)
 	self:SetDeleteOnClose(false)
 	self:SetSizable(true)
+	self:SetScreenLock(true)
 	
 	local tabBar = vgui.Create("DPropertySheet", self)
 	tabBar:Dock(FILL)
