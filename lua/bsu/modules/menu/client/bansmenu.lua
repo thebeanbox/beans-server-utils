@@ -164,5 +164,3 @@ hook.Add("BSU_BSUMenuInit", "BSU_BansMenuInit", function(bsuMenu)
 	--bsuMenu:AddTab("Ban History", 4, banMenu, "icon16/shield.png")
 	--BSU.BansMenu:LoadPage(1)
 end)
-
-end

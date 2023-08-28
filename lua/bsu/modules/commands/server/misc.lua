@@ -75,3 +75,12 @@ timer.Create("BSU_CheckAFK", 1, 0, function()
 		end
 	end
 end)
+
+BSU.SetupCommand("thetime", function(cmd)
+	cmd:SetDescription("Displays the current time")
+	cmd:SetAccess(BSU.CMD_ANYONE)
+	cmd:SetFunction(function(self, caller)
+		local timestamp = os.date("%A, %B %d, %Y | %I:%M %p")
+		self:BroadcastActionMsg("It is currently: %timestamp%", {timestamp = timestamp})
+	end)
+end)
