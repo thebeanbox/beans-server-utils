@@ -80,7 +80,12 @@ BSU.SetupCommand("thetime", function(cmd)
 	cmd:SetDescription("Displays the current time")
 	cmd:SetAccess(BSU.CMD_ANYONE)
 	cmd:SetFunction(function(self, caller)
-		local timestamp = os.date("%A, %B %d, %Y | %I:%M %p")
-		self:BroadcastActionMsg("It is currently: %timestamp%", {timestamp = timestamp})
+		if not timer.Exists("bsu_thetime_cooldown") then
+			local timestamp = os.date("%A, %B %d, %Y | %I:%M %p")
+			BSU.SendChatMsg(nil, BSU.CLR_TEXT, "It is currently: ", BSU.CLR_PARAM, timestamp)
+			timer.Create("bsu_thetime_cooldown", 60, 1, function() end)
+		else
+			error("Please wait " .. math.Round(timer.TimeLeft("bsu_thetime_cooldown")) .. " more seconds!")
+		end
 	end)
 end)
