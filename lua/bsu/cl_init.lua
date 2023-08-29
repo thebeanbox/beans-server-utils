@@ -11,6 +11,12 @@ include(clBaseDir .. "convars.lua")
 include(clBaseDir .. "networking.lua")
 include(clBaseDir .. "pp.lua")
 include(clBaseDir .. "commands.lua")
+-- menu
+include(clBaseDir .. "menu/bsumenu.lua")
+include(clBaseDir .. "menu/commandmenu.lua")
+include(clBaseDir .. "menu/votemenu.lua")
+include(clBaseDir .. "menu/groupsmenu.lua")
+include(clBaseDir .. "menu/bansmenu.lua")
 
 -- module loading
 BSU.LoadModules()

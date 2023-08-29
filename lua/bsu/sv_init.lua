@@ -20,12 +20,20 @@ include(svBaseDir .. "privileges.lua")
 include(svBaseDir .. "limits.lua")
 include(svBaseDir .. "pp.lua")
 include(svBaseDir .. "commands.lua")
+-- server-side menu
+include(svBaseDir .. "menu/bansmenu.lua")
 
 -- send client-side scripts
 AddCSLuaFile(clBaseDir .. "convars.lua")
 AddCSLuaFile(clBaseDir .. "networking.lua")
 AddCSLuaFile(clBaseDir .. "pp.lua")
 AddCSLuaFile(clBaseDir .. "commands.lua")
+-- client-side menu
+AddCSLuaFile(clBaseDir .. "menu/bsumenu.lua")
+AddCSLuaFile(clBaseDir .. "menu/commandmenu.lua")
+AddCSLuaFile(clBaseDir .. "menu/votemenu.lua")
+AddCSLuaFile(clBaseDir .. "menu/groupsmenu.lua")
+AddCSLuaFile(clBaseDir .. "menu/bansmenu.lua")
 
 -- module loading
 BSU.LoadModules()

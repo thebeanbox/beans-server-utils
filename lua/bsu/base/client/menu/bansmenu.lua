@@ -135,7 +135,7 @@ function bansMenu:NextPage()
 	if #(self.bans) < 50 then return end
 	self.currentPage = self.currentPage + 1
 	self.currentPageLabel:SetText("Page: " .. self.currentPage)
-	self:LoadPage(self.currentPage)	
+	self:LoadPage(self.currentPage)
 end
 
 net.Receive("bsu_request_bans", function()
@@ -159,8 +159,8 @@ end)
 vgui.Register("BSUBansMenu", bansMenu, "DPanel")
 
 hook.Add("BSU_BSUMenuInit", "BSU_BansMenuInit", function(bsuMenu)
-	--local banMenu = vgui.Create("BSUBansMenu", bsuMenu)
-	--BSU.BansMenu = banMenu
-	--bsuMenu:AddTab("Ban History", 4, banMenu, "icon16/shield.png")
-	--BSU.BansMenu:LoadPage(1)
+	local banMenu = vgui.Create("BSUBansMenu", bsuMenu)
+	BSU.BansMenu = banMenu
+	bsuMenu:AddTab("Ban History", 4, banMenu, "icon16/shield.png")
+	BSU.BansMenu:LoadPage(1)
 end)
