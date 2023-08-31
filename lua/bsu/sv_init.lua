@@ -21,6 +21,7 @@ include(svBaseDir .. "limits.lua")
 include(svBaseDir .. "pp.lua")
 include(svBaseDir .. "commands.lua")
 -- server-side menu
+include(svBaseDir .. "menu/bsumenu.lua")
 include(svBaseDir .. "menu/bansmenu.lua")
 
 -- send client-side scripts

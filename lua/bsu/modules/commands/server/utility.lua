@@ -275,3 +275,26 @@ hook.Add("PlayerSay", "BSU_CommandShorthand", function(ply, text)
 		return ""
 	end
 end)
+
+util.AddNetworkString("bsu_menu_open")
+util.AddNetworkString("bsu_menu_regen")
+
+BSU.SetupCommand("menu", function(cmd)
+	cmd:SetDescription("Opens the menu")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ANYONE)
+	cmd:SetFunction(function(self, caller)
+		net.Start("bsu_menu_open")
+		net.Send(caller)
+	end)
+end)
+
+BSU.SetupCommand("menuregen", function(cmd)
+	cmd:SetDescription("Regenerates the menu")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ANYONE)
+	cmd:SetFunction(function(self, caller)
+		net.Start("bsu_menu_regen")
+		net.Send(caller)
+	end)
+end)
