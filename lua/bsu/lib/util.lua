@@ -25,6 +25,7 @@ function BSU.LocalTime()
 end
 
 function BSU.SteamIDTo3(steamid)
+	if steamid == "BOT" or steamid == "NULL" then return 0 end
 	local y, z = string.match(steamid, "^STEAM_0:([01]):(%d+)$")
 	return bit.lshift(z, 1) + y
 end

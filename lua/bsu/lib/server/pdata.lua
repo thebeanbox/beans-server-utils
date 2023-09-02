@@ -23,7 +23,7 @@ function BSU.GetPDataBySteamID(steamid, key)
 end
 
 function BSU.GetAllPDataBySteamID(steamid, network)
-	local query = BSU.SQLSelectByValues(BSU.SQL_PDATA, { steamid = steamid })
+	local query = BSU.SQLSelectByValues(BSU.SQL_PDATA, { steamid = BSU.ID64(steamid) })
 	local data = {}
 
 	for i = 1, #query do
