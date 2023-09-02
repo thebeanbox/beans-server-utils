@@ -355,7 +355,7 @@ BSU.SetupCommand("cleargrouppriv", function(cmd)
 		if not type then error("Unknown privilege type") end
 
 		local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = type, value = value })[1]
-		if not priv then error("Privilege on this group doesn't exist") end
+		if not priv then error("Privilege is not set on this group") end
 
 		BSU.RemoveGroupPrivilege(groupid, type, value)
 
@@ -369,6 +369,52 @@ BSU.SetupCommand("cleargrouppriv", function(cmd)
 	cmd:AddStringArg("group")
 	cmd:AddStringArg("name")
 	cmd:AddStringArg("value")
+end)
+
+BSU.SetupCommand("setgrouplimit", function(cmd)
+	cmd:SetDescription("Set a group limit")
+	cmd:SetCategory("moderation")
+	cmd:SetAccess(BSU.CMD_SUPERADMIN)
+	cmd:SetFunction(function(self, _, groupid, name, amount)
+		local group = BSU.GetGroupByID(groupid)
+		if not group then error("Group does not exist") end
+
+		local limit = BSU.SQLSelectByValues(BSU.SQL_GROUP_LIMITS, { groupid = groupid, name = name })[1]
+		if limit == amount then error("Limit is already set to this amount on this group") end
+
+		BSU.RegisterGroupLimit(groupid, name, amount)
+
+		self:BroadcastActionMsg("%caller% set a limit on the group %groupid% to %amount% (%name%)", {
+			groupid = groupid,
+			amount = amount,
+			name = name
+		})
+	end)
+	cmd:AddStringArg("group")
+	cmd:AddStringArg("name")
+	cmd:AddNumberArg("amount")
+end)
+
+BSU.SetupCommand("cleargrouplimit", function(cmd)
+	cmd:SetDescription("Set a group limit")
+	cmd:SetCategory("moderation")
+	cmd:SetAccess(BSU.CMD_SUPERADMIN)
+	cmd:SetFunction(function(self, _, groupid, name)
+		local group = BSU.GetGroupByID(groupid)
+		if not group then error("Group does not exist") end
+
+		local limit = BSU.SQLSelectByValues(BSU.SQL_GROUP_LIMITS, { groupid = groupid, name = name })[1]
+		if not limit then error("Limit is not set on this group") end
+
+		BSU.RemoveGroupLimit(groupid, name)
+
+		self:BroadcastActionMsg("%caller% cleared a limit on the group %groupid% (%name%)", {
+			groupid = groupid,
+			name = name
+		})
+	end)
+	cmd:AddStringArg("group")
+	cmd:AddStringArg("name")
 end)
 
 BSU.SetupCommand("mute", function(cmd)
