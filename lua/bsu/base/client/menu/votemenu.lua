@@ -111,7 +111,7 @@ hook.Add("BSU_BSUMenuInit", "BSU_VoteMenuInit", function(bsuMenu)
 end)
 
 hook.Add("BSU_VoteStart", "BSU_VoteMenu", function(vote)
-	if not BSU.VoteMenu then return end
+	if not BSU.VoteMenu then BSU.CreateMenu() end
 
 	BSU.VoteMenu:VoteStart(vote)
 	BSU.BSUMenu:SelectTab(2)

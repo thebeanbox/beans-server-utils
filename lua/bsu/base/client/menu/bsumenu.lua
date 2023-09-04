@@ -64,7 +64,7 @@ end
 
 vgui.Register("BSUMenu", bsuMenu, "DFrame")
 
-local function createBSUMenu()
+function BSU.CreateMenu()
 	if BSU.BSUMenu then BSU.BSUMenu:Remove() end
 
 	local bsuMenu = vgui.Create("BSUMenu")
@@ -75,12 +75,12 @@ local function createBSUMenu()
 end
 
 net.Receive("bsu_menu_open", function()
-	if not BSU.BSUMenu then createBSUMenu() end
+	if not BSU.BSUMenu then BSU.CreateMenu() end
 	BSU.BSUMenu:Open()
 end)
 
 net.Receive("bsu_menu_regen", function()
 	if BSU.BSUMenu then BSU.BSUMenu:Remove() end
-	createBSUMenu()
+	BSU.CreateMenu()
 	BSU.BSUMenu:Open()
 end)
