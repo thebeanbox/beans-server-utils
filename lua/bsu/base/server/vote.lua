@@ -46,6 +46,8 @@ function BSU.StartVote(title, duration, author, options, callback)
 	end
 	net.Broadcast()
 
+	BSU.SendChatMsg(nil, author, BSU.CLR_TEXT, " started a vote! (", BSU.CLR_PARAM, title, BSU.CLR_TEXT, ")")
+
 	BSU.ActiveVotes[vote.id] = vote
 	hook.Run("BSU_VoteStart", vote)
 	timer.Simple(duration, function()
@@ -93,3 +95,9 @@ function BSU.TallyVote(vote)
 	return vote.options[tally[1].index]
 end
 
+function BSU.HasActiveVote(author)
+	for _, vote in pairs(BSU.ActiveVotes) do
+		if vote.author == author then return true end
+	end
+	return false
+end

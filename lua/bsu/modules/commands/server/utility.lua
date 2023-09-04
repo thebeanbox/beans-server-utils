@@ -303,18 +303,22 @@ BSU.SetupCommand("vote", function(cmd)
 	cmd:SetDescription("Start a vote")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(_, caller, duration, title, ...)
+	cmd:SetFunction(function(self, caller, duration, title, ...)
+		if BSU.HasActiveVote(caller) then
+			error("You already have a vote active!")
+		end
+
 		local options = {...}
 		BSU.StartVote(title, duration, caller, options, function(winner)
 			if not winner then
-				BSU.SendChatMsg(player.GetAll(), color_white, string.format("No one voted!", winner))
+				BSU.SendChatMsg(nil, color_white, string.format("No one voted!", winner))
 				return
 			end
 
-			BSU.SendChatMsg(player.GetAll(), color_white, string.format("'%s' won the vote!", winner))
+			BSU.SendChatMsg(nil, color_white, string.format("'%s' won the vote!", winner))
 		end)
 	end)
-	cmd:AddNumberArg("duration", { min = 1 })
+	cmd:AddNumberArg("duration", { min = 1, max = 120 })
 	cmd:AddStringArg("title")
 	cmd:AddStringArg("option1")
 	cmd:AddStringArg("option2")
@@ -349,7 +353,7 @@ BSU.SetupCommand("votemap", function(cmd)
 			end)
 		end)
 	end)
-	cmd:AddNumberArg("duration", { min = 30 })
+	cmd:AddNumberArg("duration", { min = 30, max = 120 })
 	cmd:AddStringArg("option1")
 	cmd:AddStringArg("option2")
 	for i = 3, 10 do
@@ -357,3 +361,32 @@ BSU.SetupCommand("votemap", function(cmd)
 	end
 end)
 
+BSU.SetupCommand("map", function(cmd)
+	cmd:SetDescription("Changes the map")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetSilent(true)
+	cmd:SetFunction(function(_, _, mapname)
+		if not mapLookup[mapname] then
+			error(string.format("'%s' is not a valid map.", mapname))
+		end
+
+		RunConsoleCommand("changelevel", mapname)
+	end)
+	cmd:AddStringArg("mapname", {})
+end)
+
+BSU.SetupCommand("maplist", function(cmd)
+	cmd:SetDescription("Lists maps available on the server")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetSilent(true)
+	cmd:SetFunction(function()
+		local msg = {color_white, "\n\n[Maps Available On The Server]\n\n"}
+		for mapname, _ in pairs(mapLookup) do
+			table.insert(msg, "\n\t- " .. mapname)
+		end
+		
+		self:PrintConsoleMsg(unpack(msg))
+	end)
+end)
