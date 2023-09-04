@@ -111,8 +111,9 @@ end
 
 hook.Add("PopulateToolMenu", "BSU_AddPropProtectionMenu", addPropProtectionMenu)
 
-local color_bg = Color(0, 0, 0, 75)
-local hudX, hudY = 37, ScrH() - 180
+local hudColorBG = Color(0, 0, 0, 75)
+local hudColorFG = Color(255, 255, 255, 255)
+local hudX, hudY = GetConVar("bsu_propinfo_x"):GetInt(), GetConVar("bsu_propinfo_y"):GetInt()
 
 local font = "BSU_PP_HUD"
 surface.CreateFont(font, {
@@ -122,6 +123,14 @@ surface.CreateFont(font, {
 	antialias = true,
 	shadow = true
 })
+
+cvars.AddChangeCallback("bsu_propinfo_x", function(_, _, new)
+	hudX = tonumber(new)
+end)
+
+cvars.AddChangeCallback("bsu_propinfo_y", function(_, _, new)
+	hudY = tonumber(new)
+end)
 
 local function drawPropProtectionHUD()
 	local ply = LocalPlayer()
@@ -136,8 +145,8 @@ local function drawPropProtectionHUD()
 			local text = "Owner: " .. name .. (steamid and "<" .. steamid .. ">" or "") .. "\n" .. ent:GetModel() .. "\n" .. tostring(ent)
 			surface.SetFont(font)
 			local w, h = surface.GetTextSize(text)
-			draw.RoundedBox(4, hudX, hudY, w + 8, h + 8, color_bg)
-			draw.DrawText(text, font, hudX + 4, hudY + 4, color_white, TEXT_ALIGN_LEFT)
+			draw.RoundedBox(4, hudX, hudY, w + 8, h + 8, hudColorBG)
+			draw.DrawText(text, font, hudX + 4, hudY + 4, hudColorFG, TEXT_ALIGN_LEFT)
 		end
 	end
 end
