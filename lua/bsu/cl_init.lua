@@ -11,6 +11,8 @@ include(clBaseDir .. "convars.lua")
 include(clBaseDir .. "networking.lua")
 include(clBaseDir .. "pp.lua")
 include(clBaseDir .. "commands.lua")
+-- voting
+include(clBaseDir .. "vote.lua")
 -- menu
 include(clBaseDir .. "menu/bsumenu.lua")
 include(clBaseDir .. "menu/commandmenu.lua")

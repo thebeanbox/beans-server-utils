@@ -20,6 +20,8 @@ include(svBaseDir .. "privileges.lua")
 include(svBaseDir .. "limits.lua")
 include(svBaseDir .. "pp.lua")
 include(svBaseDir .. "commands.lua")
+-- voting
+include(svBaseDir .. "vote.lua")
 -- server-side menu
 include(svBaseDir .. "menu/bsumenu.lua")
 include(svBaseDir .. "menu/bansmenu.lua")
@@ -29,6 +31,8 @@ AddCSLuaFile(clBaseDir .. "convars.lua")
 AddCSLuaFile(clBaseDir .. "networking.lua")
 AddCSLuaFile(clBaseDir .. "pp.lua")
 AddCSLuaFile(clBaseDir .. "commands.lua")
+-- voting
+AddCSLuaFile(clBaseDir .. "vote.lua")
 -- client-side menu
 AddCSLuaFile(clBaseDir .. "menu/bsumenu.lua")
 AddCSLuaFile(clBaseDir .. "menu/commandmenu.lua")

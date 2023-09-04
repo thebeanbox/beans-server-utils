@@ -298,3 +298,62 @@ BSU.SetupCommand("menuregen", function(cmd)
 	end)
 	cmd:SetValidCaller(true)
 end)
+
+BSU.SetupCommand("vote", function(cmd)
+	cmd:SetDescription("Start a vote")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(_, caller, duration, title, ...)
+		local options = {...}
+		BSU.StartVote(title, duration, caller, options, function(winner)
+			if not winner then
+				BSU.SendChatMsg(player.GetAll(), color_white, string.format("No one voted!", winner))
+				return
+			end
+
+			BSU.SendChatMsg(player.GetAll(), color_white, string.format("'%s' won the vote!", winner))
+		end)
+	end)
+	cmd:AddNumberArg("duration", { min = 1 })
+	cmd:AddStringArg("title")
+	cmd:AddStringArg("option1")
+	cmd:AddStringArg("option2")
+	for i = 3, 10 do
+		cmd:AddStringArg("option" .. i, { optional = true })
+	end
+end)
+
+local maps = file.Find("maps/*.bsp", "GAME")
+local mapLookup = {}
+for _, map in ipairs(maps) do
+	mapLookup[string.sub(map, 1, #map - 4)] = true
+end
+
+BSU.SetupCommand("votemap", function(cmd)
+	cmd:SetDescription("Start a vote")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(_, caller, duration, ...)
+		local options = {...}
+		for _, str in ipairs(options) do
+			if not mapLookup[str] then
+				error(string.format("'%s' is not a valid map.", str))
+			end
+		end
+
+		BSU.StartVote("Map Vote", duration, caller, options, function(winner)
+			if not winner then return end
+			RunConsoleCommand("nextlevel", winner)
+			timer.Simple(20, function()
+				game.LoadNextMap()
+			end)
+		end)
+	end)
+	cmd:AddNumberArg("duration", { min = 30 })
+	cmd:AddStringArg("option1")
+	cmd:AddStringArg("option2")
+	for i = 3, 10 do
+		cmd:AddStringArg("option" .. i, { optional = true })
+	end
+end)
+

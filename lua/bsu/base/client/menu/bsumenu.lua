@@ -26,11 +26,21 @@ function bsuMenu:Init()
 	self:SetDeleteOnClose(false)
 	self:SetSizable(true)
 	self:SetScreenLock(true)
-	
+
 	local tabBar = vgui.Create("DPropertySheet", self)
 	tabBar:Dock(FILL)
 	self.tabBar = tabBar
 	self.tabs = {}
+end
+
+function bsuMenu:Open()
+	BSU.BSUMenu:Center()
+	BSU.BSUMenu:Show()
+	BSU.BSUMenu:MakePopup()
+end
+
+function bsuMenu:SelectTab(n)
+	self.tabBar:SetActiveTab(self.tabBar:GetItems()[n].Tab)
 end
 
 function bsuMenu:AddTab(name, pos, panel, icon)
@@ -56,7 +66,7 @@ vgui.Register("BSUMenu", bsuMenu, "DFrame")
 
 local function createBSUMenu()
 	if BSU.BSUMenu then BSU.BSUMenu:Remove() end
-	
+
 	local bsuMenu = vgui.Create("BSUMenu")
 	BSU.BSUMenu = bsuMenu
 	hook.Run("BSU_BSUMenuInit", bsuMenu)
@@ -64,19 +74,13 @@ local function createBSUMenu()
 	hook.Run("BSU_BSUMenuPostInit", bsuMenu)
 end
 
-local function openBSUMenu()
-	BSU.BSUMenu:Center()
-	BSU.BSUMenu:Show()
-	BSU.BSUMenu:MakePopup()
-end
-
 net.Receive("bsu_menu_open", function()
 	if not BSU.BSUMenu then createBSUMenu() end
-	openBSUMenu()
+	BSU.BSUMenu:Open()
 end)
 
 net.Receive("bsu_menu_regen", function()
 	if BSU.BSUMenu then BSU.BSUMenu:Remove() end
 	createBSUMenu()
-	openBSUMenu()
+	BSU.BSUMenu:Open()
 end)
