@@ -303,7 +303,7 @@ BSU.SetupCommand("vote", function(cmd)
 	cmd:SetDescription("Start a vote")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self, caller, duration, title, ...)
+	cmd:SetFunction(function(_, caller, duration, title, ...)
 		if BSU.HasActiveVote(caller) then
 			error("You already have a vote active!")
 		end
@@ -388,7 +388,6 @@ BSU.SetupCommand("maplist", function(cmd)
 		for mapname, _ in pairs(mapLookup) do
 			table.insert(msg, "\n\t- " .. mapname)
 		end
-		
 		self:PrintConsoleMsg(unpack(msg))
 	end)
 end)
