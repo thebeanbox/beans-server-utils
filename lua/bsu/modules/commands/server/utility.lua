@@ -311,11 +311,13 @@ BSU.SetupCommand("vote", function(cmd)
 		local options = {...}
 		BSU.StartVote(title, duration, caller, options, function(winner)
 			if not winner then
-				BSU.SendChatMsg(nil, color_white, string.format("No one voted!", winner))
+				--BSU.SendChatMsg(nil, color_white, string.format("No one voted!", winner))
+				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "No one voted! (", BSU.CLR_PARAM, title, BSU.CLR_TEXT, ")")
 				return
 			end
 
-			BSU.SendChatMsg(nil, color_white, string.format("'%s' won the vote!", winner))
+			--BSU.SendChatMsg(nil, color_white, string.format("'%s' won the vote!", winner))
+			BSU.SendChatMsg(nil, BSU.CLR_TEXT, "'", BSU.CLR_PARAM, winner, BSU.CLR_TEXT, "' won the vote! (", BSU.CLR_PARAM, title, BSU.CLR_TEXT, ")")
 		end)
 	end)
 	cmd:AddNumberArg("duration", { min = 1, max = 120 })
