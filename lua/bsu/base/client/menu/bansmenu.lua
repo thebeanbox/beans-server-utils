@@ -159,6 +159,8 @@ end)
 vgui.Register("BSUBansMenu", bansMenu, "DPanel")
 
 hook.Add("BSU_BSUMenuInit", "BSU_BansMenuInit", function(bsuMenu)
+	-- Only create tab if you're a superadmin
+	if not LocalPlayer():IsUserGroup("superadmin") then return end
 	local banMenu = vgui.Create("BSUBansMenu", bsuMenu)
 	BSU.BansMenu = banMenu
 	bsuMenu:AddTab("Ban History", 4, banMenu, "icon16/shield.png")
