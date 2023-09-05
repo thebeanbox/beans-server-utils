@@ -10,7 +10,7 @@ end
 
 vgui.Register("BSUGroupsMenu", groupsMenu, "DHorizontalDivider")
 
-hook.Add("BSU_BSUMenuInit", "BSU_GroupsMenuInit", function(bsuMenu)
-	--local groupsMenu = vgui.Create("BSUGroupsMenu", bsuMenu)
-	--bsuMenu:AddTab("Privileges", 3, groupsMenu, "icon16/group.png")
-end)
+--[[hook.Add("BSU_BSUMenuInit", "BSU_GroupsMenuInit", function(bsuMenu)
+	local groupsMenu = vgui.Create("BSUGroupsMenu", bsuMenu)
+	bsuMenu:AddTab("Privileges", 3, groupsMenu, "icon16/group.png")
+end)]]

@@ -67,11 +67,11 @@ vgui.Register("BSUMenu", bsuMenu, "DFrame")
 function BSU.CreateMenu()
 	if BSU.BSUMenu then BSU.BSUMenu:Remove() end
 
-	local bsuMenu = vgui.Create("BSUMenu")
-	BSU.BSUMenu = bsuMenu
-	hook.Run("BSU_BSUMenuInit", bsuMenu)
-	bsuMenu:InitializeTabs()
-	hook.Run("BSU_BSUMenuPostInit", bsuMenu)
+	local menu = vgui.Create("BSUMenu")
+	BSU.BSUMenu = menu
+	hook.Run("BSU_BSUMenuInit", menu)
+	menu:InitializeTabs()
+	hook.Run("BSU_BSUMenuPostInit", menu)
 end
 
 net.Receive("bsu_menu_open", function()

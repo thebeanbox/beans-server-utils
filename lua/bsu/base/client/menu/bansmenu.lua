@@ -2,15 +2,15 @@ local bansMenu = {}
 
 function bansMenu:Init()
 	self:Dock(FILL)
-	
+
 	self.currentPage = 1
 	self.bans = {}
-	
+
 	topPanel = vgui.Create("DPanel", self)
 	topPanel:Dock(TOP)
 	topPanel:SetHeight(25)
 	self.topPanel = topPanel
-	
+
 	local previousButton = vgui.Create("DButton", topPanel)
 	previousButton:SetIcon("icon16/arrow_undo.png")
 	previousButton:SetText("")
@@ -20,7 +20,7 @@ function bansMenu:Init()
 		self:PreviousPage()
 	end
 	self.previousButton = previousButton
-	
+
 	local nextButton = vgui.Create("DButton", topPanel)
 	nextButton:SetIcon("icon16/arrow_redo.png")
 	nextButton:SetText("")
@@ -30,17 +30,17 @@ function bansMenu:Init()
 		self:NextPage()
 	end
 	self.nextButton = nextButton
-	
+
 	local currentPageLabel = vgui.Create("DLabel", topPanel)
 	currentPageLabel:SetText("Page: 1")
-	currentPageLabel:SetTextColor(Color(0,0,0))
+	currentPageLabel:SetTextColor(Color(0, 0, 0))
 	currentPageLabel:Dock(LEFT)
 	self.currentPageLabel = currentPageLabel
-	
+
 	listPanel = vgui.Create("DPanel", self)
 	listPanel:Dock(FILL)
 	self.listPanel = listPanel
-	
+
 	local banList = vgui.Create("DListView", listPanel)
 	banList:Dock(FILL)
 	banList:AddColumn("Name")
@@ -55,60 +55,60 @@ function bansMenu:Init()
 	banList.OnRowRightClick = function(_, lineID)
 		local line = banList:GetLine(lineID)
 		local menu = DermaMenu()
-		
+
 		local copyName = menu:AddOption("Copy Name")
 		copyName:SetIcon("icon16/page_copy.png")
 		copyName.DoClick = function()
 			SetClipboardText(line:GetColumnText(1))
 			notification.AddLegacy("Copied Name!", NOTIFY_GENERIC, 2)
 		end
-		
+
 		local copySteamID = menu:AddOption("Copy SteamID")
 		copySteamID:SetIcon("icon16/page_copy.png")
 		copySteamID.DoClick = function()
 			SetClipboardText(line:GetColumnText(2))
 			notification.AddLegacy("Copied SteamID!", NOTIFY_GENERIC, 2)
 		end
-		
+
 		local copyReason = menu:AddOption("Copy Reason")
 		copyReason:SetIcon("icon16/page_copy.png")
 		copyReason.DoClick = function()
 			SetClipboardText(line:GetColumnText(4))
 			notification.AddLegacy("Copied Reason!", NOTIFY_GENERIC, 2)
 		end
-		
+
 		local copyDate = menu:AddOption("Copy Date")
 		copyDate:SetIcon("icon16/page_copy.png")
 		copyDate.DoClick = function()
 			SetClipboardText(line:GetColumnText(5))
 			notification.AddLegacy("Copied Date!", NOTIFY_GENERIC, 2)
 		end
-		
+
 		menu:AddSpacer()
-		
+
 		local editBanSubMenu, editBanOption = menu:AddSubMenu("Edit Ban...")
 		editBanOption:SetIcon("icon16/user_edit.png")
-		
+
 		local editDuration = editBanSubMenu:AddOption("Edit Duration")
 		editDuration:SetIcon("icon16/clock_edit.png")
 		editDuration.DoClick = function()
 			print("there is nothing")
 		end
-		
+
 		local unbanPlayer = editBanSubMenu:AddOption("Unban Player")
 		unbanPlayer:SetIcon("icon16/user_delete.png")
 		unbanPlayer.DoClick = function()
 			print("there is nothing")
 		end
-		 
+
 		menu:Open()
 	end
-	
+
 	self.banList = banList
 end
 
 function bansMenu:AddPlayer(name, steamID, duration, reason, date, bannedByName)
-	local newRow = self.banList:AddLine(name, steamID, tostring(duration), reason, date, bannedByName)
+	self.banList:AddLine(name, steamID, tostring(duration), reason, date, bannedByName)
 end
 
 function bansMenu:GetBans(pageNum)
@@ -132,7 +132,7 @@ end
 
 function bansMenu:NextPage()
 	-- Don't scroll when there are less than 50 results
-	if #(self.bans) < 50 then return end
+	if #self.bans < 50 then return end
 	self.currentPage = self.currentPage + 1
 	self.currentPageLabel:SetText("Page: " .. self.currentPage)
 	self:LoadPage(self.currentPage)
@@ -141,16 +141,16 @@ end
 net.Receive("bsu_request_bans", function()
 	BSU.BansMenu.bans = {}
 	local banAmount = net.ReadUInt(6)
-	for i=1, banAmount do
+	for i = 1, banAmount do
 		BSU.BansMenu.bans[i] = {}
 		local banKeys = net.ReadUInt(4)
-		for ii=1, banKeys do
+		for _ = 1, banKeys do
 			local key = net.ReadString()
 			local value = net.ReadType()
 			BSU.BansMenu.bans[i][key] = value
 		end
-	end 
-	
+	end
+
 	for _, ban in ipairs(BSU.BansMenu.bans) do
 		BSU.BansMenu:AddPlayer(ban.identity, ban.identity, ban.duration, ban.reason and ban.reason or "[No Reason]", ban.time, ban.admin and ban.admin or "[Console]")
 	end
