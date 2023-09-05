@@ -62,6 +62,7 @@ function groupsMenu:Init()
     function groupList:RefreshGroups()
         self:Clear()
         for k,v in pairs(BSU.GroupsMenu.groups) do
+            local gcatName = "Group: " .. k
             local def_team = self:CreateRow(k, "Default Team")
             def_team:Setup("integer")
             def_team:SetValue(v.team)
@@ -93,7 +94,7 @@ function groupsMenu:Init()
     function teamList:RefreshTeams()
         self:Clear()
         for k,v in pairs(BSU.GroupsMenu.teams) do
-            local tcatName = k .. ": " .. v.Name
+            local tcatName = "Team: " .. v.Name .. " (" .. k ..")"
 
             local teamid = self:CreateRow(tcatName, "Team ID")
             teamid:Setup("integer")
