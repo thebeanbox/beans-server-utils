@@ -383,7 +383,7 @@ BSU.SetupCommand("maplist", function(cmd)
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetSilent(true)
-	cmd:SetFunction(function()
+	cmd:SetFunction(function(self)
 		local msg = {color_white, "\n\n[Maps Available On The Server]\n\n"}
 		for mapname, _ in pairs(mapLookup) do
 			table.insert(msg, "\n\t- " .. mapname)
