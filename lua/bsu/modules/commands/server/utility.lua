@@ -354,6 +354,8 @@ BSU.SetupCommand("votemap", function(cmd)
 				game.LoadNextMap()
 			end)
 		end)
+
+		self:BroadcastActionMsg("%caller% started a map vote!")
 	end)
 	cmd:AddNumberArg("duration", { min = 30, max = 120 })
 	cmd:AddStringArg("map1")
@@ -361,8 +363,6 @@ BSU.SetupCommand("votemap", function(cmd)
 	for i = 3, 10 do
 		cmd:AddStringArg("map" .. i, { optional = true })
 	end
-
-	self:BroadcastActionMsg("%caller% started a map vote!")	
 end)
 
 BSU.SetupCommand("map", function(cmd)
@@ -402,7 +402,7 @@ BSU.SetupCommand("votekick", function(cmd)
 		if BSU.HasActiveVote(caller) then
 			error("You already have a vote active!")
 		end
-		
+
 		local title = string.format("Vote To Kick %s (%s)", target:Nick(), reason and reason or "No reason given")
 		local options = {"Yes", "No"}
 
@@ -411,7 +411,7 @@ BSU.SetupCommand("votekick", function(cmd)
 				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "No one voted! (", BSU.CLR_PARAM, title, BSU.CLR_TEXT, ")")
 				return
 			end
-			
+
 			if winner == "Yes" then
 				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "Vote kick passed, ", target, " will now be kicked!")
 				BSU.SafeRunCommand(caller, "kick", string.format("\"%s\" \"%s\"", target:Nick(), reason))
@@ -434,9 +434,9 @@ BSU.SetupCommand("voteban", function(cmd)
 		if BSU.HasActiveVote(caller) then
 			error("You already have a vote active!")
 		end
-		
+
 		local targetSteamID = target:SteamID()
-		local title = string.format("Vote To Ban %s %s (%s)", target:Nick(), (duration ~= 0 and "for " .. BSU.StringTime(duration, 10000) or "permanently"), reason and reason or "No reason given")
+		local title = string.format("Vote To Ban %s %s (%s)", target:Nick(), duration ~= 0 and "for " .. BSU.StringTime(duration, 10000) or "permanently", reason and reason or "No reason given")
 		local options = {"Yes", "No"}
 
 		BSU.StartVote(title, 30, caller, options, function(winner)
@@ -444,7 +444,7 @@ BSU.SetupCommand("voteban", function(cmd)
 				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "No one voted! (", BSU.CLR_PARAM, title, BSU.CLR_TEXT, ")")
 				return
 			end
-			
+
 			if winner == "Yes" then
 				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "Vote ban passed, ", target, " will now be banned!")
 				BSU.BanSteamID(targetSteamID, reason, duration, caller:SteamID64())
