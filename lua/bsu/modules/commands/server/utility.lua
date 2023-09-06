@@ -435,6 +435,7 @@ BSU.SetupCommand("voteban", function(cmd)
 			error("You already have a vote active!")
 		end
 		
+		local targetSteamID = target:SteamID()
 		local title = string.format("Vote To Ban %s %s (%s)", target:Nick(), (duration ~= 0 and "for " .. BSU.StringTime(duration, 10000) or "permanently"), reason and reason or "No reason given")
 		local options = {"Yes", "No"}
 
@@ -446,7 +447,7 @@ BSU.SetupCommand("voteban", function(cmd)
 			
 			if winner == "Yes" then
 				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "Vote ban passed, ", target, " will now be banned!")
-				BSU.SafeRunCommand(caller, "ban", string.format("\"%s\" %s \"%s\"", target:Nick(), tostring(duration), reason))
+				BSU.BanSteamID(targetSteamID, reason, duration, caller)
 			else
 				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "Vote ban failed, ", target, " will NOT be banned!")
 			end
