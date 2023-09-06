@@ -13,7 +13,7 @@ hook.Add("OnGamemodeLoaded", "BSU_InitializePlayer", function()
 		local isPlayer = not ply:IsBot()
 
 		if not plyData then -- this is the first time this player has joined
-			BSU.RegisterPlayer(id64, GetConVar("bsu_default_group"):GetString(), not isPlayer and GetConVar("bsu_bot_team"):GetInt() or nil)
+			BSU.RegisterPlayer(id64, isPlayer and GetConVar("bsu_default_group"):GetString() or GetConVar("bsu_bot_group"):GetString())
 			plyData = BSU.GetPlayerData(ply)
 		end
 
