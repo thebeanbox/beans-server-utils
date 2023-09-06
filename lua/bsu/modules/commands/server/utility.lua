@@ -303,7 +303,7 @@ BSU.SetupCommand("vote", function(cmd)
 	cmd:SetDescription("Start a vote")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(_, caller, duration, title, ...)
+	cmd:SetFunction(function(self, caller, duration, title, ...)
 		if BSU.HasActiveVote(caller) then
 			error("You already have a vote active!")
 		end
@@ -311,14 +311,14 @@ BSU.SetupCommand("vote", function(cmd)
 		local options = {...}
 		BSU.StartVote(title, duration, caller, options, function(winner)
 			if not winner then
-				--BSU.SendChatMsg(nil, color_white, string.format("No one voted!", winner))
 				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "No one voted! (", BSU.CLR_PARAM, title, BSU.CLR_TEXT, ")")
 				return
 			end
 
-			--BSU.SendChatMsg(nil, color_white, string.format("'%s' won the vote!", winner))
 			BSU.SendChatMsg(nil, BSU.CLR_TEXT, "'", BSU.CLR_PARAM, winner, BSU.CLR_TEXT, "' won the vote! (", BSU.CLR_PARAM, title, BSU.CLR_TEXT, ")")
 		end)
+
+		self:BroadcastActionMsg("%caller% started a vote! (%title%)", {title = title})
 	end)
 	cmd:AddNumberArg("duration", { min = 1, max = 120 })
 	cmd:AddStringArg("title")
@@ -336,10 +336,10 @@ for _, map in ipairs(maps) do
 end
 
 BSU.SetupCommand("votemap", function(cmd)
-	cmd:SetDescription("Start a vote")
+	cmd:SetDescription("Starts a vote to change the map")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(_, caller, duration, ...)
+	cmd:SetFunction(function(self, caller, duration, ...)
 		local options = {...}
 		for _, str in ipairs(options) do
 			if not mapLookup[str] then
@@ -356,11 +356,13 @@ BSU.SetupCommand("votemap", function(cmd)
 		end)
 	end)
 	cmd:AddNumberArg("duration", { min = 30, max = 120 })
-	cmd:AddStringArg("option1")
-	cmd:AddStringArg("option2")
+	cmd:AddStringArg("map1")
+	cmd:AddStringArg("map2")
 	for i = 3, 10 do
-		cmd:AddStringArg("option" .. i, { optional = true })
+		cmd:AddStringArg("map" .. i, { optional = true })
 	end
+
+	self:BroadcastActionMsg("%caller% started a map vote!")	
 end)
 
 BSU.SetupCommand("map", function(cmd)
@@ -390,4 +392,73 @@ BSU.SetupCommand("maplist", function(cmd)
 		end
 		self:PrintConsoleMsg(unpack(msg))
 	end)
+end)
+
+BSU.SetupCommand("votekick", function(cmd)
+	cmd:SetDescription("Starts a vote to kick a player")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self, caller, target, reason)
+		if BSU.HasActiveVote(caller) then
+			error("You already have a vote active!")
+		end
+		
+		local title = string.format("Vote To Kick %s (%s)", target:Nick(), reason and reason or "No reason given")
+		local options = {"Yes", "No"}
+
+		BSU.StartVote(title, 30, caller, options, function(winner)
+			if not winner then
+				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "No one voted! (", BSU.CLR_PARAM, title, BSU.CLR_TEXT, ")")
+				return
+			end
+			
+			if winner == "Yes" then
+				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "Vote kick passed, ", target, " will now be kicked!")
+				BSU.SafeRunCommand(caller, "kick", string.format("\"%s\" \"%s\"", target:Nick(), reason))
+			else
+				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "Vote kick failed, ", target, " will NOT be kicked!")
+			end
+		end)
+
+		self:BroadcastActionMsg("%caller% started a vote to kick %target% (%title%)", {target = target, title = title})
+	end)
+	cmd:AddPlayerArg("target", { check = true })
+	cmd:AddStringArg("reason", { optional = true, multi = true })
+end)
+
+BSU.SetupCommand("voteban", function(cmd)
+	cmd:SetDescription("Starts a vote to kick a player")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self, caller, target, duration, reason)
+		if BSU.HasActiveVote(caller) then
+			error("You already have a vote active!")
+		end
+		
+		local title = string.format("Vote To Ban %s %s (%s)", target:Nick(), (duration ~= 0 and "for " .. BSU.StringTime(duration, 10000) or "permanently"), reason and reason or "No reason given")
+		local options = {"Yes", "No"}
+
+		BSU.StartVote(title, 30, caller, options, function(winner)
+			if not winner then
+				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "No one voted! (", BSU.CLR_PARAM, title, BSU.CLR_TEXT, ")")
+				return
+			end
+			
+			if winner == "Yes" then
+				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "Vote ban passed, ", target, " will now be banned!")
+				BSU.SafeRunCommand(caller, "ban", string.format("\"%s\" %s \"%s\"", target:Nick(), tostring(duration), reason))
+			else
+				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "Vote ban failed, ", target, " will NOT be banned!")
+			end
+		end)
+
+		self:BroadcastActionMsg("%caller% started a vote to ban %target% for %duration% (%title%)", {
+			target = target,
+			duration = duration ~= 0 and BSU.StringTime(duration, 10000) or nil,
+			title = title
+		})
+	end)
+	cmd:AddPlayerArg("target", { check = true })
+	cmd:AddNumberArg("duration", { default = 0, min = 0, allowtime = true })
+	cmd:AddStringArg("reason", { optional = true, multi = true })
 end)
