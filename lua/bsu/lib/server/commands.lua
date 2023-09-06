@@ -23,14 +23,10 @@ function BSU.RemovePlayerCommandAccess(steamid, cmd)
 end
 
 function BSU.AddGroupTargetAccess(groupid, target, access)
-	target = string.match(target, "^[%w_]+$")
-	if not target then error("Target can only have letters, digits, and underscores") end
 	BSU.RegisterGroupPrivilege(groupid, BSU.PRIV_TARGET, string.lower(target), access == nil and true or access)
 end
 
 function BSU.RemoveGroupTargetAccess(groupid, target)
-	target = string.match(target, "^[%w_]+$")
-	if not target then error("Target can only have letters, digits, and underscores") end
 	BSU.RemoveGroupPrivilege(groupid, BSU.PRIV_TARGET, string.lower(target))
 end
 
