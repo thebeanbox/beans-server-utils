@@ -36,7 +36,7 @@ function BSU.GetGroupWildcardPrivileges(groupid, type)
 end
 
 -- returns bool if the group is granted the privilege (or nothing if the privilege is not registered)
-function BSU.CheckGroupPrivilege(groupid, type, value, checkwildcards)
+function BSU.CheckGroupPrivilege(groupid, type, value)
 	-- check for group privilege
 	local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = type, value = value })[1]
 
@@ -44,14 +44,12 @@ function BSU.CheckGroupPrivilege(groupid, type, value, checkwildcards)
 		return priv.granted ~= 0
 	else
 		-- check wildcard privileges
-		if checkwildcards then
-			local wildcards = BSU.GetGroupWildcardPrivileges(groupid, type)
-			table.sort(wildcards, function(a, b) return #a.value > #b.value end)
+		local wildcards = BSU.GetGroupWildcardPrivileges(groupid, type)
+		table.sort(wildcards, function(a, b) return #a.value > #b.value end)
 
-			for _, v in ipairs(wildcards) do
-				if string.find(value, string.Replace(v.value, "*", "(.-)")) ~= nil then
-					return v.granted ~= 0
-				end
+		for _, v in ipairs(wildcards) do
+			if string.find(value, string.Replace(v.value, "*", "(.-)")) ~= nil then
+				return v.granted ~= 0
 			end
 		end
 
@@ -64,12 +62,12 @@ function BSU.CheckGroupPrivilege(groupid, type, value, checkwildcards)
 end
 
 -- returns bool if the player is granted the privilege (or nothing if the privilege is not registered in the player's group)
-function BSU.CheckPlayerPrivilege(steamid, type, value, checkwildcards)
+function BSU.CheckPlayerPrivilege(steamid, type, value)
 	steamid = BSU.ID64(steamid)
 
 	-- check for privilege in player's group
 	local data = BSU.SQLSelectByValues(BSU.SQL_PLAYERS, { steamid = steamid })[1]
 	if data then
-		return BSU.CheckGroupPrivilege(data.groupid, type, value, checkwildcards)
+		return BSU.CheckGroupPrivilege(data.groupid, type, value)
 	end
 end
