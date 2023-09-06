@@ -256,18 +256,17 @@ BSU.SetupCommand("resetteam", function(cmd)
 end)
 
 local privs = {
-	model   = BSU.PRIV_MODEL,
-	mdl     = BSU.PRIV_MODEL,
-	npc     = BSU.PRIV_NPC,
-	sent    = BSU.PRIV_SENT,
-	entity  = BSU.PRIV_SENT,
-	swep    = BSU.PRIV_SWEP,
-	weapon  = BSU.PRIV_SWEP,
-	tool    = BSU.PRIV_TOOL,
+	model = BSU.PRIV_MODEL,
+	mdl = BSU.PRIV_MODEL,
+	npc = BSU.PRIV_NPC,
+	sent = BSU.PRIV_SENT,
+	entity = BSU.PRIV_SENT,
+	swep = BSU.PRIV_SWEP,
+	weapon = BSU.PRIV_SWEP,
+	tool = BSU.PRIV_TOOL,
 	command = BSU.PRIV_CMD,
-	cmd     = BSU.PRIV_CMD,
-	target  = BSU.PRIV_TARGET,
-	misc    = BSU.PRIV_MISC,
+	cmd = BSU.PRIV_CMD,
+	misc = BSU.PRIV_MISC,
 }
 
 local function getPrivFromName(name)
@@ -275,14 +274,13 @@ local function getPrivFromName(name)
 end
 
 local names = {
-	[BSU.PRIV_MODEL]  = "model",
-	[BSU.PRIV_NPC]    = "npc",
-	[BSU.PRIV_SENT]   = "entity",
-	[BSU.PRIV_SWEP]   = "weapon",
-	[BSU.PRIV_TOOL]   = "tool",
-	[BSU.PRIV_CMD]    = "command",
-	[BSU.PRIV_TARGET] = "target",
-	[BSU.PRIV_MISC]   = "misc",
+	[BSU.PRIV_MODEL] = "model",
+	[BSU.PRIV_NPC] = "npc",
+	[BSU.PRIV_SENT] = "entity",
+	[BSU.PRIV_SWEP] = "weapon",
+	[BSU.PRIV_TOOL] = "tool",
+	[BSU.PRIV_CMD] = "command",
+	[BSU.PRIV_MISC] = "misc",
 }
 
 local function getNameFromPriv(priv)
@@ -301,11 +299,6 @@ BSU.SetupCommand("grantgrouppriv", function(cmd)
 		local type = getPrivFromName(name)
 		if not type then error("Unknown privilege type") end
 
-		-- command names should be lowercase
-		if type == BSU.PRIV_CMD or type == BSU.PRIV_TARGET then
-			value = string.lower(value)
-		end
-
 		local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = type, value = value })[1]
 		if priv and priv.granted ~= 0 then error("Privilege is already granted to this group") end
 
@@ -319,7 +312,7 @@ BSU.SetupCommand("grantgrouppriv", function(cmd)
 	end)
 	cmd:AddStringArg("group")
 	cmd:AddStringArg("name")
-	cmd:AddStringArg("value", { multi = true })
+	cmd:AddStringArg("value")
 end)
 
 BSU.SetupCommand("revokegrouppriv", function(cmd)
@@ -334,11 +327,6 @@ BSU.SetupCommand("revokegrouppriv", function(cmd)
 		local type = getPrivFromName(name)
 		if not type then error("Unknown privilege type") end
 
-		-- command names should be lowercase
-		if type == BSU.PRIV_CMD or type == BSU.PRIV_TARGET then
-			value = string.lower(value)
-		end
-
 		local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = type, value = value })[1]
 		if priv and priv.granted == 0 then error("Privilege is already revoked from this group") end
 
@@ -352,7 +340,7 @@ BSU.SetupCommand("revokegrouppriv", function(cmd)
 	end)
 	cmd:AddStringArg("group")
 	cmd:AddStringArg("name")
-	cmd:AddStringArg("value", { multi = true })
+	cmd:AddStringArg("value")
 end)
 
 BSU.SetupCommand("cleargrouppriv", function(cmd)
@@ -365,11 +353,6 @@ BSU.SetupCommand("cleargrouppriv", function(cmd)
 
 		local type = getPrivFromName(name)
 		if not type then error("Unknown privilege type") end
-
-		-- command names should be lowercase
-		if type == BSU.PRIV_CMD or type == BSU.PRIV_TARGET then
-			value = string.lower(value)
-		end
 
 		local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = type, value = value })[1]
 		if not priv then error("Privilege is not set on this group") end
@@ -385,7 +368,7 @@ BSU.SetupCommand("cleargrouppriv", function(cmd)
 	end)
 	cmd:AddStringArg("group")
 	cmd:AddStringArg("name")
-	cmd:AddStringArg("value", { multi = true })
+	cmd:AddStringArg("value")
 end)
 
 BSU.SetupCommand("setgrouplimit", function(cmd)

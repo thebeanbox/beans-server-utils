@@ -711,40 +711,17 @@ function objCmdHandler.GetSilent(self)
 end
 
 if SERVER then
-	function objCmdHandler.CheckCanTargetSteamID(self, targetid, fail)
-		targetid = BSU.ID64(targetid)
-		if not self.caller:IsValid() or self.caller:IsSuperAdmin() then return true end
-		local steamid = self.caller:SteamID64()
-
-		-- check can target self
-		if steamid == targetid then
-			local check = BSU.CheckPlayerPrivilege(steamid, BSU.PRIV_TARGET, string.format("%s ^", self.cmd.name))
-			if check ~= nil then
-				if not check and fail then error("You cannot select this target") end
-				return check
-			end
-		end
-
-		-- check can target group
-		local data = BSU.GetPlayerDataBySteamID(targetid)
-		if data then
-			local check = BSU.CheckPlayerPrivilege(steamid, BSU.PRIV_TARGET, string.format("%s #%s", self.cmd.name, data.groupid))
-			if check ~= nil then
-				if not check and fail then error("You cannot select this target") end
-				return check
-			end
-		end
-
-		-- check can target anyone
-		-- note: it's important when checking target privilege that no wildcard checking is used as the "*" syntax will conflict
-		local check = BSU.CheckPlayerPrivilege(steamid, BSU.PRIV_TARGET, string.format("%s *", self.cmd.name))
-		if check ~= false then return true end
+	function objCmdHandler.CheckCanTargetSteamID(self, targetID, fail)
+		targetID = BSU.ID64(targetID)
+		if not self.caller:IsValid() or self.caller:IsSuperAdmin() or self.caller:SteamID64() == targetID then return true end
+		local targetPriv = BSU.CheckPlayerPrivilege(self.caller:SteamID64(), BSU.PRIV_TARGET, BSU.GetPlayerDataBySteamID(targetID).groupid)
+		if targetPriv then return true end
 		if fail then error("You cannot select this target") end
 		return false
 	end
 
 	function objCmdHandler.CheckCanTarget(self, target, fail)
-		if not self.caller:IsValid() or self.caller:IsSuperAdmin() then return true end -- is server console or superadmin
+		if not self.caller:IsValid() or self.caller:IsSuperAdmin() or self.caller == target then return true end -- is server console or superadmin
 		return self:CheckCanTargetSteamID(target:SteamID64(), fail)
 	end
 
