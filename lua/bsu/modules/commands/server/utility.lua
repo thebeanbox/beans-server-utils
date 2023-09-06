@@ -447,7 +447,7 @@ BSU.SetupCommand("voteban", function(cmd)
 			
 			if winner == "Yes" then
 				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "Vote ban passed, ", target, " will now be banned!")
-				BSU.BanSteamID(targetSteamID, reason, duration, caller)
+				BSU.BanSteamID(targetSteamID, reason, duration, caller:SteamID64())
 			else
 				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "Vote ban failed, ", target, " will NOT be banned!")
 			end
