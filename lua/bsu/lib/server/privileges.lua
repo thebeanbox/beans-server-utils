@@ -35,6 +35,11 @@ function BSU.GetGroupWildcardPrivileges(groupid, type)
 	return query and BSU.SQLParse(query, BSU.SQL_GROUP_PRIVS) or {}
 end
 
+function BSU.GetGroupInherit(groupid)
+	local query = BSU.SQLSelectByValues(BSU.SQL_GROUPS, { id = groupid })[1]
+	return query and query.inherit or nil
+end
+
 -- returns bool if the group is granted the privilege (or nothing if the privilege is not registered)
 function BSU.CheckGroupPrivilege(groupid, type, value, checkwildcards)
 	-- check for group privilege
@@ -56,9 +61,9 @@ function BSU.CheckGroupPrivilege(groupid, type, value, checkwildcards)
 		end
 
 		-- check for privilege in inherited group
-		local data = BSU.SQLSelectByValues(BSU.SQL_GROUPS, { id = groupid })[1]
-		if data and data.inherit then
-			return BSU.CheckGroupPrivilege(data.inherit, type, value)
+		local inherit = BSU.GetGroupInherit(groupid)
+		if inherit then
+			return BSU.CheckGroupPrivilege(inherit, type, value)
 		end
 	end
 end

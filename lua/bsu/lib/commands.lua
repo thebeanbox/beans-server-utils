@@ -711,33 +711,49 @@ function objCmdHandler.GetSilent(self)
 end
 
 if SERVER then
+	local function checkCanTargetSelf(steamid, cmd)
+		return BSU.CheckPlayerPrivilege(steamid, BSU.PRIV_TARGET, cmd.name .. " ^")
+	end
+
+	local function checkCanTargetGroup(steamid, cmd, groupid)
+		local check = BSU.CheckPlayerPrivilege(steamid, BSU.PRIV_TARGET, cmd.name .. " #" .. groupid)
+		if check ~= nil then return check end
+
+		-- check with inherited group
+		local inherit = BSU.GetGroupInherit(groupid)
+		if inherit then
+			return checkCanTargetGroup(steamid, cmd, inherit)
+		end
+	end
+
+	local function checkCanTargetAnyone(steamid, cmd)
+		-- note: it's important when checking target privilege that no wildcard checking is used as the "*" syntax will conflict
+		return BSU.CheckPlayerPrivilege(steamid, BSU.PRIV_TARGET, cmd.name .. " *")
+	end
+
 	function objCmdHandler.CheckCanTargetSteamID(self, targetid, fail)
 		targetid = BSU.ID64(targetid)
 		if not self.caller:IsValid() or self.caller:IsSuperAdmin() then return true end
 		local steamid = self.caller:SteamID64()
 
-		-- check can target self
 		if steamid == targetid then
-			local check = BSU.CheckPlayerPrivilege(steamid, BSU.PRIV_TARGET, string.format("%s ^", self.cmd.name))
+			local check = checkCanTargetSelf(steamid, self.cmd)
 			if check ~= nil then
 				if not check and fail then error("You cannot select this target") end
 				return check
 			end
 		end
 
-		-- check can target group
 		local data = BSU.GetPlayerDataBySteamID(targetid)
 		if data then
-			local check = BSU.CheckPlayerPrivilege(steamid, BSU.PRIV_TARGET, string.format("%s #%s", self.cmd.name, data.groupid))
+			local check = checkCanTargetGroup(steamid, self.cmd, data.groupid)
 			if check ~= nil then
 				if not check and fail then error("You cannot select this target") end
 				return check
 			end
 		end
 
-		-- check can target anyone
-		-- note: it's important when checking target privilege that no wildcard checking is used as the "*" syntax will conflict
-		local check = BSU.CheckPlayerPrivilege(steamid, BSU.PRIV_TARGET, string.format("%s *", self.cmd.name))
+		local check = checkCanTargetAnyone(steamid, self.cmd)
 		if check ~= false then return true end
 		if fail then error("You cannot select this target") end
 		return false
