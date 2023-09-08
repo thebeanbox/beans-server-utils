@@ -1,29 +1,26 @@
-util.AddNetworkString("bsu_request_bans")
+util.AddNetworkString("bsu_request_banlist")
 
-net.Receive("bsu_request_bans", function(_, ply)
-	local check = BSU.CheckPlayerPrivilege(ply:SteamID(), BSU.PRIV_MISC, "bsu_see_bans")
-	if check == false or check == nil and not ply:IsAdmin() then return end
+net.Receive("bsu_request_banlist", function(len, ply)
+	local page = net.ReadUInt(8) - 1
+	local bansPerPage = net.ReadUInt(8)
+	local allBans = BSU.GetAllBans()
+	local bansRemaining = bansPerPage
 
-	local bansList = BSU.GetAllBans()
-	table.sort(bansList, function(a, b) return a.time > b.time end)
-	for i = #bansList, 1, -1 do
-		if not bansList[i].duration then table.remove(bansList, i) end
-	end
+	net.Start("bsu_request_banlist")
+	for banIndex = 1, bansPerPage do
+		local pageOffset = banIndex + page * 50
+		
+		username = "my awesome name"
+		steamID = "steam:1234"
+		banDuration = 1234
+		bannedByUsername = "i banned you name"
+		banDate = "monday tomorrow"
 
-	local pageOffset = (net.ReadUInt(8) - 1) * 50
-	local maxResults = math.min(#bansList, 50)
-
-	net.Start("bsu_request_bans")
-	net.WriteUInt(maxResults, 6)
-	for i = 1, maxResults do
-		local ban = bansList[i + pageOffset]
-		if not ban then continue end
-
-		net.WriteUInt(table.Count(ban), 4)
-		for banKey, banValue in pairs(ban) do
-			net.WriteString(banKey)
-			net.WriteType(banValue)
-		end
+		net.WriteString(username) -- Name
+		net.WriteString(steamID) -- SteamID
+		net.WriteUInt(banDuration, 32) -- Duration (Seconds)
+		net.WriteString(bannedByUsername) -- Banned by (Name)
+		net.WriteString(banDate) -- Ban Date (Nice time)
 	end
 	net.Send(ply)
 end)
