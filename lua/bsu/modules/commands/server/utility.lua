@@ -330,37 +330,35 @@ BSU.SetupCommand("vote", function(cmd)
 end)
 
 local maps = file.Find("maps/*.bsp", "GAME")
+
+-- Trim file ending
+local mapOptions = {}
 local mapLookup = {}
-for _, map in ipairs(maps) do
-	mapLookup[string.sub(map, 1, #map - 4)] = true
+for i, map in ipairs(maps) do
+	local mapname = string.sub(map, 1, #map - 4)
+	mapOptions[i] = mapname
+	mapLookup[mapname] = true
 end
+table.insert(mapOptions, 1, "Stay Here")
 
 BSU.SetupCommand("votemap", function(cmd)
 	cmd:SetDescription("Start a vote")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(_, caller, duration, ...)
-		local options = {...}
-		for _, str in ipairs(options) do
-			if not mapLookup[str] then
-				error(string.format("'%s' is not a valid map.", str))
-			end
-		end
-
-		BSU.StartVote("Map Vote", duration, caller, options, function(winner)
+	cmd:SetFunction(function(_, caller)
+		BSU.StartVote("Map Vote", 60, caller, mapOptions, function(winner)
 			if not winner then return end
-			RunConsoleCommand("nextlevel", winner)
-			timer.Simple(20, function()
-				game.LoadNextMap()
+			if winner == "Stay Here" then
+				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "Map will not change.")
+				return
+			end
+
+			BSU.SendChatMsg(nil, BSU.CLR_TEXT, "The map will change to '", BSU.CLR_PARAM, winner, BSU.CLR_TEXT, "' in 60 seconds, please save your stuff immediately.")
+			timer.Simple(60, function()
+				RunConsoleCommand("changelevel", winner)
 			end)
 		end)
 	end)
-	cmd:AddNumberArg("duration", { min = 30, max = 120 })
-	cmd:AddStringArg("option1")
-	cmd:AddStringArg("option2")
-	for i = 3, 10 do
-		cmd:AddStringArg("option" .. i, { optional = true })
-	end
 end)
 
 BSU.SetupCommand("map", function(cmd)
@@ -375,7 +373,7 @@ BSU.SetupCommand("map", function(cmd)
 
 		RunConsoleCommand("changelevel", mapname)
 	end)
-	cmd:AddStringArg("mapname", {})
+	cmd:AddStringArg("mapname")
 end)
 
 BSU.SetupCommand("maplist", function(cmd)
@@ -385,7 +383,7 @@ BSU.SetupCommand("maplist", function(cmd)
 	cmd:SetSilent(true)
 	cmd:SetFunction(function(self)
 		local msg = {color_white, "\n\n[Maps Available On The Server]\n\n"}
-		for mapname, _ in pairs(mapLookup) do
+		for _, mapname in pairs(maps) do
 			table.insert(msg, "\n\t- " .. mapname)
 		end
 		self:PrintConsoleMsg(unpack(msg))
