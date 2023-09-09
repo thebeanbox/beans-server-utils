@@ -744,7 +744,7 @@ if SERVER then
 			end
 		end
 
-		local data = BSU.GetPlayerDataBySteamID(steamid)
+		local data = BSU.GetPlayerDataBySteamID(targetid)
 		if data then
 			local check = checkCanTargetGroup(steamid, self.cmd, data.groupid)
 			if check ~= nil then
