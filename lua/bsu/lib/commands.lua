@@ -731,11 +731,19 @@ if SERVER then
 		return BSU.CheckPlayerPrivilege(steamid, BSU.PRIV_TARGET, cmd.name .. " *")
 	end
 
+	local function inheritsFrom(groupid, groupid2)
+		local inherit = BSU.GetGroupInherit(groupid2)
+		if not inherit then return false end
+		if inherit == groupid then return true end
+		inheritsFrom(groupid, inherit)
+	end
+
 	function objCmdHandler.CheckCanTargetSteamID(self, targetid, fail)
 		targetid = BSU.ID64(targetid)
 		if not self.caller:IsValid() or self.caller:IsSuperAdmin() then return true end
 		local steamid = self.caller:SteamID64()
 
+		-- check can target self
 		if steamid == targetid then
 			local check = checkCanTargetSelf(steamid, self.cmd)
 			if check ~= nil then
@@ -744,19 +752,32 @@ if SERVER then
 			end
 		end
 
-		local data = BSU.GetPlayerDataBySteamID(targetid)
-		if data then
-			local check = checkCanTargetGroup(steamid, self.cmd, data.groupid)
+		-- check can target group
+		local targetData = BSU.GetPlayerDataBySteamID(targetid)
+
+		if targetData then
+			local check = checkCanTargetGroup(steamid, self.cmd, targetData.groupid)
 			if check ~= nil then
 				if not check and fail then error("You cannot select this target") end
 				return check
 			end
 		end
 
+		-- check can target anyone
 		local check = checkCanTargetAnyone(steamid, self.cmd)
-		if check ~= false then return true end
-		if fail then error("You cannot select this target") end
-		return false
+		if check ~= nil then
+			if not check and fail then error("You cannot select this target") end
+			return check
+		end
+
+		-- no target privs were found, use the default behavior (allow if caller's group inherits at all from the target's group)
+
+		if not targetData then return false end
+
+		local callerData = BSU.GetPlayerDataBySteamID(steamid)
+		if not callerData then return false end
+
+		return inheritsFrom(targetData.groupid, callerData.groupid)
 	end
 
 	function objCmdHandler.CheckCanTarget(self, target, fail)
