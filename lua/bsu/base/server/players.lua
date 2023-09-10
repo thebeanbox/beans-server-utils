@@ -24,7 +24,7 @@ hook.Add("OnGamemodeLoaded", "BSU_InitializePlayer", function()
 		})
 
 		-- update some pdata
-		if not BSU.GetPData(ply, "total_time") then BSU.SetPData(ply, "total_time", 0, true) end
+		if not BSU.GetPDataNumber(ply, "total_time") then BSU.SetPData(ply, "total_time", 0, true) end
 		BSU.SetPData(ply, "last_visit", BSU.UTCTime(), true)
 		BSU.SetPData(ply, "connect_time", BSU.UTCTime(), true)
 
@@ -41,7 +41,7 @@ local function updatePlayerTime()
 	for _, v in ipairs(player.GetAll()) do
 		if not v.bsu_ready then continue end
 
-		local totalTime = tonumber(BSU.GetPData(v, "total_time")) or 0
+		local totalTime = BSU.GetPDataNumber(v, "total_time", 0)
 		if hook.Run("BSU_PlayerTotalTime", v, totalTime) ~= false then
 			BSU.SetPData(v, "total_time", totalTime + 1, true) -- increment by 1 sec
 		end
