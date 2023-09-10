@@ -735,7 +735,7 @@ if SERVER then
 		local inherit = BSU.GetGroupInherit(groupid2)
 		if not inherit then return false end
 		if inherit == groupid then return true end
-		inheritsFrom(groupid, inherit)
+		return inheritsFrom(groupid, inherit)
 	end
 
 	function objCmdHandler.CheckCanTargetSteamID(self, targetid, fail)
@@ -777,7 +777,7 @@ if SERVER then
 		local callerData = BSU.GetPlayerDataBySteamID(steamid)
 		if not callerData then return false end
 
-		return inheritsFrom(targetData.groupid, callerData.groupid)
+		return callerData.groupid == targetData.groupid or inheritsFrom(targetData.groupid, callerData.groupid)
 	end
 
 	function objCmdHandler.CheckCanTarget(self, target, fail)
