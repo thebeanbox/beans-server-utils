@@ -29,13 +29,11 @@ if SERVER then
 		net.Broadcast()
 	end
 	
-	if AdvDupe2 then 
-		BSU._oldAdvDupe2Paste = BSU._oldAdvDupe2Paste or AdvDupe2.InitPastingQueue
-		AdvDupe2.InitPastingQueue = function(Player, PositionOffset, AngleOffset, OrigPos, Constrs, Parenting, DisableParents, DisableProtection)
-			BSU._oldAdvDupe2Paste(Player, PositionOffset, AngleOffset, OrigPos, Constrs, Parenting, DisableParents, DisableProtection)
-			local Queue = AdvDupe2.JobManager.Queue[#AdvDupe2.JobManager.Queue]
-			LogDupe(Player, Player.AdvDupe2.Name and Player.AdvDupe2.Name or "[Unnamed]", #Queue.SortedEntities, #Player.AdvDupe2.Constraints)
-		end
+	BSU._oldAdvDupe2Paste = BSU._oldAdvDupe2Paste or AdvDupe2.InitPastingQueue
+	AdvDupe2.InitPastingQueue = function(Player, PositionOffset, AngleOffset, OrigPos, Constrs, Parenting, DisableParents, DisableProtection)
+		BSU._oldAdvDupe2Paste(Player, PositionOffset, AngleOffset, OrigPos, Constrs, Parenting, DisableParents, DisableProtection)
+		local Queue = AdvDupe2.JobManager.Queue[#AdvDupe2.JobManager.Queue]
+		LogDupe(Player, Player.AdvDupe2.Name and Player.AdvDupe2.Name or "[Unnamed]", #Queue.SortedEntities, #Player.AdvDupe2.Constraints)
 	end
 	
 	hook.Add("PlayerSpawnedEffect", "bsu_logPlayerSpawnedEffect", function(spawnPly, spawnModel, _)
