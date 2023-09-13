@@ -13,7 +13,7 @@ hook.Add("OnGamemodeLoaded", "BSU_InitializePlayer", function()
 		local isPlayer = not ply:IsBot()
 
 		if not plyData then -- this is the first time this player has joined
-			BSU.RegisterPlayer(id64, isPlayer and GetConVar("bsu_default_group"):GetString() or GetConVar("bsu_bot_group"):GetString())
+			BSU.RegisterPlayer(id64, GetConVar("bsu_default_group"):GetString(), not isPlayer and GetConVar("bsu_bot_team"):GetInt() or nil)
 			plyData = BSU.GetPlayerData(ply)
 		end
 
@@ -24,7 +24,7 @@ hook.Add("OnGamemodeLoaded", "BSU_InitializePlayer", function()
 		})
 
 		-- update some pdata
-		if not BSU.GetPDataNumber(ply, "total_time") then BSU.SetPData(ply, "total_time", 0, true) end
+		if not BSU.GetPData(ply, "total_time") then BSU.SetPData(ply, "total_time", 0, true) end
 		BSU.SetPData(ply, "last_visit", BSU.UTCTime(), true)
 		BSU.SetPData(ply, "connect_time", BSU.UTCTime(), true)
 
@@ -41,7 +41,7 @@ local function updatePlayerTime()
 	for _, v in ipairs(player.GetAll()) do
 		if not v.bsu_ready then continue end
 
-		local totalTime = BSU.GetPDataNumber(v, "total_time", 0)
+		local totalTime = tonumber(BSU.GetPData(v, "total_time")) or 0
 		if hook.Run("BSU_PlayerTotalTime", v, totalTime) ~= false then
 			BSU.SetPData(v, "total_time", totalTime + 1, true) -- increment by 1 sec
 		end

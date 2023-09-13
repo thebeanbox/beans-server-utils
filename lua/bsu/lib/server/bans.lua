@@ -11,8 +11,61 @@ function BSU.RegisterBan(identity, reason, duration, admin) -- this is also used
 	})
 end
 
+-- returns a sequential table of every ban and kick performed on the server
 function BSU.GetAllBans()
 	return BSU.SQLSelectAll(BSU.SQL_BANS)
+end
+
+-- returns a sequential table of every kick ever performed on the server
+function BSU.GetKickHistory(identity)
+	identity = BSU.ValidateIdentity(identity)
+
+	local allBans = BSU.GetAllBans()
+	local kicks = {}
+
+	if identity then
+		for _, ban in ipairs(allBans) do
+			if identity == ban.identity and not ban.duration then table.insert(kicks, ban) end
+		end
+	else
+		for _, ban in ipairs(allBans) do
+			if not ban.duration then table.insert(kicks, ban) end
+		end
+	end
+
+	return kicks
+end
+
+-- returns a sequential table of every ban ever performed on the server
+function BSU.GetBanHistory(identity)
+	identity = BSU.ValidateIdentity(identity)
+
+	local allBans = BSU.GetAllBans()
+	local bans = {}
+
+	if identity then
+		for _, ban in ipairs(allBans) do
+			if identity == ban.identity and ban.duration then table.insert(kicks, ban) end
+		end
+	else
+		for _, ban in ipairs(allBans) do
+			if ban.duration then table.insert(kicks, ban) end
+		end
+	end
+
+	return bans
+end
+
+-- returns a sequential table of all the currently active bans
+function BSU.GetActiveBans()
+	local allBans = BSU.GetBanHistory()
+	local activeBans = {}
+
+	for _, ban in ipairs(allBans) do
+		if not ban.unbanTime and (ban.duration == 0 or (ban.time + ban.duration * 60) > BSU.UTCTime()) then table.insert(activeBans, ban) end
+	end
+
+	return activeBans
 end
 
 function BSU.GetBansByValues(values)
@@ -22,7 +75,7 @@ end
 -- returns data of the latest ban if they are still banned, otherwise nothing if they aren't currently banned (can take a steam id or ip address)
 function BSU.GetBanStatus(identity)
 	-- correct the argument (steam id to 64 bit) (removing port from ip address)
-	identity = BSU.IsValidSteamID(identity) and BSU.ID64(identity) or BSU.IsValidIP(identity) and BSU.Address(identity) or nil
+	identity = BSU.ValidateIdentity(identity)
 	if not identity then return end
 
 	local bans = {}
@@ -42,10 +95,10 @@ function BSU.GetBanStatus(identity)
 end
 
 -- ban a player by steam id (this adds a new ban entry so it will be the new ban status for this player)
-function BSU.BanSteamID(steamid, reason, duration, admin)
+function BSU.BanSteamID(steamid, reason, duration, adminid)
 	steamid = BSU.ID64(steamid)
 
-	BSU.RegisterBan(steamid, reason, duration or 0, IsValid(admin) and admin:SteamID64() or nil)
+	BSU.RegisterBan(steamid, reason, duration or 0, BSU.ID64(adminid))
 
 	game.KickID(util.SteamIDFrom64(steamid), "(Banned) " .. (reason or "No reason given"))
 end
@@ -81,21 +134,8 @@ end
 
 function BSU.BanPlayer(ply, reason, duration, admin)
 	if ply:IsBot() then return error("Unable to ban a bot, try kicking") end
-	BSU.BanSteamID(ply:SteamID64(), reason, duration, admin)
+	BSU.BanSteamID(ply:SteamID64(), reason, duration, admin:SteamID64())
 	hook.Run("BSU_PlayerBanned", ply, reason, duration, admin)
-end
-
-function BSU.SuperBanPlayer(ply, reason, duration, admin)
-	BSU.BanPlayer(ply, reason, duration, admin)
-
-	if ply:IsFullyAuthenticated() and ply:OwnerSteamID64() ~= ply:SteamID64() then
-		BSU.BanSteamID(ply:OwnerSteamID64(), reason, duration, admin)
-	end
-end
-
-function BSU.SuperDuperBanPlayer(ply, reason, duration, admin)
-	BSU.SuperBanPlayer(ply, reason, duration, admin)
-	BSU.IPBanPlayer(ply, reason, duration, admin)
 end
 
 function BSU.IPBanPlayer(ply, reason, duration, admin)

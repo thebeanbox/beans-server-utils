@@ -17,10 +17,9 @@ function BSU.RemovePData(steamid, key)
 	BSU.SQLDeleteByValues(BSU.SQL_PDATA, { steamid = BSU.ID64(steamid), key = key })
 end
 
-function BSU.GetPDataBySteamID(steamid, key, default)
+function BSU.GetPDataBySteamID(steamid, key)
 	local query = BSU.SQLSelectByValues(BSU.SQL_PDATA, { steamid = BSU.ID64(steamid), key = key })[1]
 	if query then return query.value end
-	return default
 end
 
 function BSU.GetAllPDataBySteamID(steamid, network)
@@ -55,14 +54,9 @@ function BSU.ClearPData(ply, key)
 	ply:SetNW2String("bsu_" .. key, nil)
 end
 
--- gets a pdata value on a player (or default if it's not set)
-function BSU.GetPData(ply, key, default)
-	return BSU.GetPDataBySteamID(ply:SteamID64(), key, default)
-end
-
--- gets a pdata value on a player and attempts to convert it to a number (or default if it fails to convert)
-function BSU.GetPDataNumber(ply, key, default)
-	return tonumber(BSU.GetPData(ply, key, default)) or default
+-- gets a pdata value on a player (or nothing if it's not set)
+function BSU.GetPData(ply, key)
+	return BSU.GetPDataBySteamID(ply:SteamID64(), key)
 end
 
 -- gets a table of all the pdata on a player

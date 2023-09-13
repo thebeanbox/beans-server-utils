@@ -18,6 +18,15 @@ BSU.PP_TOOLGUN = 4
 BSU.PP_USE     = 8
 BSU.PP_DAMAGE  = 16
 
+-- logging enums
+BSU.LOG_SPAWN_EFFECT	= 1
+BSU.LOG_SPAWN_NPC		= 2
+BSU.LOG_SPAWN_PROP		= 3
+BSU.LOG_SPAWN_RAGDOLL	= 4
+BSU.LOG_SPAWN_SENT		= 5
+BSU.LOG_SPAWN_SWEP		= 6
+BSU.LOG_SPAWN_VEHICLE	= 7
+
 -- color values (mainly used for command messages)
 BSU.CLR_ERROR    = Color(255, 127, 0)   -- error messages                        (orange)
 BSU.CLR_TEXT     = Color(150, 210, 255) -- normal text                           (light blue)
@@ -26,6 +35,12 @@ BSU.CLR_SELF     = Color(75, 0, 130)    -- when target is client                
 BSU.CLR_EVERYONE = Color(0, 130, 130)   -- when targeting all plys on the server (cyan)
 BSU.CLR_CONSOLE  = Color(0, 0, 0)       -- server console name                   (black)
 BSU.CLR_MISC     = Color(255, 255, 255) -- other (just used for non-player ents) (white)
+
+-- color values (logging)
+BSU.LOG_CLR_SPAWN		= Color(0, 200, 255)
+BSU.LOG_CLR_ADVDUPE2	= Color(50, 225, 50)
+BSU.LOG_CLR_TEXT		= Color(200, 200, 200)
+BSU.LOG_CLR_PARAM		= Color(255, 255, 255)
 
 BSU.CMD_CONCMD        = "bsu"
 BSU.CMD_CONCMD_SILENT = "sbsu"

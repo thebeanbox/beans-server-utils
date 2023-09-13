@@ -46,8 +46,6 @@ function BSU.StartVote(title, duration, author, options, callback)
 	end
 	net.Broadcast()
 
-	BSU.SendChatMsg(nil, author, BSU.CLR_TEXT, " started a vote! (", BSU.CLR_PARAM, title, BSU.CLR_TEXT, ")")
-
 	BSU.ActiveVotes[vote.id] = vote
 	hook.Run("BSU_VoteStart", vote)
 	timer.Simple(duration, function()

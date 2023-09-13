@@ -135,7 +135,7 @@ BSU.SQLCreateTable(BSU.SQL_GROUP_PRIVS, string.format(
 BSU.SQLCreateTable(BSU.SQL_GROUP_LIMITS, string.format(
 	[[
 		groupid TEXT NOT NULL REFERENCES %s(id),
-		name TEXT NOT NULL,
+		name TEXT NOT NULL UNIQUE,
 		amount INTEGER NOT NULL
 	]],
 		BSU.EscOrNULL(BSU.SQL_GROUPS, true)
