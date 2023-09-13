@@ -711,17 +711,77 @@ function objCmdHandler.GetSilent(self)
 end
 
 if SERVER then
-	function objCmdHandler.CheckCanTargetSteamID(self, targetID, fail)
-		targetID = BSU.ID64(targetID)
-		if not self.caller:IsValid() or self.caller:IsSuperAdmin() or self.caller:SteamID64() == targetID then return true end
-		local targetPriv = BSU.CheckPlayerPrivilege(self.caller:SteamID64(), BSU.PRIV_TARGET, BSU.GetPlayerDataBySteamID(targetID).groupid)
-		if targetPriv then return true end
-		if fail then error("You cannot select this target") end
-		return false
+	local function checkCanTargetSelf(steamid, cmd)
+		return BSU.CheckPlayerPrivilege(steamid, BSU.PRIV_TARGET, cmd.name .. " ^")
+	end
+
+	local function checkCanTargetGroup(steamid, cmd, groupid)
+		local check = BSU.CheckPlayerPrivilege(steamid, BSU.PRIV_TARGET, cmd.name .. " #" .. groupid)
+		if check ~= nil then return check end
+
+		-- check with inherited group
+		local inherit = BSU.GetGroupInherit(groupid)
+		if inherit then
+			return checkCanTargetGroup(steamid, cmd, inherit)
+		end
+	end
+
+	local function checkCanTargetAnyone(steamid, cmd)
+		-- note: it's important when checking target privilege that no wildcard checking is used as the "*" syntax will conflict
+		return BSU.CheckPlayerPrivilege(steamid, BSU.PRIV_TARGET, cmd.name .. " *")
+	end
+
+	local function inheritsFrom(groupid, groupid2)
+		local inherit = BSU.GetGroupInherit(groupid2)
+		if not inherit then return false end
+		if inherit == groupid then return true end
+		return inheritsFrom(groupid, inherit)
+	end
+
+	function objCmdHandler.CheckCanTargetSteamID(self, targetid, fail)
+		targetid = BSU.ID64(targetid)
+		if not self.caller:IsValid() or self.caller:IsSuperAdmin() then return true end
+		local steamid = self.caller:SteamID64()
+
+		-- check can target self
+		if steamid == targetid then
+			local check = checkCanTargetSelf(steamid, self.cmd)
+			if check ~= nil then
+				if not check and fail then error("You cannot select this target") end
+				return check
+			end
+		end
+
+		-- check can target group
+		local targetData = BSU.GetPlayerDataBySteamID(targetid)
+
+		if targetData then
+			local check = checkCanTargetGroup(steamid, self.cmd, targetData.groupid)
+			if check ~= nil then
+				if not check and fail then error("You cannot select this target") end
+				return check
+			end
+		end
+
+		-- check can target anyone
+		local check = checkCanTargetAnyone(steamid, self.cmd)
+		if check ~= nil then
+			if not check and fail then error("You cannot select this target") end
+			return check
+		end
+
+		-- no target privs were found, use the default behavior (allow if caller's group inherits at all from the target's group)
+
+		if not targetData then return false end
+
+		local callerData = BSU.GetPlayerDataBySteamID(steamid)
+		if not callerData then return false end
+
+		return callerData.groupid == targetData.groupid or inheritsFrom(targetData.groupid, callerData.groupid)
 	end
 
 	function objCmdHandler.CheckCanTarget(self, target, fail)
-		if not self.caller:IsValid() or self.caller:IsSuperAdmin() or self.caller == target then return true end -- is server console or superadmin
+		if not self.caller:IsValid() or self.caller:IsSuperAdmin() then return true end -- is server console or superadmin
 		return self:CheckCanTargetSteamID(target:SteamID64(), fail)
 	end
 
