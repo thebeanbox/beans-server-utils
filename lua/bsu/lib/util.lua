@@ -71,6 +71,11 @@ function BSU.Address(ip)
 	return string.Split(ip, ":")[1]
 end
 
+-- attempts to convert a SteamID3 into SteamID64, or an IP:Port into an IP, otherwide returns nil
+function BSU.ValidateIdentity(identity)
+	return BSU.IsValidSteamID(identity) and BSU.ID64(identity) or BSU.IsValidIP(identity) and BSU.Address(identity) or nil
+end
+
 -- convert minutes into a nice time format
 -- set ratio to the multiplier needed for the amt to stop being counted
 -- (ratio used for cases when the input is really big to the point where smaller times like hours or minutes don't really matter)

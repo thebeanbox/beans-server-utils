@@ -11,8 +11,61 @@ function BSU.RegisterBan(identity, reason, duration, admin) -- this is also used
 	})
 end
 
+-- returns a sequential table of every ban and kick performed on the server
 function BSU.GetAllBans()
 	return BSU.SQLSelectAll(BSU.SQL_BANS)
+end
+
+-- returns a sequential table of every kick ever performed on the server
+function BSU.GetKickHistory(identity)
+	identity = BSU.ValidateIdentity(identity)
+	
+	local allBans = BSU.GetAllBans()
+	local kicks = {}
+
+	if identity then
+		for _, ban in ipairs(allBans) do
+			if identity == ban.identity and not ban.duration then table.insert(kicks, ban) end
+		end
+	else
+		for _, ban in ipairs(allBans) do
+			if not ban.duration then table.insert(kicks, ban) end
+		end
+	end
+
+	return kicks
+end
+
+-- returns a sequential table of every ban ever performed on the server
+function BSU.GetBanHistory(identity)
+	identity = BSU.ValidateIdentity(identity)
+
+	local allBans = BSU.GetAllBans()
+	local bans = {}
+
+	if identity then
+		for _, ban in ipairs(allBans) do
+			if identity == ban.identity and ban.duration then table.insert(kicks, ban) end
+		end
+	else
+		for _, ban in ipairs(allBans) do
+			if ban.duration then table.insert(kicks, ban) end
+		end
+	end
+
+	return bans
+end
+
+-- returns a sequential table of all the currently active bans
+function BSU.GetActiveBans()
+	local allBans = BSU.GetBanHistory()
+	local activeBans = {}
+
+	for _, ban in ipairs(allBans) do
+		if not ban.unbanTime and (ban.duration == 0 or (ban.time + ban.duration * 60) > BSU.UTCTime()) then table.insert(activeBans, ban) end
+	end
+
+	return activeBans
 end
 
 function BSU.GetBansByValues(values)
@@ -22,7 +75,7 @@ end
 -- returns data of the latest ban if they are still banned, otherwise nothing if they aren't currently banned (can take a steam id or ip address)
 function BSU.GetBanStatus(identity)
 	-- correct the argument (steam id to 64 bit) (removing port from ip address)
-	identity = BSU.IsValidSteamID(identity) and BSU.ID64(identity) or BSU.IsValidIP(identity) and BSU.Address(identity) or nil
+	identity = BSU.ValidateIdentity(identity)
 	if not identity then return end
 
 	local bans = {}
