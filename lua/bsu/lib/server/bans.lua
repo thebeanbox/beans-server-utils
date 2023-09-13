@@ -19,7 +19,7 @@ end
 -- returns a sequential table of every kick ever performed on the server
 function BSU.GetKickHistory(identity)
 	identity = BSU.ValidateIdentity(identity)
-	
+
 	local allBans = BSU.GetAllBans()
 	local kicks = {}
 

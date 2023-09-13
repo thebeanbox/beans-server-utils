@@ -2,12 +2,12 @@ local bansmenu = {}
 
 function bansmenu:Init()
 	self:Dock(FILL)
-	
+
 	self.bansPerPage = 50 -- 255 Max
 	self.bansRemaining = 0
 	self.page = 1
 	self.bans = {}
-		
+
 	local headerPanel = vgui.Create("DPanel", self)
 	headerPanel:Dock(TOP)
 	headerPanel:SetHeight(25)
@@ -32,7 +32,7 @@ function bansmenu:Init()
 		self:NextPage()
 	end
 	self.nextButton = nextButton
-	
+
 	local refreshButton = vgui.Create("DButton", headerPanel)
 	refreshButton:Dock(LEFT)
 	refreshButton:SetWidth(25)
@@ -81,31 +81,31 @@ function bansmenu:UpdatePage()
 		local newEntry = self:AddEntry(ban.name, ban.steamid, ban.duration, ban.reason, ban.bannedByName, ban.dateNiceTime)
 		newEntry.banDate = ban.date
 		newEntry.bannedBySteamID = ban.bannedBySteamID
-		
+
 		newEntry.OnRightClick = function(s)
 			local menu = DermaMenu()
-			
+
 			local copyName = menu:AddOption("Copy Name", function()
 				local str = s:GetColumnText(1)
 				SetClipboardText(str)
 				notification.AddLegacy("Copied Name \"" .. str .. "\"", NOTIFY_CLEANUP, 2)
 			end)
 			copyName:SetIcon("icon16/page_copy.png")
-			
+
 			local copySteamID = menu:AddOption("Copy SteamID", function()
 				local str = s:GetColumnText(2)
 				SetClipboardText(str)
 				notification.AddLegacy("Copied SteamID \"" .. str .. "\"", NOTIFY_CLEANUP, 2)
 			end)
 			copySteamID:SetIcon("icon16/page_copy.png")
-			
+
 			local copyReason = menu:AddOption("Copy Reason", function()
 				local str = s:GetColumnText(3)
 				SetClipboardText(str)
 				notification.AddLegacy("Copied Reason \"" .. str .. "\"", NOTIFY_CLEANUP, 2)
 			end)
 			copyReason:SetIcon("icon16/page_copy.png")
-			
+
 			local copyBannedByName = menu:AddOption("Copy Admin Name", function()
 				print("test")
 				local str = s:GetColumnText(4)
@@ -113,23 +113,23 @@ function bansmenu:UpdatePage()
 				notification.AddLegacy("Copied Admin Name \"" .. str .. "\"", NOTIFY_CLEANUP, 2)
 			end)
 			copyBannedByName:SetIcon("icon16/page_copy.png")
-			
+
 			local copyBannedBySteamID = menu:AddOption("Copy Admin SteamID", function()
 				local str = s.bannedBySteamID
 				SetClipboardText(str)
 				notification.AddLegacy("Copied Admin SteamID \"" .. str .. "\"", NOTIFY_CLEANUP, 2)
 			end)
 			copyBannedBySteamID:SetIcon("icon16/page_copy.png")
-			
+
 			local copyDate = menu:AddOption("Copy Date", function()
 				local str = s.banDate
 				SetClipboardText(str)
 				notification.AddLegacy("Copied Date \"" .. str .. "\"", NOTIFY_CLEANUP, 2)
 			end)
 			copyDate:SetIcon("icon16/page_copy.png")
-			
+
 			menu:AddSpacer()
-			
+
 			menu:Open()
 		end
 	end
@@ -162,11 +162,11 @@ end)
 
 net.Receive("bsu_request_banlist2", function()
 	if not BSU.BansMenu then return end
-	
+
 	local bans = {}
-	
+
 	local banAmount = net.ReadUInt(8)
-	for i=1, banAmount do
+	for i = 1, banAmount do
 		bans[i] = {
 			name = net.ReadString(),
 			steamid = net.ReadString(),
@@ -178,7 +178,7 @@ net.Receive("bsu_request_banlist2", function()
 			bannedBySteamID = net.ReadString(),
 		}
 	end
-	
+
 	BSU.BansMenu.bans = bans
 	BSU.BansMenu:UpdatePage()
 end)

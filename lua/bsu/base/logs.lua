@@ -12,7 +12,7 @@ if SERVER then
 		net.WriteUInt(dupeConstraintAmount, 16)
 		net.Broadcast()
 	end
-	
+
 	local function LogSpawn(spawnType, spawnPly, spawnModel)
 		net.Start("bsu_logspawn")
 		net.WriteUInt(spawnType, 8)
@@ -20,7 +20,7 @@ if SERVER then
 		net.WriteString(spawnModel)
 		net.Broadcast()
 	end
-	
+
 	local function LogTool(toolPly, toolName, toolHitClass)
 		net.Start("bsu_logtool")
 		net.WriteEntity(toolPly)
@@ -28,14 +28,14 @@ if SERVER then
 		net.WriteString(toolHitClass)
 		net.Broadcast()
 	end
-	
+
 	BSU._oldAdvDupe2Paste = BSU._oldAdvDupe2Paste or AdvDupe2.InitPastingQueue
 	AdvDupe2.InitPastingQueue = function(Player, PositionOffset, AngleOffset, OrigPos, Constrs, Parenting, DisableParents, DisableProtection)
 		BSU._oldAdvDupe2Paste(Player, PositionOffset, AngleOffset, OrigPos, Constrs, Parenting, DisableParents, DisableProtection)
 		local Queue = AdvDupe2.JobManager.Queue[#AdvDupe2.JobManager.Queue]
 		LogDupe(Player, Player.AdvDupe2.Name and Player.AdvDupe2.Name or "[Unnamed]", #Queue.SortedEntities, #Player.AdvDupe2.Constraints)
 	end
-	
+
 	hook.Add("PlayerSpawnedEffect", "bsu_logPlayerSpawnedEffect", function(spawnPly, spawnModel, _)
 		LogSpawn(BSU.LOG_SPAWN_EFFECT, spawnPly, spawnModel)
 	end)
@@ -63,8 +63,8 @@ if SERVER then
 	hook.Add("PlayerSpawnedVehicle", "bsu_logPlayerSpawnedVehicle", function(spawnPly, spawnEntity)
 		LogSpawn(BSU.LOG_SPAWN_VEHICLE, spawnPly, spawnEntity:GetClass())
 	end)
-	
-	hook.Add("CanTool", "bsu_logPlayerTool", function(toolPly, toolTrace, toolName, tool, _)
+
+	hook.Add("CanTool", "bsu_logPlayerTool", function(toolPly, toolTrace, toolName)
 		LogTool(toolPly, toolName, toolTrace.Entity:GetClass())
 	end)
 
@@ -136,5 +136,4 @@ else
 		local toolHitClass = net.ReadString()
 		LogTool(toolPly, toolName, toolHitClass)
 	end)
-	
 end
