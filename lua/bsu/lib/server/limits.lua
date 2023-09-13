@@ -44,9 +44,9 @@ function BSU.GetGroupLimit(groupid, name)
 		return limit.amount
 	else
 		-- check for limit in inherited group
-		local inherit = BSU.GetGroupInherit(groupid)
-		if inherit then
-			return BSU.GetGroupLimit(inherit, name)
+		local data = BSU.SQLSelectByValues(BSU.SQL_GROUPS, { id = groupid })[1]
+		if data and data.inherit then
+			return BSU.GetGroupLimit(data.inherit, name)
 		end
 	end
 end

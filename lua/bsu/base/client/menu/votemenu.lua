@@ -35,7 +35,6 @@ function voteEntry:SetVote(vote)
 		self.options[i] = option
 
 		local button = vgui.Create("DButton", option)
-		button:SetWidth(300)
 		button:SetText(opt)
 		button:Dock(RIGHT)
 

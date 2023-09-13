@@ -2,7 +2,7 @@
 
 local function isAllowed(ply, type, priv)
 	if ply:IsSuperAdmin() then return true end
-	local check = BSU.CheckPlayerPrivilege(ply:SteamID64(), type, priv, true) -- also check wildcards
+	local check = BSU.CheckPlayerPrivilege(ply:SteamID64(), type, priv)
 	return check == nil or check == true
 end
 

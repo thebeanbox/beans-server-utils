@@ -330,16 +330,10 @@ BSU.SetupCommand("vote", function(cmd)
 end)
 
 local maps = file.Find("maps/*.bsp", "GAME")
-
--- Trim file ending
-local mapOptions = {}
 local mapLookup = {}
-for i, map in ipairs(maps) do
-	local mapname = string.sub(map, 1, #map - 4)
-	mapOptions[i] = mapname
-	mapLookup[mapname] = true
+for _, map in ipairs(maps) do
+	mapLookup[string.sub(map, 1, #map - 4)] = true
 end
-table.insert(mapOptions, 1, "Stay Here")
 
 BSU.SetupCommand("votemap", function(cmd)
 	cmd:SetDescription("Starts a vote to change the map")
@@ -351,10 +345,13 @@ BSU.SetupCommand("votemap", function(cmd)
 			if not mapLookup[str] then
 				error(string.format("'%s' is not a valid map.", str))
 			end
+		end
 
-			BSU.SendChatMsg(nil, BSU.CLR_TEXT, "The map will change to '", BSU.CLR_PARAM, winner, BSU.CLR_TEXT, "' in 60 seconds, please save your stuff immediately.")
-			timer.Simple(60, function()
-				RunConsoleCommand("changelevel", winner)
+		BSU.StartVote("Map Vote", duration, caller, options, function(winner)
+			if not winner then return end
+			RunConsoleCommand("nextlevel", winner)
+			timer.Simple(20, function()
+				game.LoadNextMap()
 			end)
 		end)
 
@@ -380,7 +377,7 @@ BSU.SetupCommand("map", function(cmd)
 
 		RunConsoleCommand("changelevel", mapname)
 	end)
-	cmd:AddStringArg("mapname")
+	cmd:AddStringArg("mapname", {})
 end)
 
 BSU.SetupCommand("maplist", function(cmd)
@@ -390,7 +387,7 @@ BSU.SetupCommand("maplist", function(cmd)
 	cmd:SetSilent(true)
 	cmd:SetFunction(function(self)
 		local msg = {color_white, "\n\n[Maps Available On The Server]\n\n"}
-		for _, mapname in pairs(maps) do
+		for mapname, _ in pairs(mapLookup) do
 			table.insert(msg, "\n\t- " .. mapname)
 		end
 		self:PrintConsoleMsg(unpack(msg))
