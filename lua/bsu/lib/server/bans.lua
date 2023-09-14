@@ -98,16 +98,16 @@ end
 function BSU.BanSteamID(steamid, reason, duration, adminid)
 	steamid = BSU.ID64(steamid)
 
-	BSU.RegisterBan(steamid, reason, duration or 0, BSU.ID64(adminid))
+	BSU.RegisterBan(steamid, reason, duration or 0, adminid and BSU.ID64(adminid) or nil)
 
 	game.KickID(util.SteamIDFrom64(steamid), "(Banned) " .. (reason or "No reason given"))
 end
 
 -- ban a player by ip (this adds a new ban entry so it will be the new ban status for this player)
-function BSU.BanIP(ip, reason, duration, admin)
+function BSU.BanIP(ip, reason, duration, adminid)
 	ip = BSU.Address(ip)
 
-	BSU.RegisterBan(ip, reason, duration or 0, IsValid(admin) and admin:SteamID64() or nil)
+	BSU.RegisterBan(ip, reason, duration or 0, adminid and BSU.ID64(adminid) or nil)
 
 	for _, v in ipairs(player.GetHumans()) do -- try to kick all players with this ip
 		if BSU.Address(v:IPAddress()) == ip then
@@ -134,13 +134,13 @@ end
 
 function BSU.BanPlayer(ply, reason, duration, admin)
 	if ply:IsBot() then return error("Unable to ban a bot, try kicking") end
-	BSU.BanSteamID(ply:SteamID64(), reason, duration, admin:SteamID64())
+	BSU.BanSteamID(ply:SteamID64(), reason, duration, IsValid(admin) and admin:SteamID64() or nil)
 	hook.Run("BSU_PlayerBanned", ply, reason, duration, admin)
 end
 
 function BSU.IPBanPlayer(ply, reason, duration, admin)
 	if ply:IsBot() then return error("Unable to ip ban a bot, try kicking") end
-	BSU.BanIP(ply:IPAddress(), reason, duration, admin)
+	BSU.BanIP(ply:IPAddress(), reason, duration, IsValid(admin) and admin:SteamID64() or nil)
 end
 
 function BSU.KickPlayer(ply, reason, admin)
