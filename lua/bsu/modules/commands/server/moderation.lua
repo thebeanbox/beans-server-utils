@@ -24,7 +24,7 @@ BSU.SetupCommand("banid", function(cmd)
 	cmd:SetFunction(function(self, caller, steamid, duration, reason)
 		self:CheckCanTargetSteamID(steamid, true) -- make sure caller is allowed to target this person
 
-		BSU.BanSteamID(steamid, reason, duration, caller:SteamID64())
+		BSU.BanSteamID(steamid, reason, duration, caller:IsValid() and caller:SteamID64() or nil)
 
 		local data = BSU.GetPlayerDataBySteamID(steamid)
 		local name = data and data.name or nil
@@ -70,7 +70,7 @@ BSU.SetupCommand("banip", function(cmd)
 			self:CheckCanTargetSteamID(data[i].steamid, true)
 		end
 
-		BSU.BanIP(ip, reason, duration, caller)
+		BSU.BanIP(ip, reason, duration, caller:IsValid() and caller:SteamID64() or nil)
 
 		local names = {}
 		for i = 1, #data do
@@ -139,7 +139,7 @@ BSU.SetupCommand("superban", function(cmd)
 
 		local ownerID = target:OwnerSteamID64()
 		if ownerID ~= target:SteamID64() then
-			BSU.BanSteamID(ownerID, reason, duration, caller:SteamID64())
+			BSU.BanSteamID(ownerID, reason, duration, caller:IsValid() and caller:SteamID64() or nil)
 		end
 
 		self:BroadcastActionMsg("%caller% superbanned %target%<%steamid%>" .. (duration ~= 0 and " for %duration%" or " permanently") .. (reason and " (%reason%)" or ""), {
@@ -163,7 +163,7 @@ BSU.SetupCommand("superduperban", function(cmd)
 
 		local ownerID = target:OwnerSteamID64()
 		if ownerID ~= target:SteamID64() then
-			BSU.BanSteamID(ownerID, reason, duration, caller:SteamID64())
+			BSU.BanSteamID(ownerID, reason, duration, caller:IsValid() and caller:SteamID64() or nil)
 		end
 
 		BSU.IPBanPlayer(target, reason, duration, caller)
