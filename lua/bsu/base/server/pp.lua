@@ -109,10 +109,17 @@ hook.Add("OnEntityCreated", "BSU_SetOwnerMapEntities", function(ent)
 				if ent:CreatedByMap() then
 					BSU.SetOwnerWorld(ent)
 				else
-					local owner = ent:GetInternalVariable("m_hOwnerEntity") -- seems to always be a player or NULL entity
-					if not owner:IsPlayer() then owner = ent:GetInternalVariable("m_hOwner") end
-					if owner and owner:IsPlayer() then
+					-- seems to always be a player, an npc (zombie that dropped a headcrab) or NULL
+					-- i don't think this will ever be nil, but just incase, it will fallback to NULL
+					local owner = ent:GetInternalVariable("m_hOwnerEntity") or NULL
+					-- sometimes is set to a weapon for projectile ents (has been seen to be nil)
+					if owner == NULL then owner = ent:GetInternalVariable("m_hOwner") or NULL end
+					if owner == NULL then return end
+
+					if owner:IsPlayer() then
 						BSU.SetOwner(ent, owner)
+					else
+						BSU.CopyOwner(owner, ent) -- try set the owner of the ent to the owner of it's internal owner
 					end
 				end
 			end
