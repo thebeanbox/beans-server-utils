@@ -23,6 +23,8 @@ hook.Add("OnGamemodeLoaded", "BSU_InitializePlayer", function()
 			ip = isPlayer and BSU.Address(ply:IPAddress()) or nil
 		})
 
+		local lastvisit = BSU.GetPDataNumber(ply, "last_visit")
+
 		-- update some pdata
 		if not BSU.GetPDataNumber(ply, "total_time") then BSU.SetPData(ply, "total_time", 0, true) end
 		BSU.SetPData(ply, "last_visit", BSU.UTCTime(), true)
@@ -33,6 +35,8 @@ hook.Add("OnGamemodeLoaded", "BSU_InitializePlayer", function()
 		ply:SetUserGroup(groupData.usergroup or "user")
 
 		ply.bsu_ready = true
+
+		hook.Run("BSU_PlayerReady", ply, lastvisit)
 	end
 end)
 
