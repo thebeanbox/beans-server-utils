@@ -166,6 +166,17 @@ function BSU.SetOwnerWorld(ent)
 	setEntityOwner(ent:EntIndex(), -1)
 end
 
+function BSU.CopyOwner(from, to)
+	if not IsValid(from) or from:IsPlayer() then return end
+	if not IsValid(to) or to:IsPlayer() then return end
+
+	local id = BSU._entowners[from:EntIndex()]
+	if not id then return end -- is ownerless
+
+	setEntityOwner(to:EntIndex(), id)
+	to:CallOnRemove("BSU_SetOwnerless", BSU.SetOwnerless)
+end
+
 function BSU.ReplaceOwner(from, to)
 	if not IsValid(from) or from:IsPlayer() then return end
 	if not IsValid(to) or to:IsPlayer() then return end
