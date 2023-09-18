@@ -1,5 +1,4 @@
 if SERVER then
-
 	util.AddNetworkString("bsu_logspawn")
 	util.AddNetworkString("bsu_logdupe")
 	util.AddNetworkString("bsu_logtool")
@@ -29,11 +28,19 @@ if SERVER then
 		net.Broadcast()
 	end
 
-	BSU._oldAdvDupe2Paste = BSU._oldAdvDupe2Paste or AdvDupe2.InitPastingQueue
-	AdvDupe2.InitPastingQueue = function(Player, PositionOffset, AngleOffset, OrigPos, Constrs, Parenting, DisableParents, DisableProtection)
-		BSU._oldAdvDupe2Paste(Player, PositionOffset, AngleOffset, OrigPos, Constrs, Parenting, DisableParents, DisableProtection)
-		local Queue = AdvDupe2.JobManager.Queue[#AdvDupe2.JobManager.Queue]
-		LogDupe(Player, Player.AdvDupe2.Name and Player.AdvDupe2.Name or "[Unnamed]", #Queue.SortedEntities, #Player.AdvDupe2.Constraints)
+	local function setupAdvDupe2Logs()
+		if not AdvDupe2 then return false end
+
+		BSU._oldAdvDupe2Paste = BSU._oldAdvDupe2Paste or AdvDupe2.InitPastingQueue
+		AdvDupe2.InitPastingQueue = function(Player, PositionOffset, AngleOffset, OrigPos, Constrs, Parenting, DisableParents, DisableProtection)
+			BSU._oldAdvDupe2Paste(Player, PositionOffset, AngleOffset, OrigPos, Constrs, Parenting, DisableParents, DisableProtection)
+			local Queue = AdvDupe2.JobManager.Queue[#AdvDupe2.JobManager.Queue]
+			LogDupe(Player, Player.AdvDupe2.Name and Player.AdvDupe2.Name or "[Unnamed]", #Queue.SortedEntities, #Player.AdvDupe2.Constraints)
+		end
+		return true
+	end
+	if not setupAdvDupe2Logs() then
+		timer.Simple(0, setupAdvDupe2Logs)
 	end
 
 	hook.Add("PlayerSpawnedEffect", "bsu_logPlayerSpawnedEffect", function(spawnPly, spawnModel, _)
@@ -67,9 +74,7 @@ if SERVER then
 	hook.Add("CanTool", "bsu_logPlayerTool", function(toolPly, toolTrace, toolName)
 		LogTool(toolPly, toolName, toolTrace.Entity:GetClass())
 	end)
-
 else
-
 	local function LogDupe(dupePly, dupeName, dupeEntityAmount, dupeConstraintAmount)
 		MsgC(
 			BSU.LOG_CLR_ADVDUPE2, "[ADVDUPE2] ",
