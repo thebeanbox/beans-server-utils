@@ -27,6 +27,7 @@ include(svBaseDir .. "vote.lua")
 -- server-side menu
 include(svBaseDir .. "menu/bsumenu.lua")
 include(svBaseDir .. "menu/bansmenu.lua")
+include(svBaseDir .. "menu/groupsmenu.lua")
 
 -- send client-side scripts
 AddCSLuaFile(clBaseDir .. "convars.lua")
