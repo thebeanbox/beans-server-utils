@@ -58,9 +58,7 @@ end)
 
 -- physgun checking
 hook.Add("PhysgunPickup", "BSU_PhysgunPermission", function(ply, ent) return BSU.PlayerHasPermission(ply, ent, BSU.PP_PHYSGUN) end)
-hook.Add("OnPhysgunReload", "BSU_PhysgunPermission", function(_, ply)
-	if not BSU.PlayerHasPermission(ply, ply:GetEyeTrace().Entity, BSU.PP_PHYSGUN) then return false end
-end)
+hook.Add("OnPhysgunReload", "BSU_PhysgunPermission", function(_, ply) return BSU.PlayerHasPermission(ply, ply:GetEyeTrace().Entity, BSU.PP_PHYSGUN) end)
 
 -- gravgun checking
 local function checkGravgunPermission(ply, ent)
