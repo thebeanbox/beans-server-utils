@@ -57,7 +57,7 @@ end
 -- tries to convert a steamid to 64 bit if it's valid
 function BSU.ID64(steamid)
 	local valid, is64 = BSU.IsValidSteamID(steamid)
-	if not valid then return error("Received bad steam ID") end
+	if not valid then return error("Received bad steam id") end
 	if is64 then
 		return steamid
 	else
@@ -67,11 +67,11 @@ end
 
 -- tries to remove the port from an ip if it's valid
 function BSU.Address(ip)
-	if not BSU.IsValidIP(ip) then return error("Received bad IP address") end
+	if not BSU.IsValidIP(ip) then return error("Received bad ip address") end
 	return string.Split(ip, ":")[1]
 end
 
--- attempts to convert a SteamID3 into SteamID64, or an IP:Port into an IP, otherwide returns nil
+-- tries to correct an identity to be valid (will return a 64 bit id, an ip address, or nil on failure)
 function BSU.ValidateIdentity(identity)
 	return BSU.IsValidSteamID(identity) and BSU.ID64(identity) or BSU.IsValidIP(identity) and BSU.Address(identity) or nil
 end
