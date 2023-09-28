@@ -16,7 +16,7 @@ function voteEntry:SetVote(vote)
 	title:SetHeight(32)
 	title:SetContentAlignment(5)
 	title:SetTextColor(color_black)
-	title:SetText(vote.author:Nick() .. ": " .. vote.title)
+	title:SetText(IsValid(vote.author) and (vote.author:Nick() .. ": " .. vote.title) or vote.title)
 	title:Dock(TOP)
 
 	function title.DoClick()
