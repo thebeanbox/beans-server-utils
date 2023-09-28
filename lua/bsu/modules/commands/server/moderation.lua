@@ -22,6 +22,8 @@ BSU.SetupCommand("banid", function(cmd)
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self, caller, steamid, duration, reason)
+		steamid = BSU.ID64(steamid)
+
 		self:CheckCanTargetSteamID(steamid, true) -- make sure caller is allowed to target this person
 
 		BSU.BanSteamID(steamid, reason, duration, caller:IsValid() and caller:SteamID64() or nil)
