@@ -74,71 +74,76 @@ if SERVER then
 	hook.Add("CanTool", "bsu_logPlayerTool", function(toolPly, toolTrace, toolName)
 		LogTool(toolPly, toolName, toolTrace.Entity:GetClass())
 	end)
-else
-	local function LogDupe(dupePly, dupeName, dupeEntityAmount, dupeConstraintAmount)
-		MsgC(
-			BSU.LOG_CLR_ADVDUPE2, "[ADVDUPE2] ",
-			team.GetColor(dupePly:Team()), dupePly:Nick(),
-			BSU.LOG_CLR_PARAM, "<" .. dupePly:SteamID() .. ">",
-			BSU.LOG_CLR_TEXT, " spawned a dupe \"",
-			BSU.LOG_CLR_PARAM, dupeName,
-			BSU.LOG_CLR_TEXT, "\" [",
-			BSU.LOG_CLR_PARAM, tostring(dupeEntityAmount),
-			BSU.LOG_CLR_TEXT, " entities, ",
-			BSU.LOG_CLR_PARAM, tostring(dupeConstraintAmount),
-			BSU.LOG_CLR_TEXT, " constraints]\n"
-		)
-	end
-
-	local logSpawnName = {
-		"effect", "NPC", "prop", "ragdoll", "SENT", "SWEP", "vehicle"
-	}
-
-	local function LogSpawn(spawnType, spawnPly, spawnModel)
-		MsgC(
-			BSU.LOG_CLR_SPAWN, "[SPAWN] ",
-			team.GetColor(spawnPly:Team()), spawnPly:Nick(),
-			BSU.LOG_CLR_PARAM, "<" .. spawnPly:SteamID() .. ">",
-			BSU.LOG_CLR_TEXT, " spawned ",
-			BSU.LOG_CLR_PARAM, logSpawnName[spawnType],
-			BSU.LOG_CLR_TEXT, " \"",
-			BSU.LOG_CLR_PARAM, spawnModel,
-			BSU.LOG_CLR_TEXT, "\"\n"
-		)
-	end
-
-	local function LogTool(toolPly, toolName, toolHitClass)
-		MsgC(
-			BSU.LOG_CLR_SPAWN, "[TOOL] ",
-			team.GetColor(toolPly:Team()), toolPly:Nick(),
-			BSU.LOG_CLR_PARAM, "<" .. toolPly:SteamID() .. ">",
-			BSU.LOG_CLR_TEXT, " used tool ",
-			BSU.LOG_CLR_PARAM, toolName,
-			BSU.LOG_CLR_TEXT, " on \"",
-			BSU.LOG_CLR_PARAM, toolHitClass,
-			BSU.LOG_CLR_TEXT, "\"\n"
-		)
-	end
-
-	net.Receive("bsu_logspawn", function()
-		local spawnType = net.ReadUInt(8)
-		local spawnPly = net.ReadEntity()
-		local spawnModel = net.ReadString()
-		LogSpawn(spawnType, spawnPly, spawnModel)
-	end)
-
-	net.Receive("bsu_logdupe", function()
-		local dupePly = net.ReadEntity()
-		local dupeName = net.ReadString()
-		local dupeEntityAmount = net.ReadUInt(16)
-		local dupeConstraintAmount = net.ReadUInt(16)
-		LogDupe(dupePly, dupeName, dupeEntityAmount, dupeConstraintAmount)
-	end)
-
-	net.Receive("bsu_logtool", function()
-		local toolPly = net.ReadEntity()
-		local toolName = net.ReadString()
-		local toolHitClass = net.ReadString()
-		LogTool(toolPly, toolName, toolHitClass)
-	end)
+	return
 end
+
+local function LogDupe(dupePly, dupeName, dupeEntityAmount, dupeConstraintAmount)
+	MsgC(
+		BSU.LOG_CLR_ADVDUPE2, "[ADVDUPE2] ",
+		team.GetColor(dupePly:Team()), dupePly:Nick(),
+		BSU.LOG_CLR_PARAM, "<" .. dupePly:SteamID() .. ">",
+		BSU.LOG_CLR_TEXT, " spawned a dupe \"",
+		BSU.LOG_CLR_PARAM, dupeName,
+		BSU.LOG_CLR_TEXT, "\" [",
+		BSU.LOG_CLR_PARAM, tostring(dupeEntityAmount),
+		BSU.LOG_CLR_TEXT, " entities, ",
+		BSU.LOG_CLR_PARAM, tostring(dupeConstraintAmount),
+		BSU.LOG_CLR_TEXT, " constraints]\n"
+	)
+end
+
+local logSpawnName = {
+	"effect", "NPC", "prop", "ragdoll", "SENT", "SWEP", "vehicle"
+}
+
+local function LogSpawn(spawnType, spawnPly, spawnModel)
+	MsgC(
+		BSU.LOG_CLR_SPAWN, "[SPAWN] ",
+		team.GetColor(spawnPly:Team()), spawnPly:Nick(),
+		BSU.LOG_CLR_PARAM, "<" .. spawnPly:SteamID() .. ">",
+		BSU.LOG_CLR_TEXT, " spawned ",
+		BSU.LOG_CLR_PARAM, logSpawnName[spawnType],
+		BSU.LOG_CLR_TEXT, " \"",
+		BSU.LOG_CLR_PARAM, spawnModel,
+		BSU.LOG_CLR_TEXT, "\"\n"
+	)
+end
+
+local function LogTool(toolPly, toolName, toolHitClass)
+	MsgC(
+		BSU.LOG_CLR_SPAWN, "[TOOL] ",
+		team.GetColor(toolPly:Team()), toolPly:Nick(),
+		BSU.LOG_CLR_PARAM, "<" .. toolPly:SteamID() .. ">",
+		BSU.LOG_CLR_TEXT, " used tool ",
+		BSU.LOG_CLR_PARAM, toolName,
+		BSU.LOG_CLR_TEXT, " on \"",
+		BSU.LOG_CLR_PARAM, toolHitClass,
+		BSU.LOG_CLR_TEXT, "\"\n"
+	)
+end
+
+net.Receive("bsu_logspawn", function()
+	local spawnType = net.ReadUInt(8)
+	local spawnPly = net.ReadEntity()
+	local spawnModel = net.ReadString()
+	if not spawnPly:IsPlayer() then return end
+	LogSpawn(spawnType, spawnPly, spawnModel)
+end)
+
+net.Receive("bsu_logdupe", function()
+	local dupePly = net.ReadEntity()
+	local dupeName = net.ReadString()
+	local dupeEntityAmount = net.ReadUInt(16)
+	local dupeConstraintAmount = net.ReadUInt(16)
+	if not dupePly:IsPlayer() then return end
+	LogDupe(dupePly, dupeName, dupeEntityAmount, dupeConstraintAmount)
+end)
+
+net.Receive("bsu_logtool", function()
+	local toolPly = net.ReadEntity()
+	local toolName = net.ReadString()
+	local toolHitClass = net.ReadString()
+	if not toolPly:IsPlayer() then return end
+	LogTool(toolPly, toolName, toolHitClass)
+end)
+
