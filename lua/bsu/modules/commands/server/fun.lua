@@ -509,6 +509,86 @@ BSU.SetupCommand("earthquake", function(cmd)
 end)
 BSU.AliasCommand("shake", "earthquake")
 
+BSU.SetupCommand("setammo", function(cmd)
+	cmd:SetDescription("Set the ammo for players")
+	cmd:SetCategory("fun")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self, _, targets, amount)
+		for _, v in ipairs(targets) do
+			local wep = v:GetActiveWeapon()
+			if wep:IsValid() then
+				v:SetAmmo(amount, wep:GetPrimaryAmmoType())
+				v:SetAmmo(amount, wep:GetSecondaryAmmoType())
+			end
+		end
+
+		self:BroadcastActionMsg("%caller% set the ammo for %targets% to %ammount%", { targets = targets, amount = amount })
+	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
+	cmd:AddNumberArg("amount", { default = "9999", min = 0, max = 9999 })
+end)
+BSU.AliasCommand("ammo", "setammo")
+
+local infammoPlys = {}
+
+hook.Add("Think", "BSU_InfAmmo", function()
+	for ply, _ in pairs(infammoPlys) do
+		if not ply:IsValid() then
+			infammoPlys[ply] = nil
+		else
+			local wep = ply:GetActiveWeapon()
+			if wep:IsValid() then
+				wep:SetClip1(wep:GetMaxClip1())
+				wep:SetClip2(wep:GetMaxClip2())
+				ply:SetAmmo(9999, wep:GetPrimaryAmmoType())
+				ply:SetAmmo(9999, wep:GetSecondaryAmmoType())
+			end
+		end
+	end
+end)
+
+BSU.SetupCommand("infammo", function(cmd)
+	cmd:SetDescription("Set infinite ammo for players")
+	cmd:SetCategory("fun")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self, _, targets)
+		local infammoed = {}
+
+		for _, v in ipairs(targets) do
+			if not infammoPlys[v] then
+				infammoPlys[v] = true
+				table.insert(infammoed, v)
+			end
+		end
+
+		if next(infammoed) ~= nil then
+			self:BroadcastActionMsg("%caller% set infinite ammo for %infammoed%", { infammoed = infammoed })
+		end
+	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
+end)
+
+BSU.SetupCommand("limammo", function(cmd)
+	cmd:SetDescription("Set limited ammo for players")
+	cmd:SetCategory("fun")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self, _, targets)
+		local limammoed = {}
+
+		for _, v in ipairs(targets) do
+			if infammoPlys[v] then
+				infammoPlys[v] = nil
+				table.insert(limammoed, v)
+			end
+		end
+
+		if next(limammoed) ~= nil then
+			self:BroadcastActionMsg("%caller% set limited ammo for %limammoed%", { limammoed = limammoed })
+		end
+	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
+end)
+
 local function collideOnlyPlayers(_, ent1, ent2)
 	if not ent1:IsPlayer() and not ent2:IsPlayer() then return false end
 end
