@@ -128,6 +128,28 @@ BSU.SetupCommand("cleardecals", function(cmd)
 	end)
 end)
 
+local debrisGroups = {
+	[COLLISION_GROUP_DEBRIS] = true,
+	[COLLISION_GROUP_DEBRIS_TRIGGER] = true,
+	[COLLISION_GROUP_INTERACTIVE_DEBRIS] = true,
+	[COLLISION_GROUP_INTERACTIVE] = true
+}
+
+BSU.SetupCommand("cleardebris", function(cmd)
+	cmd:SetDescription("Clear all debris")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		for _, v in pairs(ents.GetAll()) do
+			if not BSU.GetOwner(v) and debrisGroups[v:GetCollisionGroup()] then
+				v:Remove()
+			end
+		end
+
+		self:BroadcastActionMsg("%caller% cleared debris")
+	end)
+end)
+
 BSU.SetupCommand("removeragdolls", function(cmd)
 	cmd:SetDescription("Remove all clientside ragdolls")
 	cmd:SetCategory("utility")
