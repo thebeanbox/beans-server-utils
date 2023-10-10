@@ -137,17 +137,16 @@ local function drawPropProtectionHUD()
 
 	if not GetConVar("bsu_show_propinfo"):GetBool() then return end
 
-	local trace = util.TraceLine(util.GetPlayerTrace(ply))
-	if trace.HitNonWorld then
-		local ent = trace.Entity
-		if ent:IsValid() and not ent:IsPlayer() then
-			local name, steamid = BSU.GetOwnerName(ent) or "N/A", BSU.GetOwnerSteamID(ent)
-			local text = "Owner: " .. name .. (steamid and "<" .. steamid .. ">" or "") .. "\n" .. ent:GetModel() .. "\n" .. tostring(ent)
-			surface.SetFont(font)
-			local w, h = surface.GetTextSize(text)
-			draw.RoundedBox(4, hudX, hudY, w + 8, h + 8, hudColorBG)
-			draw.DrawText(text, font, hudX + 4, hudY + 4, hudColorFG, TEXT_ALIGN_LEFT)
-		end
+	local trace = util.GetPlayerTrace(ply)
+	trace.mask = MASK_SHOT
+	local ent = util.TraceLine(trace).Entity
+	if ent:IsValid() and not ent:IsPlayer() then
+		local name, steamid = BSU.GetOwnerName(ent) or "N/A", BSU.GetOwnerSteamID(ent)
+		local text = "Owner: " .. name .. (steamid and "<" .. steamid .. ">" or "") .. "\n" .. ent:GetModel() .. "\n" .. tostring(ent)
+		surface.SetFont(font)
+		local w, h = surface.GetTextSize(text)
+		draw.RoundedBox(4, hudX, hudY, w + 8, h + 8, hudColorBG)
+		draw.DrawText(text, font, hudX + 4, hudY + 4, hudColorFG, TEXT_ALIGN_LEFT)
 	end
 end
 
