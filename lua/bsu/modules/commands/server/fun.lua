@@ -522,7 +522,7 @@ BSU.SetupCommand("setammo", function(cmd)
 			end
 		end
 
-		self:BroadcastActionMsg("%caller% set the ammo for %targets% to %ammount%", { targets = targets, amount = amount })
+		self:BroadcastActionMsg("%caller% set the ammo for %targets% to %amount%", { targets = targets, amount = amount })
 	end)
 	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 	cmd:AddNumberArg("amount", { default = "9999", min = 0, max = 9999 })
