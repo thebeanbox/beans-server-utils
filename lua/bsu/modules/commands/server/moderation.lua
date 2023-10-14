@@ -540,7 +540,7 @@ BSU.SetupCommand("cleanprops", function(cmd)
 	cmd:SetDescription("Cleans up a player's props")
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self, caller, target)
+	cmd:SetFunction(function(self, _, target)
 
 		BSU.CleanupProps(target:UserID())
 
