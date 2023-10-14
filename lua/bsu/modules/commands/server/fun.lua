@@ -72,6 +72,7 @@ local function ragdollPlayer(ply, owner)
 	end
 
 	duplicator.DoGeneric(ragdoll, duplicator.CopyEntTable(ply))
+	ragdoll:SetCollisionGroup(COLLISION_GROUP_NONE) -- fix wrong collision group when player is in vehicle
 
 	ragdoll:Spawn()
 	ragdoll:Activate()
