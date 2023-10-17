@@ -7,15 +7,15 @@ local function cleanupProps(id)
 end
 
 hook.Add("BSU_PlayerBanned", "BSU_CleanupBannedPlayerProps", function(ply)
-	cleanupProps(ply:UserID())
+	cleanupProps(ply:AccountID())
 end)
 
 hook.Add("BSU_PlayerKicked", "BSU_CleanupKickedPlayerProps", function(ply)
-	cleanupProps(ply:UserID())
+	cleanupProps(ply:AccountID())
 end)
 
 hook.Add("PlayerDisconnected", "BSU_HandleDisconnectedPlayerProps", function(ply)
-	local id = ply:UserID()
+	local id = ply:AccountID()
 
 	-- freeze props
 	for _, ent in ipairs(BSU.GetOwnerEntities(id)) do
@@ -28,7 +28,7 @@ hook.Add("PlayerDisconnected", "BSU_HandleDisconnectedPlayerProps", function(ply
 	end
 
 	-- cleanup after some time
-	timer.Create("BSU_RemoveDisconnected_" .. id, GetConVar("bsu_cleanup_time"):GetFloat(), 1, function()
+	timer.Create("BSU_CleanupDisconnected_" .. id, GetConVar("bsu_cleanup_time"):GetFloat(), 1, function()
 		cleanupProps(id)
 	end)
 
@@ -38,12 +38,9 @@ hook.Add("PlayerDisconnected", "BSU_HandleDisconnectedPlayerProps", function(ply
 	end
 end)
 
-hook.Add("PlayerInitialSpawn", "BSU_RegainPropOwnership", function(ply)
-	local id = BSU.GetOwnerIDBySteamID(ply:SteamID()) -- check if props with an owner of the same steamid exists
-	if id then
-		BSU.TransferOwnerData(id, ply)
-		timer.Remove("BSU_RemoveDisconnected_" .. id)
-	end -- regain player's ownership over props after rejoining
+hook.Add("PlayerInitialSpawn", "BSU_RemoveCleanupDisconnected", function(ply)
+	local id = ply:AccountID()
+	timer.Remove("BSU_CleanupDisconnected_" .. id) -- try remove the prop cleanup timer so they keep their props
 end)
 
 hook.Add("BSU_ClientReady", "BSU_InitPropProtection", function(ply)
@@ -53,7 +50,7 @@ end)
 
 gameevent.Listen("player_changename")
 hook.Add("player_changename", "BSU_UpdateOwnerName", function(data)
-	BSU.SetOwnerInfo(Player(data.userid), "name", data.newname)
+	BSU.SetOwnerInfo(Player(data.userid):AccountID(), "name", data.newname)
 end)
 
 -- physgun checking
@@ -103,7 +100,7 @@ hook.Add("EntityTakeDamage", "BSU_DamagePermission", function(ent, dmg)
 end)
 
 -- try set the owner of newly created entities
-hook.Add("OnEntityCreated", "BSU_SetOwnerMapEntities", function(ent)
+hook.Add("OnEntityCreated", "BSU_SetOwnerEntities", function(ent)
 	if ent:IsValid() then
 		timer.Simple(0, function() -- need to wait a tick to ensure some data to be available
 			if ent:IsValid() then

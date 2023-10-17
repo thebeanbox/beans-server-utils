@@ -1,18 +1,24 @@
 -- lib/pp.lua (SHARED)
 
 BSU._owners = BSU._owners or {} -- owner data
-BSU._entowners = BSU._entowners or {} -- entity index -> userid lookup
-BSU._ownerents = BSU._ownerents or {} -- userid -> entity index lookup lookup
+BSU._entowners = BSU._entowners or {} -- entity index -> steamid3 lookup
+BSU._ownerents = BSU._ownerents or {} -- steamid3 -> entity index lookup lookup
 
 local infoUpdates, entsUpdates = {}, {}
+
+local WORLD_ID = 2 ^ 32 - 1 -- owner id for the world (whoever gets this steamid, TOO BAD!)
+
+-- used for determining amount of bits needed to network owner info and ents (these do not limit anything serverside)
+
+local OWNER_INFO_MAX = 2 -- max keys in owner info, currently only storing name and userid (update this if more are added)
+local OWNER_ENTS_MAX = 2 ^ 13 - 1 -- max ents per owner
 
 local function sendOwnerUpdates()
 	if next(infoUpdates) ~= nil then
 		for id, info in pairs(infoUpdates) do
 			for k, v in pairs(info) do
-				net.Start("bsu_owners")
-					net.WriteUInt(1, 3) -- update owner info
-					net.WriteInt(id, 16)
+				net.Start("bsu_owner_info")
+					net.WriteUInt(id, 32)
 					net.WriteString(k)
 					net.WriteType(v)
 				net.Broadcast()
@@ -37,9 +43,8 @@ local function sendOwnerUpdates()
 		if next(owners) ~= nil then
 			for id, ents in pairs(owners) do
 				for _, entindex in ipairs(ents) do
-					net.Start("bsu_owners")
-						net.WriteUInt(2, 3) -- set entity owner
-						net.WriteInt(id, 16)
+					net.Start("bsu_set_owner")
+						net.WriteUInt(id, 32)
 						net.WriteUInt(entindex, 13)
 					net.Broadcast()
 				end
@@ -48,8 +53,7 @@ local function sendOwnerUpdates()
 
 		if next(ownerless) ~= nil then
 			for _, entindex in ipairs(ownerless) do
-				net.Start("bsu_owners")
-					net.WriteUInt(3, 3) -- clear entity owner
+				net.Start("bsu_clear_owner")
 					net.WriteUInt(entindex, 13)
 				net.Broadcast()
 			end
@@ -58,6 +62,16 @@ local function sendOwnerUpdates()
 		entsUpdates = {}
 	end
 end
+
+local function signalOwnerUpdates()
+	-- use a 0 second timer to send updates next tick
+	-- if ownership changes multiple times in the same tick, only the last update will matter (this makes sure only the last is sent)
+	timer.Create("BSU_SendOwnerUpdates", 0, 1, sendOwnerUpdates)
+end
+
+-- periodically send owner updates
+-- if ownership updates keep happening every tick, the above timer will keep resetting and never finish (this makes sure updates get sent atleast every so often)
+timer.Create("BSU_ForceSendOwnerUpdates", 1, 0, sendOwnerUpdates)
 
 local function updateOwnerInfo(id, key, value)
 	if not isstring(key) or value == nil then return end
@@ -74,7 +88,7 @@ local function updateOwnerInfo(id, key, value)
 	if SERVER then
 		if not infoUpdates[id] then infoUpdates[id] = {} end
 		infoUpdates[id][key] = value
-		timer.Create("BSU_SendOwnerUpdates", 0, 1, sendOwnerUpdates) -- send updates next tick
+		signalOwnerUpdates()
 	end
 end
 
@@ -91,7 +105,7 @@ local function clearEntityOwner(entindex)
 
 	if SERVER then
 		entsUpdates[entindex] = false
-		timer.Create("BSU_SendOwnerUpdates", 0, 1, sendOwnerUpdates) -- send updates next tick
+		signalOwnerUpdates()
 	end
 end
 
@@ -105,42 +119,13 @@ local function setEntityOwner(entindex, id)
 
 	if SERVER then
 		entsUpdates[entindex] = id
-		timer.Create("BSU_SendOwnerUpdates", 0, 1, sendOwnerUpdates) -- send updates next tick
-	end
-end
-
-local function transferOwnerData(id, id2)
-	local info = BSU._owners[id]
-	if not info then return end -- owner doesn't exist (happens clientside when server transfers owner data and we haven't received any owner data yet)
-	local ents = BSU._ownerents[id] or {}
-
-	BSU._owners[id2] = BSU._owners[id2] or {}
-	BSU._ownerents[id2] = BSU._ownerents[id2] or {}
-
-	for k, v in pairs(info) do
-		BSU._owners[id2][k] = v
-	end
-
-	for entindex, _ in pairs(ents) do
-		BSU._ownerents[id2][entindex] = true
-		BSU._entowners[entindex] = id2
-	end
-
-	BSU._owners[id] = nil
-	BSU._ownerents[id] = nil
-
-	if SERVER then
-		net.Start("bsu_owners")
-			net.WriteUInt(4, 3) -- transfer owner data
-			net.WriteInt(id, 16)
-			net.WriteInt(id2, 16)
-		net.Broadcast()
+		signalOwnerUpdates()
 	end
 end
 
 function BSU.SetOwnerInfo(owner, key, value)
 	if not IsValid(owner) or (not owner:IsPlayer() and not owner:IsWorld()) then return end
-	local id = owner:IsPlayer() and owner:UserID() or -1
+	local id = owner:IsPlayer() and owner:AccountID() or WORLD_ID
 	updateOwnerInfo(id, key, value)
 end
 
@@ -152,18 +137,19 @@ end
 
 function BSU.SetOwner(ent, owner)
 	if not IsValid(ent) or ent:IsPlayer() then return end
-	if not IsValid(owner) or (not owner:IsPlayer() and not owner:IsWorld()) then return end
-	local id = owner:UserID()
+	if not IsValid(owner) or not owner:IsPlayer() then return end
+	local id = owner:AccountID()
 	updateOwnerInfo(id, "name", owner:Nick()) -- used for HUD display
-	updateOwnerInfo(id, "steamid", owner:SteamID()) -- used for regaining player ownership after rejoining
+	updateOwnerInfo(id, "userid", owner:UserID()) -- used for getting the owner entity
 	setEntityOwner(ent:EntIndex(), id)
 	ent:CallOnRemove("BSU_SetOwnerless", BSU.SetOwnerless)
 end
 
 function BSU.SetOwnerWorld(ent)
 	if not IsValid(ent) or ent:IsPlayer() then return end
-	updateOwnerInfo(-1, "name", "World") -- used for HUD display
-	setEntityOwner(ent:EntIndex(), -1)
+	updateOwnerInfo(WORLD_ID, "name", "World") -- used for HUD display
+	updateOwnerInfo(WORLD_ID, "userid", -1) -- used for getting the owner entity
+	setEntityOwner(ent:EntIndex(), WORLD_ID)
 end
 
 function BSU.CopyOwner(from, to)
@@ -191,47 +177,6 @@ function BSU.ReplaceOwner(from, to)
 	to:CallOnRemove("BSU_SetOwnerless", BSU.SetOwnerless)
 end
 
-function BSU.TransferOwnerData(id, owner)
-	if not IsValid(owner) or (not owner:IsPlayer() and not owner:IsWorld()) then return end
-	local id2 = owner:IsPlayer() and owner:UserID() or -1
-	transferOwnerData(id, id2)
-end
-
-if SERVER then
-	function BSU.SendOwnerData(ply)
-		net.Start("bsu_owners")
-			net.WriteUInt(0, 3) -- init
-			net.WriteUInt(table.Count(BSU._owners), 7)
-		for id, info in pairs(BSU._owners) do
-			net.WriteInt(id, 16)
-
-			net.WriteUInt(math.min(table.Count(info), 2 ^ 12 - 1), 12)
-			for k, v in pairs(info) do
-				net.WriteString(k)
-				net.WriteType(v)
-			end
-
-			local ents = BSU._ownerents[id]
-			net.WriteUInt(math.min(table.Count(ents), 2 ^ 13 - 1), 13)
-			for entindex, _ in pairs(ents) do
-				net.WriteUInt(entindex, 13)
-			end
-		end
-		net.Send(ply)
-	end
-end
-
--- returns userid by steamid (prioritizes lower ids, nil if no owner with this steamid)
-function BSU.GetOwnerIDBySteamID(steamid)
-	local ids = table.GetKeys(BSU._owners)
-	table.sort(ids, function(a, b) return a < b end)
-	for _, id in ipairs(ids) do
-		if BSU._owners[id].steamid == steamid then
-			return id
-		end
-	end
-end
-
 -- returns table of entities this owner owns
 function BSU.GetOwnerEntities(id)
 	local ents = {}
@@ -241,19 +186,18 @@ function BSU.GetOwnerEntities(id)
 	return ents
 end
 
--- returns userid of the entity's owner (-1 if owner is the world, nil if entity is ownerless)
+-- returns steamid3 of the entity's owner (WORLD_ID if owner is the world, nil if entity is ownerless)
 function BSU.GetOwnerID(ent)
 	if not IsValid(ent) then return end
 	return BSU._entowners[ent:EntIndex()]
 end
 
--- returns owner of the entity (can be a player or the world, NULL entity if player is disconnected, nil if entity is ownerless)
-function BSU.GetOwner(ent)
+-- returns STEAM_0 style id of the entity owner (nil if entity is ownerless or owned by the world)
+function BSU.GetOwnerSteamID(ent)
 	if not IsValid(ent) then return end
 	local id = BSU._entowners[ent:EntIndex()]
-	if not id then return end
-	if id == -1 then return game.GetWorld() end
-	return Player(id)
+	if id == WORLD_ID then return end
+	return BSU.SteamIDFrom3(id)
 end
 
 -- returns info about the entity owner (nil if entity is ownerless or there's no info with the key)
@@ -264,48 +208,91 @@ function BSU.GetOwnerInfo(ent, key)
 	return BSU._owners[id][string.lower(key)]
 end
 
--- returns name of the entity owner (nil if entity is ownerless)
+-- returns owner of the entity (can be a player or the world, NULL entity if player is disconnected, nil if entity is ownerless)
+function BSU.GetOwner(ent)
+	if not IsValid(ent) then return end
+	local userid = BSU.GetOwnerInfo(ent, "userid")
+	if not userid then return end
+	if userid == -1 then return game.GetWorld() end
+	return Player(userid)
+end
+
+-- owner info util functions
+
+-- returns name of the entity owner (will be "World" if entity is the world, nil if entity is ownerless)
 function BSU.GetOwnerName(ent)
 	return BSU.GetOwnerInfo(ent, "name")
 end
 
--- returns steam id of the entity owner (nil if entity is ownerless or is owned by the world entity)
-function BSU.GetOwnerSteamID(ent)
-	return BSU.GetOwnerInfo(ent, "steamid")
+-- returns userid of the entity owner (will be -1 if entity is the world, nil if entity is ownerless)
+function BSU.GetOwnerUserID(ent)
+	return BSU.GetOwnerInfo(ent, "userid")
+end
+
+local infoBits = math.ceil(math.log(OWNER_INFO_MAX, 2))
+local entsBits = math.ceil(math.log(OWNER_ENTS_MAX, 2))
+
+if SERVER then
+	function BSU.SendOwnerData(ply)
+		net.Start("bsu_init_owners")
+			net.WriteUInt(table.Count(BSU._owners), 7)
+		for id, info in pairs(BSU._owners) do
+			net.WriteUInt(id, 32)
+
+			local infoTotal = math.min(table.Count(info), OWNER_INFO_MAX)
+			net.WriteUInt(infoTotal, infoBits)
+			for k, v in pairs(info) do
+				net.WriteString(k)
+				net.WriteType(v)
+				infoTotal = infoTotal - 1
+				if infoTotal == 0 then break end
+			end
+
+			local ents = BSU._ownerents[id]
+			local entsTotal = math.min(table.Count(ents), OWNER_ENTS_MAX)
+			net.WriteUInt(entsTotal, entsBits)
+			for entindex, _ in pairs(ents) do
+				net.WriteUInt(entindex, 13)
+				entsTotal = entsTotal - 1
+				if entsTotal == 0 then break end
+			end
+		end
+		net.Send(ply)
+	end
 end
 
 if CLIENT then
-	net.Receive("bsu_owners", function()
-		local kind = net.ReadUInt(3)
-		if kind == 0 then -- init owner data
-			local owners = net.ReadUInt(7)
-			for _ = 1, owners do
-				local id = net.ReadInt(16)
+	net.Receive("bsu_init_owners", function()
+		local owners = net.ReadUInt(7)
+		for _ = 1, owners do
+			local id = net.ReadUInt(32)
 
-				local info = net.ReadUInt(12)
-				for _ = 1, info do
-					local key, value = net.ReadString(), net.ReadType()
-					updateOwnerInfo(id, key, value)
-				end
-
-				local ents = net.ReadUInt(13)
-				for _ = 1, ents do
-					local entindex = net.ReadUInt(13)
-					setEntityOwner(entindex, id)
-				end
+			local info = net.ReadUInt(OWNER_INFO_MAX)
+			for _ = 1, info do
+				local key, value = net.ReadString(), net.ReadType()
+				updateOwnerInfo(id, key, value)
 			end
-		elseif kind == 1 then -- update owner info
-			local id, key, value = net.ReadInt(16), net.ReadString(), net.ReadType()
-			updateOwnerInfo(id, key, value)
-		elseif kind == 2 then -- set entity owner
-			local id, entindex = net.ReadInt(16), net.ReadUInt(13)
-			setEntityOwner(entindex, id)
-		elseif kind == 3 then -- clear entity owner
-			local entindex = net.ReadUInt(13)
-			clearEntityOwner(entindex)
-		elseif kind == 4 then -- transfer owner data
-			local id1, id2 = net.ReadInt(16), net.ReadInt(16)
-			transferOwnerData(id1, id2)
+
+			local ents = net.ReadUInt(OWNER_ENTS_MAX)
+			for _ = 1, ents do
+				local entindex = net.ReadUInt(13)
+				setEntityOwner(entindex, id)
+			end
 		end
+	end)
+
+	net.Receive("bsu_owner_info", function()
+		local id, key, value = net.ReadUInt(32), net.ReadString(), net.ReadType()
+		updateOwnerInfo(id, key, value)
+	end)
+
+	net.Receive("bsu_set_owner", function()
+		local id, entindex = net.ReadUInt(32), net.ReadUInt(13)
+		setEntityOwner(entindex, id)
+	end)
+
+	net.Receive("bsu_clear_owner", function()
+		local entindex = net.ReadUInt(13)
+		clearEntityOwner(entindex)
 	end)
 end

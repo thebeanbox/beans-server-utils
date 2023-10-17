@@ -9,7 +9,12 @@ util.AddNetworkString("bsu_rpc") -- used for client RPC system
 util.AddNetworkString("bsu_client_info") -- used to send client info to the server
 
 util.AddNetworkString("bsu_perms") -- used for sending permission data to the server
-util.AddNetworkString("bsu_owners") -- used for sending owner data to the clients
+
+-- used for sending prop protection data
+util.AddNetworkString("bsu_init_owners")
+util.AddNetworkString("bsu_owner_info")
+util.AddNetworkString("bsu_set_owner")
+util.AddNetworkString("bsu_clear_owner")
 
 function BSU.ClientRPC(plys, func, ...)
 	net.Start("bsu_rpc")
