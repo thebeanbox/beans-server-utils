@@ -24,18 +24,28 @@ function BSU.LocalTime()
 	return os.time(os.date("!*t"))
 end
 
-function BSU.SteamIDTo3(steamid)
-	if steamid == "BOT" or steamid == "NULL" then return 0 end
-	local y, z = string.match(steamid, "^STEAM_0:([01]):(%d+)$")
+function BSU.SteamIDTo3(id)
+	local y, z = string.match(id, "^STEAM_0:([01]):(%d+)$")
+	if not y then return 0 end
 	return bit.lshift(z, 1) + y
 end
 
 function BSU.SteamIDFrom3(id3)
 	local y, z = bit.band(id3, 1), bit.rshift(id3, 1)
-	return string.format("STEAM_0:%d:%d", y, z)
+	return string.format("STEAM_0:%u:%u", y, z)
 end
 
--- checks if a string is a valid STEAM_0 or 64 bit formatted steam id (also returns if it was 64 bit or not)
+function BSU.SteamID64To3(id64)
+	local id = util.SteamIDFrom64(id64)
+	return BSU.SteamIDTo3(id)
+end
+
+function BSU.SteamID64From3(id3)
+	local id = BSU.SteamIDFrom3(id3)
+	return util.SteamIDTo64(id)
+end
+
+-- checks if a string is a valid STEAM_0 or 64 bit steam id (also returns if it was 64 bit or not)
 function BSU.IsValidSteamID(steamid)
 	if not isstring(steamid) then return false end
 	if string.match(steamid, "^STEAM_0:[01]:%d+$") then
