@@ -48,7 +48,9 @@ local function authedBanCheck(ply)
 		if plyID ~= ownerID then -- this player doesn't own the Garry's Mod license they're using
 			local ownerBan = BSU.GetBanStatus(ownerID)
 			if ownerBan then -- if the owner of the license is banned
-				BSU.BanPlayer(ply, string.format("%s (Family share with banned account: %s)", ownerBan.reason or "No reason given", util.SteamIDFrom64(ownerID)), 0, ownerBan.reason)
+				BSU.BanPlayer(ply, string.format("%s (Steam Family Sharing with banned account: %s)", ownerBan.reason or "No reason given", util.SteamIDFrom64(ownerID)), 0, ownerBan.reason)
+			elseif not GetConVar("bsu_allow_family_sharing"):GetBool() then
+				game.KickID(ply:UserID(), "Steam Family Sharing is prohibited on this server")
 			end
 		end
 	end
