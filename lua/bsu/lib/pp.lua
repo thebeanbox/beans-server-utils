@@ -229,8 +229,8 @@ function BSU.GetOwnerUserID(ent)
 	return BSU.GetOwnerInfo(ent, "userid")
 end
 
-local infoBits = math.ceil(math.log(OWNER_INFO_MAX, 2))
-local entsBits = math.ceil(math.log(OWNER_ENTS_MAX, 2))
+local infoBits = math.floor(math.log(OWNER_INFO_MAX, 2)) + 1
+local entsBits = math.floor(math.log(OWNER_ENTS_MAX, 2)) + 1
 
 if SERVER then
 	function BSU.SendOwnerData(ply)
