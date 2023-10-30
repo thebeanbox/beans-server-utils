@@ -259,40 +259,40 @@ if SERVER then
 		end
 		net.Send(ply)
 	end
+
+	return
 end
 
-if CLIENT then
-	net.Receive("bsu_init_owners", function()
-		local owners = net.ReadUInt(7)
-		for _ = 1, owners do
-			local id = net.ReadUInt(32)
+net.Receive("bsu_init_owners", function()
+	local owners = net.ReadUInt(7)
+	for _ = 1, owners do
+		local id = net.ReadUInt(32)
 
-			local info = net.ReadUInt(infoBits)
-			for _ = 1, info do
-				local key, value = net.ReadString(), net.ReadType()
-				updateOwnerInfo(id, key, value)
-			end
-
-			local ents = net.ReadUInt(entsBits)
-			for _ = 1, ents do
-				local entindex = net.ReadUInt(13)
-				setEntityOwner(entindex, id)
-			end
+		local info = net.ReadUInt(infoBits)
+		for _ = 1, info do
+			local key, value = net.ReadString(), net.ReadType()
+			updateOwnerInfo(id, key, value)
 		end
-	end)
 
-	net.Receive("bsu_owner_info", function()
-		local id, key, value = net.ReadUInt(32), net.ReadString(), net.ReadType()
-		updateOwnerInfo(id, key, value)
-	end)
+		local ents = net.ReadUInt(entsBits)
+		for _ = 1, ents do
+			local entindex = net.ReadUInt(13)
+			setEntityOwner(entindex, id)
+		end
+	end
+end)
 
-	net.Receive("bsu_set_owner", function()
-		local id, entindex = net.ReadUInt(32), net.ReadUInt(13)
-		setEntityOwner(entindex, id)
-	end)
+net.Receive("bsu_owner_info", function()
+	local id, key, value = net.ReadUInt(32), net.ReadString(), net.ReadType()
+	updateOwnerInfo(id, key, value)
+end)
 
-	net.Receive("bsu_clear_owner", function()
-		local entindex = net.ReadUInt(13)
-		clearEntityOwner(entindex)
-	end)
-end
+net.Receive("bsu_set_owner", function()
+	local id, entindex = net.ReadUInt(32), net.ReadUInt(13)
+	setEntityOwner(entindex, id)
+end)
+
+net.Receive("bsu_clear_owner", function()
+	local entindex = net.ReadUInt(13)
+	clearEntityOwner(entindex)
+end)
