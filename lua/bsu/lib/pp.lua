@@ -196,7 +196,7 @@ end
 function BSU.GetOwnerSteamID(ent)
 	if not IsValid(ent) then return end
 	local id = BSU._entowners[ent:EntIndex()]
-	if id == WORLD_ID then return end
+	if not id or id == WORLD_ID then return end
 	return BSU.SteamIDFrom3(id)
 end
 
