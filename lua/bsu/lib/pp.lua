@@ -267,13 +267,13 @@ if CLIENT then
 		for _ = 1, owners do
 			local id = net.ReadUInt(32)
 
-			local info = net.ReadUInt(OWNER_INFO_MAX)
+			local info = net.ReadUInt(infoBits)
 			for _ = 1, info do
 				local key, value = net.ReadString(), net.ReadType()
 				updateOwnerInfo(id, key, value)
 			end
 
-			local ents = net.ReadUInt(OWNER_ENTS_MAX)
+			local ents = net.ReadUInt(entsBits)
 			for _ = 1, ents do
 				local entindex = net.ReadUInt(13)
 				setEntityOwner(entindex, id)
