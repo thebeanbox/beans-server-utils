@@ -63,7 +63,7 @@ function BSU.CheckGroupPrivilege(groupid, type, value, checkwildcards)
 		-- check for privilege in inherited group
 		local inherit = BSU.GetGroupInherit(groupid)
 		if inherit then
-			return BSU.CheckGroupPrivilege(inherit, type, value)
+			return BSU.CheckGroupPrivilege(inherit, type, value, checkwildcards)
 		end
 	end
 end
