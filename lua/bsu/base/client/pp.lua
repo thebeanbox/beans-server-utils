@@ -29,7 +29,7 @@ local function addPropProtectionMenu()
 		top:SetSpaceX(9)
 		local label = top:Add("DLabel")
 		label:SetSize(100, 16)
-		label:SetText("[ Players ]")
+		label:SetText("[ Permissions ]")
 		label:SetColor(color_black)
 		local icons = { "wrench", "wrench_orange", "wand", "ruby", "gun" }
 		local tips = { "Physgun", "Gravgun", "Toolgun/Properties", "Use (E)", "Damage" }
@@ -40,7 +40,13 @@ local function addPropProtectionMenu()
 			icon:SetTooltip(tips[i])
 		end
 
+		local color_outline = Color(100, 100, 100)
+		local color_granted = Color(150, 255, 0)
+		local color_revoked = Color(255, 0, 150)
+		local color_global = Color(0, 150, 255)
+
 		local plyElems = {}
+		local globalElem
 
 		local function playerBoxOnChange(self, checked)
 			if self.ply:IsValid() then
@@ -50,6 +56,12 @@ local function addPropProtectionMenu()
 					BSU.RevokePermission(self.ply, self.perm)
 				end
 			end
+		end
+
+		local function playerBoxPaint(self, w, h)
+			draw.RoundedBox(4, 0, 0, w, h, color_outline)
+			local globalBox = globalElem.boxes[self.idx]
+			draw.RoundedBox(4, 1, 1, w - 2, h - 2, self:GetChecked() and (globalBox:GetChecked() and color_revoked or color_granted) or color_white)
 		end
 
 		local function updatePlayerElems()
@@ -79,10 +91,12 @@ local function addPropProtectionMenu()
 					for i = 1, 5 do
 						local box = elem:Add("DCheckBox")
 						elem.boxes[i] = box
+						box.idx = i
 						box.ply = v
 						box.perm = bit.lshift(1, i - 1)
 						box:SetValue(BSU.CheckPermission(v:SteamID64(), box.perm))
 						box.OnChange = playerBoxOnChange
+						box.Paint = playerBoxPaint
 					end
 				end
 			end
@@ -101,7 +115,10 @@ local function addPropProtectionMenu()
 			end
 		end
 
-		local globalElem
+		local function globalBoxPaint(self, w, h)
+			draw.RoundedBox(4, 0, 0, w, h, color_outline)
+			draw.RoundedBox(4, 1, 1, w - 2, h - 2, self:GetChecked() and color_global or color_white)
+		end
 
 		local function updateGlobalElem()
 			if globalElem and globalElem:IsValid() then return end
@@ -114,7 +131,7 @@ local function addPropProtectionMenu()
 
 			local name = elem:Add("DLabel")
 			name:SetSize(100, 15)
-			name:SetText("< GLOBAL >")
+			name:SetText("< Global >")
 			name:SetColor(color_black)
 
 			elem.boxes = {}
@@ -124,6 +141,7 @@ local function addPropProtectionMenu()
 				box.perm = bit.lshift(1, i - 1)
 				box:SetValue(BSU.CheckGlobalPermission(box.perm))
 				box.OnChange = globalBoxOnChange
+				box.Paint = globalBoxPaint
 			end
 		end
 

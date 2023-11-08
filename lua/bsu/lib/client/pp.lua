@@ -23,8 +23,7 @@ function BSU.GetPermission(steamid)
 end
 
 function BSU.CheckPermission(steamid, perm)
-	local permission = BSU.GetPermission(steamid)
-	return bit.band(permission, perm) == perm
+	return bit.band(BSU.GetPermission(steamid), perm) == perm
 end
 
 local GLOBAL_ID = "GLOBAL"
@@ -53,14 +52,18 @@ end
 
 -- returns bool if local player has granted permission globally to all players
 function BSU.CheckGlobalPermission(perm)
-	local permission = BSU.GetGlobalPermission()
-	return bit.band(permission, perm) == perm
+	return bit.band(BSU.GetGlobalPermission(), perm) == perm
+end
+
+function BSU.GetPlayerPermission(target)
+	if not target:IsPlayer() then return end
+	return bit.bxor(BSU.GetGlobalPermission(), BSU.GetPermission(target:SteamID64()))
 end
 
 -- returns bool if local player has granted permission to the target player
 function BSU.CheckPlayerPermission(target, perm)
 	if not target:IsPlayer() then return end
-	return BSU.CheckPermission(target:SteamID64(), perm)
+	return bit.band(BSU.GetPlayerPermission(target), perm) == perm
 end
 
 -- returns a table of current players on the server who are friends with the player, including admins (uses the toolgun permission)
@@ -69,7 +72,7 @@ function BSU.GetPlayerFriends()
 	if BSU.CheckGlobalPermission(BSU.PP_TOOLGUN) then return plys end
 	local friends = {}
 	for _, v in ipairs(plys) do
-		if v:IsAdmin() or BSU.CheckPlayerPermission(v, BSU.PP_TOOLGUN) then
+		if v:IsSuperAdmin() or BSU.CheckPlayerPermission(v, BSU.PP_TOOLGUN) then
 			table.insert(friends, v)
 		end
 	end
@@ -89,10 +92,10 @@ function BSU.SendPermissions(plys)
 		return
 	end
 
-	local data, global = {}, BSU.GetGlobalPermission()
+	local data = {}
 	for _, v in ipairs(plys) do
 		if v ~= LocalPlayer() and not v:IsBot() then -- ignore local player and bots
-			table.insert(data, { v:UserID(), bit.bor(global, BSU.GetPermission(v:SteamID64())) })
+			table.insert(data, { v:UserID(), BSU.GetPlayerPermission(v:SteamID64()) })
 		end
 	end
 	if next(data) == nil then return end
