@@ -40,9 +40,9 @@ local function addPropProtectionMenu()
 			icon:SetTooltip(tips[i])
 		end
 
-		local elems = {}
+		local plyElems = {}
 
-		local function boxOnChange(self, checked)
+		local function playerBoxOnChange(self, checked)
 			if self.ply:IsValid() then
 				if checked then
 					BSU.GrantPermission(self.ply, self.perm)
@@ -52,19 +52,19 @@ local function addPropProtectionMenu()
 			end
 		end
 
-		local function update()
-			local oldElems = elems
-			elems = {}
+		local function updatePlayerElems()
+			local oldElems = plyElems
+			plyElems = {}
 			for _, v in ipairs(player.GetHumans()) do
 				if v == LocalPlayer() then continue end
 				local oldElem = oldElems[v]
 				if oldElem and oldElem:IsValid() then
 					oldElem.name:SetText(v:Nick()) -- incase name changed
-					elems[v] = oldElem
+					plyElems[v] = oldElem
 					oldElems[v] = nil
 				else -- add player element
 					local elem = list:Add("DIconLayout")
-					elems[v] = elem
+					plyElems[v] = elem
 					elem.OwnLine = true
 					elem:SetSize(225, 15)
 					elem:SetSpaceX(10)
@@ -80,9 +80,9 @@ local function addPropProtectionMenu()
 						local box = elem:Add("DCheckBox")
 						elem.boxes[i] = box
 						box.ply = v
-						box.perm = math.pow(2, i - 1)
+						box.perm = bit.lshift(1, i - 1)
 						box:SetValue(BSU.CheckPermission(v:SteamID64(), box.perm))
-						box.OnChange = boxOnChange
+						box.OnChange = playerBoxOnChange
 					end
 				end
 			end
@@ -93,16 +93,52 @@ local function addPropProtectionMenu()
 			end
 		end
 
-		timer.Create("BSU_UpdatePropProtectionMenu", 1, 0, update)
+		local function globalBoxOnChange(self, checked)
+			if checked then
+				BSU.GrantGlobalPermission(self.perm)
+			else
+				BSU.RevokeGlobalPermission(self.perm)
+			end
+		end
+
+		local globalElem
+
+		local function updateGlobalElem()
+			if globalElem and globalElem:IsValid() then return end
+
+			local elem = list:Add("DIconLayout")
+			globalElem = elem
+			elem.OwnLine = true
+			elem:SetSize(225, 15)
+			elem:SetSpaceX(10)
+
+			local name = elem:Add("DLabel")
+			name:SetSize(100, 15)
+			name:SetText("< GLOBAL >")
+			name:SetColor(color_black)
+
+			elem.boxes = {}
+			for i = 1, 5 do
+				local box = elem:Add("DCheckBox")
+				elem.boxes[i] = box
+				box.perm = bit.lshift(1, i - 1)
+				box:SetValue(BSU.CheckGlobalPermission(box.perm))
+				box.OnChange = globalBoxOnChange
+			end
+		end
+
+		timer.Create("BSU_UpdatePropProtectionMenu", 1, 0, updatePlayerElems)
 
 		hook.Add("BSU_ResetPermissions", "BSU_UpdatePropProtectionMenu", function()
-			for _, v in pairs(elems) do
-				v:Remove()
-			end
-			update()
+			if globalElem then globalElem:Remove() end
+			for _, elem in pairs(plyElems) do elem:Remove() end
+			updateGlobalElem()
+			updatePlayerElems()
 		end)
 
-		update()
+		-- initialize elems
+		updateGlobalElem()
+		updatePlayerElems()
 
 		pnl:CheckBox("Persist permissions across sessions", "bsu_permission_persist")
 		pnl:CheckBox("Allow props to take fire damage", "bsu_allow_fire_damage")
