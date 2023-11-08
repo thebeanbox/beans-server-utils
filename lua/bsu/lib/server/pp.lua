@@ -23,8 +23,7 @@ function BSU.GetPermission(plyID, tarID)
 end
 
 function BSU.CheckPermission(plyID, tarID, perm)
-	local permission = BSU.GetPermission(plyID, tarID)
-	return bit.band(permission, perm) == perm
+	return bit.band(BSU.GetPermission(plyID, tarID), perm) == perm
 end
 
 function BSU.SetPlayerPermission(ply, target, perm)
@@ -51,7 +50,7 @@ function BSU.GetPlayerFriends(ply)
 	if not ply:IsPlayer() then return {} end
 	local friends = {}
 	for _, v in ipairs(player.GetHumans()) do
-		if v:IsAdmin() or BSU.CheckPlayerPermission(ply, v, BSU.PP_TOOLGUN) then
+		if v:IsSuperAdmin() or BSU.CheckPlayerPermission(ply, v, BSU.PP_TOOLGUN) then
 			table.insert(friends, v)
 		end
 	end
