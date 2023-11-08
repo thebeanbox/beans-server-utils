@@ -1,7 +1,7 @@
 -- lib/client/pp.lua
 
 function BSU.SetPermission(steamid, permission)
-	BSU.ClearPermission(steamid, permission) -- clear if already exists
+	BSU.ClearPermission(steamid) -- clear if already exists
 
 	if permission <= 0 then return end -- no permission set
 
@@ -27,6 +27,36 @@ function BSU.CheckPermission(steamid, perm)
 	return bit.band(permission, perm) == perm
 end
 
+local GLOBAL_ID = "GLOBAL"
+
+function BSU.SetGlobalPermission(permission)
+	BSU.ClearGlobalPermission() -- clear if already exists
+
+	if permission <= 0 then return end -- no permission set
+
+	BSU.SQLInsert(BSU.SQL_PP,
+		{
+			steamid = GLOBAL_ID,
+			permission = permission
+		}
+	)
+end
+
+function BSU.ClearGlobalPermission()
+	BSU.SQLDeleteByValues(BSU.SQL_PP, { steamid = GLOBAL_ID })
+end
+
+function BSU.GetGlobalPermission()
+	local query = BSU.SQLSelectByValues(BSU.SQL_PP, { steamid = GLOBAL_ID })[1]
+	return query and query.permission or 0
+end
+
+-- returns bool if local player has granted permission globally to all players
+function BSU.CheckGlobalPermission(perm)
+	local permission = BSU.GetGlobalPermission()
+	return bit.band(permission, perm) == perm
+end
+
 -- returns bool if local player has granted permission to the target player
 function BSU.CheckPlayerPermission(target, perm)
 	if not target:IsPlayer() then return end
@@ -35,25 +65,15 @@ end
 
 -- returns a table of current players on the server who are friends with the player, including admins (uses the toolgun permission)
 function BSU.GetPlayerFriends()
+	local plys = player.GetHumans()
+	if BSU.CheckGlobalPermission(BSU.PP_TOOLGUN) then return plys end
 	local friends = {}
-	for _, v in ipairs(player.GetHumans()) do
+	for _, v in ipairs(plys) do
 		if v:IsAdmin() or BSU.CheckPlayerPermission(v, BSU.PP_TOOLGUN) then
 			table.insert(friends, v)
 		end
 	end
 	return friends
-end
-
--- returns a table of current players on the server the client has granted the permission to
-
-function BSU.GetPermissionList(perm)
-	local plys = {}
-	for _, v in ipairs(player.GetHumans()) do
-		if bit.band(BSU.GetPermission(v:GetSteamID64()), perm) == perm then
-			table.insert(plys, v)
-		end
-	end
-	return plys
 end
 
 -- send permission data to the server (takes a player, table of players, or nil for all current players)
@@ -69,10 +89,10 @@ function BSU.SendPermissions(plys)
 		return
 	end
 
-	local data = {}
+	local data, global = {}, BSU.GetGlobalPermission()
 	for _, v in ipairs(plys) do
 		if v ~= LocalPlayer() and not v:IsBot() then -- ignore local player and bots
-			table.insert(data, { v:UserID(), BSU.GetPermission(v:SteamID64()) })
+			table.insert(data, { v:UserID(), bit.bor(global, BSU.GetPermission(v:SteamID64())) })
 		end
 	end
 	if next(data) == nil then return end
@@ -111,4 +131,16 @@ function BSU.RevokePermission(ply, perm)
 		BSU.SetPermission(steamid, bit.bxor(permission, perm))
 		BSU.SendPermissions(ply)
 	end
+end
+
+function BSU.GrantGlobalPermission(perm)
+	local permission = BSU.GetGlobalPermission()
+	BSU.SetGlobalPermission(bit.bor(permission, perm))
+	BSU.SendPermissions()
+end
+
+function BSU.RevokeGlobalPermission(perm)
+	local permission = BSU.GetGlobalPermission()
+	BSU.SetGlobalPermission(bit.bxor(permission, perm))
+	BSU.SendPermissions()
 end
