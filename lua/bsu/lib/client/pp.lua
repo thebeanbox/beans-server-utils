@@ -95,7 +95,7 @@ function BSU.SendPermissions(plys)
 	local data = {}
 	for _, v in ipairs(plys) do
 		if v ~= LocalPlayer() and not v:IsBot() then -- ignore local player and bots
-			table.insert(data, { v:UserID(), BSU.GetPlayerPermission(v:SteamID64()) })
+			table.insert(data, { v:UserID(), BSU.GetPlayerPermission(v) })
 		end
 	end
 	if next(data) == nil then return end
