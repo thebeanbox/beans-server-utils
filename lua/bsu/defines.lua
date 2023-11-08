@@ -9,7 +9,7 @@ BSU.PRIV_SWEP   = 3
 BSU.PRIV_TOOL   = 4
 BSU.PRIV_CMD    = 5
 BSU.PRIV_TARGET = 6
-BSU.PRIV_MISC	  = 7
+BSU.PRIV_MISC   = 7
 
 -- prop protection enums
 BSU.PP_PHYSGUN = 1
@@ -19,13 +19,13 @@ BSU.PP_USE     = 8
 BSU.PP_DAMAGE  = 16
 
 -- logging enums
-BSU.LOG_SPAWN_EFFECT	= 1
-BSU.LOG_SPAWN_NPC		= 2
-BSU.LOG_SPAWN_PROP		= 3
-BSU.LOG_SPAWN_RAGDOLL	= 4
-BSU.LOG_SPAWN_SENT		= 5
-BSU.LOG_SPAWN_SWEP		= 6
-BSU.LOG_SPAWN_VEHICLE	= 7
+BSU.LOG_SPAWN_EFFECT  = 1
+BSU.LOG_SPAWN_NPC     = 2
+BSU.LOG_SPAWN_PROP    = 3
+BSU.LOG_SPAWN_RAGDOLL = 4
+BSU.LOG_SPAWN_SENT    = 5
+BSU.LOG_SPAWN_SWEP    = 6
+BSU.LOG_SPAWN_VEHICLE = 7
 
 -- color values (mainly used for command messages)
 BSU.CLR_ERROR    = Color(255, 127, 0)   -- error messages                        (orange)
@@ -37,10 +37,10 @@ BSU.CLR_CONSOLE  = Color(0, 0, 0)       -- server console name                  
 BSU.CLR_MISC     = Color(255, 255, 255) -- other (just used for non-player ents) (white)
 
 -- color values (logging)
-BSU.LOG_CLR_SPAWN		= Color(0, 200, 255)
-BSU.LOG_CLR_ADVDUPE2	= Color(50, 225, 50)
-BSU.LOG_CLR_TEXT		= Color(200, 200, 200)
-BSU.LOG_CLR_PARAM		= Color(255, 255, 255)
+BSU.LOG_CLR_SPAWN    = Color(0, 200, 255)
+BSU.LOG_CLR_ADVDUPE2 = Color(50, 225, 50)
+BSU.LOG_CLR_TEXT     = Color(200, 200, 200)
+BSU.LOG_CLR_PARAM    = Color(255, 255, 255)
 
 BSU.CMD_CONCMD        = "bsu"
 BSU.CMD_CONCMD_SILENT = "sbsu"
