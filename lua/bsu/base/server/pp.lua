@@ -50,7 +50,7 @@ end)
 
 gameevent.Listen("player_changename")
 hook.Add("player_changename", "BSU_UpdateOwnerName", function(data)
-	BSU.SetOwnerInfo(Player(data.userid):AccountID(), "name", data.newname)
+	BSU.SetOwnerInfo(Player(data.userid), "name", data.newname)
 end)
 
 -- physgun checking
