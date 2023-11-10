@@ -34,17 +34,19 @@ end
 
 -- handle build/pvp mode damaging
 
-hook.Add("PlayerInitialSpawn", "BSU_InitPVPBlocked", function(ply)
+hook.Add("PlayerInitialSpawn", "BSU_BuildPVPInit", function(ply)
+	addFlags(ply, FL_GODMODE)
+	ply.bsu_building = true
 	ply.bsu_pvpblocked = {}
 end)
 
-hook.Add("PlayerDisconnected", "BSU_ClearPVPBlocked", function(ply)
+hook.Add("PlayerDisconnected", "BSU_BuildPVPCleanup", function(ply)
 	for _, v in ipairs(player.GetAll()) do
 		v.bsu_pvpblocked[ply] = nil
 	end
 end)
 
-hook.Add("PlayerShouldTakeDamage", "BSU_PreventBuildPVPDamage", function(ply, attacker)
+hook.Add("PlayerShouldTakeDamage", "BSU_BuildPVPPreventDamage", function(ply, attacker)
 	if not ply:IsPlayer() or not attacker:IsPlayer() then return end
 	if attacker.bsu_building or ply.bsu_pvpblocked[attacker] or attacker.bsu_pvpblocked[ply] then
 		return false
