@@ -59,8 +59,8 @@ BSU.SetupCommand("build", function(cmd)
 	cmd:SetFunction(function(self, caller)
 		if caller.bsu_building then return end
 
-		addFlags(caller, FL_GODMODE)
 		caller.bsu_building = true
+		addFlags(caller, FL_GODMODE)
 
 		self:BroadcastActionMsg("%caller% entered build mode")
 	end)
@@ -73,8 +73,8 @@ BSU.SetupCommand("pvp", function(cmd)
 	cmd:SetFunction(function(self, caller)
 		if not caller.bsu_building then return end
 
-		removeFlags(caller, FL_GODMODE)
 		caller.bsu_building = nil
+		removeFlags(caller, FL_GODMODE)
 
 		self:BroadcastActionMsg("%caller% entered pvp mode")
 	end)
