@@ -57,8 +57,11 @@ end
 -- make a player run a command (does nothing if they do not have access to the command)
 function BSU.RunCommand(ply, name, argStr, silent)
 	name = string.lower(name)
+
+	if hook.Run("BSU_PreRunCommand", ply, name, argStr, silent) == false then return end
+
 	local cmd = BSU._cmds[name]
-	if not cmd then error("command does not exist") end
+	if not cmd then error("Command '" .. name .. "' does not exist") end
 
 	if not BSU.PlayerHasCommandAccess(ply, name) then
 		BSU.SendChatMsg(ply, BSU.CLR_ERROR, "You don't have permission to use this command")
@@ -68,6 +71,8 @@ function BSU.RunCommand(ply, name, argStr, silent)
 	local handler = BSU.CommandHandler(ply, cmd, argStr, silent)
 
 	xpcall(run, function(err) handler:PrintErrorMsg("Command errored with: " .. string.Split(err, ": ")[2]) end, cmd, handler)
+
+	hook.Run("BSU_PostRunCommand", ply, cmd, argStr, silent)
 end
 
 function BSU.SafeGetCommandByName(ply, name)
