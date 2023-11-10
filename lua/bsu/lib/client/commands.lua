@@ -6,12 +6,17 @@ end
 
 function BSU.RunCommand(name, argStr, silent)
 	name = string.lower(name)
+
+	if hook.Run("BSU_PreRunCommand", name, argStr, silent) == false then return end
+
 	local cmd = BSU._cmds[name]
 	if not cmd then error("Command '" .. name .. "' does not exist") end
 
 	local handler = BSU.CommandHandler(LocalPlayer(), cmd, argStr, silent)
 
 	xpcall(run, function(err) handler:PrintErrorMsg("Command errored with: " .. string.Split(err, ": ")[2]) end, cmd, handler)
+
+	hook.Run("BSU_PostRunCommand", cmd, argStr, silent)
 end
 
 function BSU.SafeRunCommand(name, argStr, silent)
