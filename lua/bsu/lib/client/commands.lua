@@ -7,10 +7,10 @@ end
 function BSU.RunCommand(name, argStr, silent)
 	name = string.lower(name)
 
-	if hook.Run("BSU_PreRunCommand", name, argStr, silent) == false then return end
-
 	local cmd = BSU._cmds[name]
 	if not cmd then error("Command '" .. name .. "' does not exist") end
+
+	if hook.Run("BSU_PreRunCommand", cmd, argStr, silent) == false then return end
 
 	local handler = BSU.CommandHandler(LocalPlayer(), cmd, argStr, silent)
 

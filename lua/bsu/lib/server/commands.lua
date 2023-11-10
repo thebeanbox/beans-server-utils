@@ -58,8 +58,6 @@ end
 function BSU.RunCommand(ply, name, argStr, silent)
 	name = string.lower(name)
 
-	if hook.Run("BSU_PreRunCommand", ply, name, argStr, silent) == false then return end
-
 	local cmd = BSU._cmds[name]
 	if not cmd then error("Command '" .. name .. "' does not exist") end
 
@@ -67,6 +65,8 @@ function BSU.RunCommand(ply, name, argStr, silent)
 		BSU.SendChatMsg(ply, BSU.CLR_ERROR, "You don't have permission to use this command")
 		return
 	end
+
+	if hook.Run("BSU_PreRunCommand", ply, cmd, argStr, silent) == false then return end
 
 	local handler = BSU.CommandHandler(ply, cmd, argStr, silent)
 
