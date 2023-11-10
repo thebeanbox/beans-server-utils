@@ -1,5 +1,170 @@
-hook.Add("PlayerSpawn", "BSU_FixGodRespawn", function(ply)
-	if ply.bsu_godded then ply:AddFlags(FL_GODMODE) end
+-- block players in an exclusive state from spawning anything or dying
+local function block(ply)
+	if ply.bsu_exclusive then return false end
+end
+
+hook.Add("PlayerSpawnObject", "BSU_BlockPlayer", block)
+hook.Add("PlayerSpawnSENT", "BSU_BlockPlayer", block)
+hook.Add("PlayerSpawnVehicle", "BSU_BlockPlayer", block)
+hook.Add("PlayerSpawnNPC", "BSU_BlockPlayer", block)
+hook.Add("CanPlayerSuicide", "BSU_BlockPlayer", block)
+hook.Add("PlayerShouldTakeDamage", "BSU_BlockPlayer", function(ply, attacker) if ply:IsPlayer() and attacker:IsPlayer() then return block(attacker) end end)
+
+-- if player respawns, add back any flags they should have
+hook.Add("PlayerSpawn", "BSU_SpawnAddFlags", function(ply)
+	if ply.bsu_building or ply.bsu_godded or ply.bsu_frozen then ply:AddFlags(FL_GODMODE) end
+	if ply.bsu_frozen then ply:AddFlags(FL_FROZEN) end
+end)
+
+-- prevent removing certain flags from players
+hook.Add("BSU_CanRemoveFlags", "BSU_FunCanRemoveFlags", function(ply, flags)
+	if bit.band(flags, FL_GODMODE) == FL_GODMODE and (ply.bsu_building or ply.bsu_godded or ply.bsu_frozen) then return false end
+	if bit.band(flags, FL_FROZEN) == FL_FROZEN and ply.bsu_frozen then return false end
+end)
+
+local function addFlags(ply, flags)
+	if hook.Run("BSU_CanAddFlags", ply, flags) == false then return end
+	ply:AddFlags(flags)
+end
+
+local function removeFlags(ply, flags)
+	if hook.Run("BSU_CanRemoveFlags", ply, flags) == false then return end
+	ply:RemoveFlags(flags)
+end
+
+-- handle build/pvp mode damaging
+
+hook.Add("PlayerInitialSpawn", "BSU_InitPVPBlocked", function(ply)
+	ply.bsu_pvpblocked = {}
+end)
+
+hook.Add("PlayerDisconnected", "BSU_ClearPVPBlocked", function(ply)
+	for _, v in ipairs(player.GetAll()) do
+		v.bsu_pvpblocked[ply] = nil
+	end
+end)
+
+hook.Add("PlayerShouldTakeDamage", "BSU_PreventBuildPVPDamage", function(ply, attacker)
+	if not ply:IsPlayer() or not attacker:IsPlayer() then return end
+	if attacker.bsu_building or ply.bsu_pvpblocked[attacker] or attacker.bsu_pvpblocked[ply] then
+		return false
+	end
+end)
+
+BSU.SetupCommand("build", function(cmd)
+	cmd:SetDescription("Enter into build mode")
+	cmd:SetCategory("fun")
+	cmd:SetFunction(function(self, caller)
+		if caller.bsu_building then return end
+
+		addFlags(caller, FL_GODMODE)
+		caller.bsu_building = true
+
+		self:BroadcastActionMsg("%caller% entered build mode")
+	end)
+	cmd:SetValidCaller(true)
+end)
+
+BSU.SetupCommand("pvp", function(cmd)
+	cmd:SetDescription("Enter into pvp mode")
+	cmd:SetCategory("fun")
+	cmd:SetFunction(function(self, caller)
+		if not caller.bsu_building then return end
+
+		removeFlags(caller, FL_GODMODE)
+		caller.bsu_building = nil
+
+		self:BroadcastActionMsg("%caller% entered pvp mode")
+	end)
+	cmd:SetValidCaller(true)
+end)
+
+BSU.SetupCommand("pvpblock", function(cmd)
+	cmd:SetDescription("Block pvp between yourself and the players")
+	cmd:SetCategory("fun")
+	cmd:SetFunction(function(self, caller, targets)
+		local blocked = {}
+
+		for _, v in ipairs(targets) do
+			if v ~= caller and not caller.bsu_pvpblocked[v] then
+				caller.bsu_pvpblocked[v] = true
+				table.insert(blocked, v)
+			end
+		end
+
+		if next(blocked) ~= nil then
+			self:BroadcastActionMsg("%caller% blocked pvp for %blocked%", { blocked = blocked })
+		end
+	end)
+	cmd:SetValidCaller(true)
+	cmd:AddPlayersArg("targets")
+end)
+
+BSU.SetupCommand("pvpunblock", function(cmd)
+	cmd:SetDescription("Unblock pvp between yourself and the players")
+	cmd:SetCategory("fun")
+	cmd:SetFunction(function(self, caller, targets)
+		if next(caller.bsu_pvpblocked) == nil then return end
+
+		local unblocked = {}
+
+		for _, v in ipairs(targets) do
+			if v ~= caller and caller.bsu_pvpblocked[v] then
+				caller.bsu_pvpblocked[v] = nil
+				table.insert(unblocked, v)
+			end
+		end
+
+		if next(unblocked) ~= nil then
+			self:BroadcastActionMsg("%caller% unblocked pvp for %unblocked%", { unblocked = unblocked })
+		end
+	end)
+	cmd:SetValidCaller(true)
+	cmd:AddPlayersArg("targets")
+end)
+
+BSU.SetupCommand("god", function(cmd)
+	cmd:SetDescription("Enable god on players")
+	cmd:SetCategory("fun")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self, _, targets)
+		local godded = {}
+
+		for _, v in ipairs(targets) do
+			if not v.bsu_godded then
+				v.bsu_godded = true
+				addFlags(v, FL_GODMODE)
+				table.insert(godded, v)
+			end
+		end
+
+		if next(godded) ~= nil then
+			self:BroadcastActionMsg("%caller% godded %godded%", { godded = godded })
+		end
+	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
+end)
+
+BSU.SetupCommand("ungod", function(cmd)
+	cmd:SetDescription("Disable god on players")
+	cmd:SetCategory("fun")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self, _, targets)
+		local ungodded = {}
+
+		for _, v in ipairs(targets) do
+			if v.bsu_godded then
+				v.bsu_godded = nil
+				removeFlags(v, FL_GODMODE)
+				table.insert(ungodded, v)
+			end
+		end
+
+		if next(ungodded) ~= nil then
+			self:BroadcastActionMsg("%caller% ungodded %ungodded%", { ungodded = ungodded })
+		end
+	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
 local function getSpawnInfo(ply)
@@ -86,13 +251,13 @@ local function ragdollPlayer(ply, owner)
 	local vel = ply:GetVelocity()
 
 	for i = 0, ragdoll:GetPhysicsObjectCount() - 1 do
-		local physobj = ragdoll:GetPhysicsObjectNum(i)
-		if IsValid(physobj) then
+		local phys = ragdoll:GetPhysicsObjectNum(i)
+		if IsValid(phys) then
 			local boneid = ragdoll:TranslatePhysBoneToBone(i)
 			local matrix = ply:GetBoneMatrix(boneid)
-			physobj:SetPos(matrix:GetTranslation())
-			physobj:SetAngles(matrix:GetAngles())
-			physobj:AddVelocity(vel)
+			phys:SetPos(matrix:GetTranslation())
+			phys:SetAngles(matrix:GetAngles())
+			phys:AddVelocity(vel)
 		end
 	end
 
@@ -128,6 +293,7 @@ local function unragdollPlayer(ply)
 	return true
 end
 
+-- if ragdolled player respawns, make them spectate their ragdoll again
 hook.Add("PlayerSpawn", "BSU_FixRagdollRespawn", function(ply)
 	if ply.bsu_ragdoll then
 		timer.Simple(0, function()
@@ -139,80 +305,13 @@ hook.Add("PlayerSpawn", "BSU_FixRagdollRespawn", function(ply)
 	end
 end)
 
+-- if ragdolled player disconnected, delete their ragdoll
 hook.Add("PlayerDisconnected", "BSU_RemoveRagdoll", function(ply)
 	if ply.bsu_ragdoll then
 		ply.bsu_ragdoll:RemoveCallOnRemove("BSU_Ragdoll")
 		ply.bsu_ragdoll:Remove()
 	end
 end)
-
-hook.Add("BSU_PlayerPhysgunDrop", "BSU_PlayerPhysgunFreeze", function(ply, target)
-	if ply:KeyDown(IN_ATTACK2) and BSU.PlayerHasCommandAccess(ply, "freeze") then
-		BSU.SafeRunCommand(ply, "freeze", "$" .. target:UserID())
-	end
-end)
-
-hook.Add("BSU_PlayerPhysgunPickup", "BSU_PlayerPhysgunUnfreeze", function(ply, target)
-	if BSU.PlayerHasCommandAccess(ply, "unfreeze") then
-		BSU.SafeRunCommand(ply, "unfreeze", "$" .. target:UserID())
-	end
-end)
-
-local function block(ply)
-	if ply.bsu_ragdoll or ply.bsu_frozen then return false end
-end
-
-hook.Add("PlayerSpawnObject", "BSU_BlockPlayer", block)
-hook.Add("PlayerSpawnSENT", "BSU_BlockPlayer", block)
-hook.Add("PlayerSpawnVehicle", "BSU_BlockPlayer", block)
-hook.Add("PlayerSpawnNPC", "BSU_BlockPlayer", block)
-hook.Add("CanPlayerSuicide", "BSU_BlockPlayer", block)
-
-BSU.SetupCommand("god", function(cmd)
-	cmd:SetDescription("Enable godmode on a player")
-	cmd:SetCategory("utility")
-	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self, _, targets)
-		local godded = {}
-
-		for _, v in ipairs(targets) do
-			if self:CheckExclusive(v, true) and not v.bsu_godded then
-				v:AddFlags(FL_GODMODE)
-				v.bsu_godded = true
-				table.insert(godded, v)
-			end
-		end
-
-		if next(godded) ~= nil then
-			self:BroadcastActionMsg("%caller% godded %godded%", { godded = godded })
-		end
-	end)
-	cmd:AddPlayersArg("targets", { default = "^", filter = true })
-end)
-BSU.AliasCommand("build", "god")
-
-BSU.SetupCommand("ungod", function(cmd)
-	cmd:SetDescription("Disable godmode on a player")
-	cmd:SetCategory("utility")
-	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self, _, targets)
-		local ungodded = {}
-
-		for _, v in ipairs(targets) do
-			if self:CheckExclusive(v, true) and v.bsu_godded then
-				if not v.bsu_frozen then v:RemoveFlags(FL_GODMODE) end
-				v.bsu_godded = nil
-				table.insert(ungodded, v)
-			end
-		end
-
-		if next(ungodded) ~= nil then
-			self:BroadcastActionMsg("%caller% ungodded %ungodded%", { ungodded = ungodded })
-		end
-	end)
-	cmd:AddPlayersArg("targets", { default = "^", filter = true })
-end)
-BSU.AliasCommand("pvp", "ungod")
 
 BSU.SetupCommand("ragdoll", function(cmd)
 	cmd:SetDescription("Set players into ragdoll mode")
@@ -256,6 +355,20 @@ BSU.SetupCommand("unragdoll", function(cmd)
 	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
+-- right-click freezing/unfreezing functionality when physgunning a player
+
+hook.Add("BSU_PlayerPhysgunDrop", "BSU_PlayerPhysgunFreeze", function(ply, target)
+	if ply:KeyDown(IN_ATTACK2) and BSU.PlayerHasCommandAccess(ply, "freeze") then
+		BSU.SafeRunCommand(ply, "freeze", "$" .. target:UserID())
+	end
+end)
+
+hook.Add("BSU_PlayerPhysgunPickup", "BSU_PlayerPhysgunUnfreeze", function(ply, target)
+	if BSU.PlayerHasCommandAccess(ply, "unfreeze") then
+		BSU.SafeRunCommand(ply, "unfreeze", "$" .. target:UserID())
+	end
+end)
+
 BSU.SetupCommand("freeze", function(cmd)
 	cmd:SetDescription("Make players unable to move")
 	cmd:SetCategory("fun")
@@ -264,12 +377,13 @@ BSU.SetupCommand("freeze", function(cmd)
 		local frozen = {}
 
 		for _, v in ipairs(targets) do
-			if self:CheckExclusive(v, true) then
-				v:AddFlags(FL_FROZEN + FL_GODMODE)
-				v:SetMoveType(MOVETYPE_NONE)
-				v:SetVelocity(-v:GetVelocity())
+			if self:CheckExclusive(v, true) and not v.bsu_frozen then
 				v.bsu_frozen = true
 				self:SetExclusive(v, "frozen")
+				addFlags(v, FL_FROZEN)
+				addFlags(v, FL_GODMODE)
+				v:SetMoveType(MOVETYPE_NONE)
+				v:SetVelocity(-v:GetVelocity())
 				table.insert(frozen, v)
 			end
 		end
@@ -289,12 +403,12 @@ BSU.SetupCommand("unfreeze", function(cmd)
 		local unfrozen = {}
 
 		for _, v in ipairs(targets) do
-			if v:IsFlagSet(FL_FROZEN) then
-				v:RemoveFlags(FL_FROZEN)
-				if not v.bsu_godded then v:RemoveFlags(FL_GODMODE) end
-				v:SetMoveType(MOVETYPE_WALK)
+			if v.bsu_frozen then
 				v.bsu_frozen = nil
 				self:ClearExclusive(v)
+				removeFlags(v, FL_FROZEN)
+				removeFlags(v, FL_GODMODE)
+				v:SetMoveType(MOVETYPE_WALK)
 				table.insert(unfrozen, v)
 			end
 		end
@@ -614,9 +728,12 @@ BSU.SetupCommand("bathe", function(cmd)
 			bath:SetCustomCollisionCheck(true)
 			bath:Spawn()
 
-			bath:GetPhysicsObject():EnableGravity(false)
-			bath:GetPhysicsObject():SetMass(50000)
-			bath:GetPhysicsObject():SetVelocity(Vector(-100000, 0, 0))
+			local phys = bath:GetPhysicsObject()
+			if IsValid(phys) then
+				phys:EnableGravity(false)
+				phys:SetMass(50000)
+				phys:SetVelocity(Vector(-100000, 0, 0))
+			end
 			bath:EmitSound("Physics.WaterSplash", 130, 100, 1, 0, 0)
 
 			timer.Simple(3, function() if bath:IsValid() then bath:Remove() end end)
@@ -647,9 +764,12 @@ BSU.SetupCommand("trainwreck", function(cmd)
 			train:SetCustomCollisionCheck(true)
 			train:Spawn()
 
-			train:GetPhysicsObject():EnableGravity(false)
-			train:GetPhysicsObject():SetMass(50000)
-			train:GetPhysicsObject():SetVelocity(Vector(-100000, 0, 0))
+			local phys = train:GetPhysicsObject()
+			if IsValid(phys) then
+				phys:EnableGravity(false)
+				phys:SetMass(50000)
+				phys:SetVelocity(Vector(-100000, 0, 0))
+			end
 			train:EmitSound("ambient/alarms/train_horn2.wav", 130, 100, 1, 0, 0)
 
 			timer.Simple(3, function() if train:IsValid() then train:Remove() end end)
@@ -761,29 +881,29 @@ BSU.SetupCommand("jail", function(cmd)
 		local jailed = {}
 
 		for _, v in ipairs(targets) do
-			if self:CheckExclusive(v, true) then
+			if self:CheckExclusive(v, true) and not v.bsu_jailed then
 				self:SetExclusive(v, "jailed")
 
-				local createdEntities = {}
-				for k, ent in ipairs(jailTemplate) do
-					local newEntity = ents.Create("prop_physics")
-					newEntity:SetModel(ent.mdl)
-					newEntity:SetPos(v:GetPos() + ent.pos)
-					newEntity:SetAngles(ent.ang)
-					BSU.SetOwnerWorld(newEntity)
-					newEntity:Spawn()
+				local entities = {}
+				for _, data in ipairs(jailTemplate) do
+					local ent = ents.Create("prop_physics")
+					BSU.SetOwnerWorld(ent)
+					ent:SetModel(data.mdl)
+					ent:SetPos(v:GetPos() + data.pos)
+					ent:SetAngles(data.ang)
+					ent:Spawn()
 
-					local physObj = newEntity:GetPhysicsObject()
-					if physObj:IsValid() then
-						physObj:EnableMotion(false)
+					local phys = ent:GetPhysicsObject()
+					if IsValid(phys) then
+						phys:EnableMotion(false)
 					end
 
-					createdEntities[k] = newEntity
+					table.insert(entities, ent)
 				end
 
 				v.bsu_jailed = {
 					origin = v:GetPos(),
-					entities = createdEntities,
+					entities = entities,
 				}
 
 				table.insert(jailed, v)
@@ -807,14 +927,13 @@ BSU.SetupCommand("unjail", function(cmd)
 
 		for _, v in ipairs(targets) do
 			if v.bsu_jailed then
+				self:ClearExclusive(v)
 				for _, ent in ipairs(v.bsu_jailed.entities or {}) do
 					if ent:IsValid() then
 						ent:Remove()
 					end
 				end
 				v.bsu_jailed = nil
-
-				self:ClearExclusive(v)
 				table.insert(unjailed, v)
 			end
 		end
@@ -829,8 +948,7 @@ end)
 hook.Add("Tick", "BSU_Jailed", function()
 	for _, ply in ipairs(player.GetAll()) do
 		if ply.bsu_jailed then
-			local pos = ply:GetPos()
-			local withinJail = pos:WithinAABox(ply.bsu_jailed.origin + jailMin, ply.bsu_jailed.origin + jailMax)
+			local withinJail = ply:GetPos():WithinAABox(ply.bsu_jailed.origin + jailMin, ply.bsu_jailed.origin + jailMax)
 			if not withinJail then
 				ply:SetPos(ply.bsu_jailed.origin)
 			end
