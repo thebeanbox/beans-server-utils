@@ -34,21 +34,21 @@ end
 
 -- handle build/pvp mode damaging
 
-hook.Add("PlayerInitialSpawn", "BSU_BuildPVPInit", function(ply)
+hook.Add("PlayerInitialSpawn", "BSU_InitBuildPVP", function(ply)
 	addFlags(ply, FL_GODMODE)
 	ply.bsu_building = true
 	ply.bsu_pvpblocked = {}
 end)
 
-hook.Add("PlayerDisconnected", "BSU_BuildPVPCleanup", function(ply)
+hook.Add("PlayerDisconnected", "BSU_CleanupPVPBlocked", function(ply)
 	for _, v in ipairs(player.GetAll()) do
 		v.bsu_pvpblocked[ply] = nil
 	end
 end)
 
-hook.Add("PlayerShouldTakeDamage", "BSU_BuildPVPPreventDamage", function(ply, attacker)
+hook.Add("PlayerShouldTakeDamage", "BSU_PreventPVPBlockedDamage", function(ply, attacker)
 	if not ply:IsPlayer() or not attacker:IsPlayer() then return end
-	if attacker.bsu_building or ply.bsu_pvpblocked[attacker] or attacker.bsu_pvpblocked[ply] then
+	if ply.bsu_pvpblocked[attacker] or attacker.bsu_pvpblocked[ply] then
 		return false
 	end
 end)
@@ -519,7 +519,8 @@ BSU.SetupCommand("disintegrate", function(cmd)
 		for _, v in ipairs(targets) do
 			dmgInfo:SetDamage(v:Health())
 			dmgInfo:SetAttacker(v)
-			v:GodDisable()
+			v:RemoveFlags(FL_GODMODE)
+			v:SetArmor(0)
 			v:TakeDamageInfo(dmgInfo)
 		end
 
@@ -538,7 +539,6 @@ BSU.SetupCommand("explode", function(cmd)
 	cmd:SetFunction(function(self, _, targets)
 		local dmgInfo = DamageInfo()
 		dmgInfo:SetDamageType(DMG_BLAST)
-		dmgInfo:SetDamage(1)
 
 		for _, v in ipairs(targets) do
 			local explosion = ents.Create("env_explosion")
@@ -548,11 +548,10 @@ BSU.SetupCommand("explode", function(cmd)
 			explosion:Fire("Explode")
 			explosion:EmitSound("BaseExplosionEffect.Sound", SNDLVL_GUNFIRE)
 
-			v:GodDisable()
-			v:SetHealth(0)
-			v:SetArmor(0)
-
+			dmgInfo:SetDamage(v:Health())
 			dmgInfo:SetAttacker(v)
+			v:RemoveFlags(FL_GODMODE)
+			v:SetArmor(0)
 			v:TakeDamageInfo(dmgInfo)
 		end
 
