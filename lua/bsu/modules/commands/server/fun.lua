@@ -8,7 +8,6 @@ hook.Add("PlayerSpawnSENT", "BSU_BlockPlayer", block)
 hook.Add("PlayerSpawnVehicle", "BSU_BlockPlayer", block)
 hook.Add("PlayerSpawnNPC", "BSU_BlockPlayer", block)
 hook.Add("CanPlayerSuicide", "BSU_BlockPlayer", block)
-hook.Add("PlayerShouldTakeDamage", "BSU_BlockPlayer", function(ply, attacker) if ply:IsPlayer() and attacker:IsPlayer() then return block(attacker) end end)
 
 -- if player respawns, add back any flags they should have
 hook.Add("PlayerSpawn", "BSU_SpawnAddFlags", function(ply)
@@ -34,21 +33,21 @@ end
 
 -- handle build/pvp mode damaging
 
-hook.Add("PlayerInitialSpawn", "BSU_InitBuildPVP", function(ply)
+hook.Add("PlayerInitialSpawn", "BSU_BuildPVPInit", function(ply)
 	addFlags(ply, FL_GODMODE)
 	ply.bsu_building = true
 	ply.bsu_pvpblocked = {}
 end)
 
-hook.Add("PlayerDisconnected", "BSU_CleanupPVPBlocked", function(ply)
+hook.Add("PlayerDisconnected", "BSU_BuildPVPCleanup", function(ply)
 	for _, v in ipairs(player.GetAll()) do
 		v.bsu_pvpblocked[ply] = nil
 	end
 end)
 
-hook.Add("PlayerShouldTakeDamage", "BSU_PreventPVPBlockedDamage", function(ply, attacker)
+hook.Add("PlayerShouldTakeDamage", "BSU_BuildPVPPreventDamage", function(ply, attacker)
 	if not ply:IsPlayer() or not attacker:IsPlayer() then return end
-	if ply.bsu_pvpblocked[attacker] or attacker.bsu_pvpblocked[ply] then
+	if ply ~= attacker and (attacker.bsu_building or ply.bsu_pvpblocked[attacker] or attacker.bsu_pvpblocked[ply]) then
 		return false
 	end
 end)
@@ -517,7 +516,7 @@ BSU.SetupCommand("disintegrate", function(cmd)
 		dmgInfo:SetDamageType(DMG_DISSOLVE)
 
 		for _, v in ipairs(targets) do
-			dmgInfo:SetDamage(v:Health())
+			dmgInfo:SetDamage(math.max(v:Health(), 1))
 			dmgInfo:SetAttacker(v)
 			v:RemoveFlags(FL_GODMODE)
 			v:SetArmor(0)
@@ -548,7 +547,7 @@ BSU.SetupCommand("explode", function(cmd)
 			explosion:Fire("Explode")
 			explosion:EmitSound("BaseExplosionEffect.Sound", SNDLVL_GUNFIRE)
 
-			dmgInfo:SetDamage(v:Health())
+			dmgInfo:SetDamage(math.max(v:Health(), 1))
 			dmgInfo:SetAttacker(v)
 			v:RemoveFlags(FL_GODMODE)
 			v:SetArmor(0)
