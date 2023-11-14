@@ -741,11 +741,11 @@ if SERVER then
 	function objCmdHandler.CheckCanTargetSteamID(self, targetid, fail)
 		targetid = BSU.ID64(targetid)
 		if not self.caller:IsValid() or self.caller:IsSuperAdmin() then return true end
-		local steamid = self.caller:SteamID64()
+		local callerid = self.caller:SteamID64()
 
 		-- check can target self
-		if steamid == targetid then
-			local check = checkCanTargetSelf(steamid, self.cmd)
+		if callerid == targetid then
+			local check = checkCanTargetSelf(callerid, self.cmd)
 			if check ~= nil then
 				if not check and fail then error("You cannot select this target") end
 				return check
@@ -756,7 +756,7 @@ if SERVER then
 		local targetData = BSU.GetPlayerDataBySteamID(targetid)
 
 		if targetData then
-			local check = checkCanTargetGroup(steamid, self.cmd, targetData.groupid)
+			local check = checkCanTargetGroup(callerid, self.cmd, targetData.groupid)
 			if check ~= nil then
 				if not check and fail then error("You cannot select this target") end
 				return check
@@ -764,7 +764,7 @@ if SERVER then
 		end
 
 		-- check can target anyone
-		local check = checkCanTargetAnyone(steamid, self.cmd)
+		local check = checkCanTargetAnyone(callerid, self.cmd)
 		if check ~= nil then
 			if not check and fail then error("You cannot select this target") end
 			return check
@@ -772,12 +772,21 @@ if SERVER then
 
 		-- no target privs were found, use the default behavior (allow if caller's group inherits at all from the target's group)
 
-		if not targetData then return false end
+		if not targetData then -- no data for this steamid so they probably have never joined this server
+			if fail then error("You cannot select this target") end
+			return false
+		end
 
-		local callerData = BSU.GetPlayerDataBySteamID(steamid)
-		if not callerData then return false end
+		local callerData = BSU.GetPlayerDataBySteamID(callerid)
 
-		return callerData.groupid == targetData.groupid or inheritsFrom(targetData.groupid, callerData.groupid)
+		if not callerData then -- every player on the server should be registered so this should never happen
+			if fail then error("You cannot select this target") end
+			return false
+		end
+
+		local allow = callerData.groupid == targetData.groupid or inheritsFrom(targetData.groupid, callerData.groupid)
+		if not allow and fail then error("You cannot select this target") end
+		return allow
 	end
 
 	function objCmdHandler.CheckCanTarget(self, target, fail)
