@@ -34,8 +34,6 @@ end
 -- handle build/pvp mode damaging
 
 hook.Add("PlayerInitialSpawn", "BSU_BuildPVPInit", function(ply)
-	addFlags(ply, FL_GODMODE)
-	ply.bsu_building = true
 	ply.bsu_pvpblocked = {}
 end)
 
