@@ -48,9 +48,9 @@ end
 function voteEntry:PlayerVote(ply, optionIndex)
 	local avatar = self.players[ply]
 	if not avatar then
-		avatar = vgui.Create("AvatarImage", 32)
+		avatar = vgui.Create("AvatarImage", self)
+		avatar:SetPlayer(ply, 32)
 		avatar:SetWidth(32)
-		avatar:SetPlayer(ply)
 		avatar:Dock(RIGHT)
 		self.players[ply] = avatar
 	end
