@@ -2,7 +2,7 @@ util.AddNetworkString("bsu_request_banlist")
 
 net.Receive("bsu_request_banlist", function(_, ply)
 	local canSeeBans = BSU.CheckPlayerPrivilege(ply:SteamID(), BSU.PRIV_MISC, "bsu_see_bans")
-	if not canSeeBans and not ply:IsAdmin() then return end
+	if canSeeBans == false or canSeeBans == nil and not ply:IsAdmin() then return end
 
 	local page = net.ReadUInt(8) - 1
 	local bansPerPage = net.ReadUInt(8)
