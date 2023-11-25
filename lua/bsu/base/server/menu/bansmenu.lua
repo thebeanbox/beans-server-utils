@@ -1,8 +1,8 @@
-util.AddNetworkString("bsu_request_banlist2")
+util.AddNetworkString("bsu_request_banlist")
 
-net.Receive("bsu_request_banlist2", function(_, ply)
+net.Receive("bsu_request_banlist", function(_, ply)
 	local canSeeBans = BSU.CheckPlayerPrivilege(ply:SteamID(), BSU.PRIV_MISC, "bsu_see_bans")
-	if canSeeBans == false or canSeeBans == nil and not ply:IsAdmin() then return end
+	if not canSeeBans and not ply:IsAdmin() then return end
 
 	local page = net.ReadUInt(8) - 1
 	local bansPerPage = net.ReadUInt(8)
@@ -21,29 +21,28 @@ net.Receive("bsu_request_banlist2", function(_, ply)
 
 	local pageOffset = page * bansPerPage
 
-	net.Start("bsu_request_banlist2")
+	net.Start("bsu_request_banlist")
 	net.WriteUInt(#bans, 8)
 	for i = 1, #bans do
 		local ban = bans[pageOffset + i]
-		if not ban then break end
+		if not ban then break end -- What?
 
-		banUsername = BSU.IsValidIP(ban.identity) and ban.identity or (BSU.GetPlayerDataBySteamID(ban.identity, "name") and BSU.GetPlayerDataBySteamID(ban.identity, "name").name or "[NO NAME]")
-		banSteamID = ban.identity
-		banReason = ban.reason and ban.reason or "[NO REASON]"
-		banDuration = ban.duration
-		banDateNiceTime = os.date("%c", tonumber(ban.time))
-		banDate = ban.time
-		bannedByUsername = ban.admin and BSU.GetPlayerDataBySteamID(ban.admin, "name").name or "[CONSOLE]"
-		bannedBySteamID = ban.admin and ban.admin or "[CONSOLE]"
+		local banUsername = BSU.IsValidIP(ban.identity) and ban.identity or (BSU.GetPlayerDataBySteamID(ban.identity) and BSU.GetPlayerDataBySteamID(ban.identity).name or "N/A")
+		local banSteamID = ban.identity
+		local banReason = ban.reason and ban.reason or "N/A"
+		local banDuration = ban.duration
+		local banDate = ban.time
+		local bannedByUsername = ban.admin and BSU.GetPlayerDataBySteamID(ban.admin).name or "[CONSOLE]"
+		local bannedBySteamID = ban.admin and ban.admin or "[CONSOLE]"
 
 		net.WriteString(banUsername)
 		net.WriteString(banSteamID)
 		net.WriteString(banReason)
 		net.WriteUInt(banDuration, 32)
-		net.WriteString(banDateNiceTime)
-		net.WriteString(banDate)
+		net.WriteUInt(banDate, 32)
 		net.WriteString(bannedByUsername)
 		net.WriteString(bannedBySteamID)
 	end
 	net.Send(ply)
 end)
+

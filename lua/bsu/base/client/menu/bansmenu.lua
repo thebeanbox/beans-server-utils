@@ -67,7 +67,7 @@ end
 -- Requests a page of bans and updates page label
 function bansmenu:LoadPage(n)
 	self.page = n
-	net.Start("bsu_request_banlist2")
+	net.Start("bsu_request_banlist")
 	net.WriteUInt(n, 8)
 	net.WriteUInt(self.bansPerPage, 8)
 	net.SendToServer()
@@ -107,7 +107,6 @@ function bansmenu:UpdatePage()
 			copyReason:SetIcon("icon16/page_copy.png")
 
 			local copyBannedByName = menu:AddOption("Copy Admin Name", function()
-				print("test")
 				local str = s:GetColumnText(4)
 				SetClipboardText(str)
 				notification.AddLegacy("Copied Admin Name \"" .. str .. "\"", NOTIFY_CLEANUP, 2)
@@ -156,29 +155,32 @@ vgui.Register("BSUBansMenu", bansmenu, "DPanel")
 hook.Add("BSU_BSUMenuInit", "BSUBansMenuInit", function(bsuMenu)
 	if not (LocalPlayer():IsAdmin() or LocalPlayer():IsSuperAdmin()) then return end
 	bansMenu = vgui.Create("BSUBansMenu", bsuMenu)
-	bsuMenu:AddTab("Ban History NEW!!!", 4, bansMenu, "icon16/shield.png")
+	bsuMenu:AddTab("Ban History", 4, bansMenu, "icon16/shield.png")
 	BSU.BansMenu = bansMenu
 end)
 
-net.Receive("bsu_request_banlist2", function()
+net.Receive("bsu_request_banlist", function()
 	if not BSU.BansMenu then return end
 
 	local bans = {}
 
 	local banAmount = net.ReadUInt(8)
 	for i = 1, banAmount do
-		bans[i] = {
+		local ban = {
 			name = net.ReadString(),
 			steamid = net.ReadString(),
 			reason = net.ReadString(),
 			duration = net.ReadUInt(32),
-			dateNiceTime = net.ReadString(),
-			date = net.ReadString(),
+			date = net.ReadUInt(32),
 			bannedByName = net.ReadString(),
 			bannedBySteamID = net.ReadString(),
 		}
+		ban.dateNiceTime = os.date("%c", ban.time)
+
+		bans[i] = ban
 	end
 
 	BSU.BansMenu.bans = bans
 	BSU.BansMenu:UpdatePage()
 end)
+
