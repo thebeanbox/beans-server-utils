@@ -46,17 +46,16 @@ local function autoComplete(_, argStr)
 		if n >= #cmd.args then return end
 
 		-- formatting magic
-		local template = string_format("bsu %s %s%%s%%s", name, n > 0 and table.concat(handler.args, " ", 1, n) .. " " or "")
+		local template = string_format("bsu %s %s%%s", name, n > 0 and table.concat(handler.args, " ", 1, n) .. " " or "")
+		local argFiller = string_format(template, getArgFiller(n + 1, cmd))
 
 		-- Custom autocomplete table.
 		-- Probably add support for a function later.
 		local autocomplete = cmd.autocomplete
 		if autocomplete then
-			local suggestions = {}
-
-			local argFiller = getArgFiller(n + 2, cmd)
+			local suggestions = { argFiller }
 			for _, v in ipairs(autocomplete) do
-				table.insert(suggestions, string_format(template, v, argFiller))
+				table.insert(suggestions, string_format(template, v))
 			end
 
 			return suggestions
@@ -65,20 +64,19 @@ local function autoComplete(_, argStr)
 		-- Player suggestions
 		local arg = cmd.args[n + 1]
 		if arg.kind == 2 or arg.kind == 3 then
-			local suggestions = {}
+			local suggestions = { argFiller }
 
-			local plyName = handler.args[n + 1] or ""
-			local argFiller = getArgFiller(n + 2, cmd)
+			local plyName = string.lower(handler.args[n + 1] or "")
 			for _, v in ipairs(player.GetAll()) do
-				if plyName == string.sub(v:Nick(), 1, #plyName) then
-					table.insert(suggestions, string_format(template, string_format("\"%s\"", v:Nick()), argFiller))
+				if plyName == string.sub(string.lower(v:Nick()), 1, #plyName) then
+					table.insert(suggestions, string_format(template, string_format("\"%s\"", v:Nick())))
 				end
 			end
 
 			return suggestions
 		end
 
-		return { string_format(template, "", getArgFiller(n + 1, cmd)) }
+		return { argFiller }
 	else
 		local result, names = {}, {}
 
