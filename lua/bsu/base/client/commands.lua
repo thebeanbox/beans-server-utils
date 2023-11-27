@@ -43,7 +43,7 @@ local function autoComplete(_, argStr)
 			local arg = cmd.args[i]
 			table.insert(argTypes, string_format("<%s: %s>", arg.name, argTypeLookup[arg.kind]))
 		end
-		local argFiller = table.concat(argTypes, " ")
+		local argFiller = string_format(template, table.concat(argTypes, " "))
 
 		-- Custom autocomplete table.
 		-- Probably add support for a function later.
