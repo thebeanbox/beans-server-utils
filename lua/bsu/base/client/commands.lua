@@ -38,6 +38,7 @@ local function autoComplete(_, argStr)
 		-- formatting magic
 		local template = string_format("bsu %s %s%%s", name, n > 0 and table.concat(handler.args, " ", 1, n) .. " " or "")
 
+		-- Arg list
 		local argTypes = {}
 		for i = n + 1, #cmd.args do
 			local arg = cmd.args[i]
