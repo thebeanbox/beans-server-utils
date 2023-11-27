@@ -253,7 +253,7 @@ function objCommand.AddStringArg(self, name, data)
 		optional = data.optional or false,
 		default = data.default,
 		multi = data.multi or false,
-		autocomplete = data.autocomplete or {}
+		autocomplete = data.autocomplete
 	})
 end
 
@@ -267,7 +267,7 @@ function objCommand.AddNumberArg(self, name, data)
 		min = data.min,
 		max = data.max,
 		allowtime = data.allowtime or false,
-		autocomplete = data.autocomplete or {}
+		autocomplete = data.autocomplete
 	})
 end
 
@@ -949,3 +949,4 @@ function BSU.CommandHandler(caller, cmd, argStr, silent)
 		silent = silent or false
 	}, objCmdHandler)
 end
+
