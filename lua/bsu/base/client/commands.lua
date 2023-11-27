@@ -1,5 +1,7 @@
 -- base/client/commands.lua
 
+local string_format = string.format
+
 local argTypeLookup = {
 	[0] = "string",
 	[1] = "number",
@@ -11,8 +13,9 @@ local function getArgFiller(n, cmd)
 	local argTypes = {}
 	for i = n, #cmd.args do
 		local arg = cmd.args[i]
-		table.insert(argTypes, string.format("<%s: %s>", arg.name, argTypeLookup[arg.kind]))
+		table.insert(argTypes, string_format("<%s: %s>", arg.name, argTypeLookup[arg.kind]))
 	end
+
 	return #argTypes > 0 and table.concat(argTypes, " ") or ""
 end
 
@@ -43,7 +46,7 @@ local function autoComplete(_, argStr)
 		if n >= #cmd.args then return end
 
 		-- formatting magic
-		local template = string.format("bsu %s %s%%s%%s", name, n > 0 and table.concat(handler.args, " ", 1, n) .. " " or "")
+		local template = string_format("bsu %s %s%%s%%s", name, n > 0 and table.concat(handler.args, " ", 1, n) .. " " or "")
 
 		-- Custom autocomplete table.
 		-- Probably add support for a function later.
@@ -53,7 +56,7 @@ local function autoComplete(_, argStr)
 
 			local argFiller = getArgFiller(n + 2, cmd)
 			for _, v in ipairs(autocomplete) do
-				table.insert(suggestions, string.format(template, v, argFiller))
+				table.insert(suggestions, string_format(template, v, argFiller))
 			end
 
 			return suggestions
@@ -67,16 +70,15 @@ local function autoComplete(_, argStr)
 			local plyName = handler.args[n + 1] or ""
 			local argFiller = getArgFiller(n + 2, cmd)
 			for _, v in ipairs(player.GetAll()) do
-				if v == LocalPlayer() then continue end
 				if plyName == string.sub(v:Nick(), 1, #plyName) then
-					table.insert(suggestions, string.format(template, string.format("\"%s\"", v:Nick()), argFiller))
+					table.insert(suggestions, string_format(template, string_format("\"%s\"", v:Nick()), argFiller))
 				end
 			end
 
 			return suggestions
 		end
 
-		return { string.format(template, "", getArgFiller(n + 1, cmd)) }
+		return { string_format(template, "", getArgFiller(n + 1, cmd)) }
 	else
 		local result, names = {}, {}
 
