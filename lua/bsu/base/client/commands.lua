@@ -9,16 +9,6 @@ local argTypeLookup = {
 	[3] = "players",
 }
 
-local function getArgFiller(n, cmd)
-	local argTypes = {}
-	for i = n, #cmd.args do
-		local arg = cmd.args[i]
-		table.insert(argTypes, string_format("<%s: %s>", arg.name, argTypeLookup[arg.kind]))
-	end
-
-	return #argTypes > 0 and table.concat(argTypes, " ") or ""
-end
-
 local function autoComplete(_, argStr)
 	local name = string.match(argStr, "^ ([^%s]+)") or ""
 	local cmd = BSU.GetCommandByName(name)
@@ -47,7 +37,13 @@ local function autoComplete(_, argStr)
 
 		-- formatting magic
 		local template = string_format("bsu %s %s%%s", name, n > 0 and table.concat(handler.args, " ", 1, n) .. " " or "")
-		local argFiller = string_format(template, getArgFiller(n + 1, cmd))
+
+		local argTypes = {}
+		for i = n + 1, #cmd.args do
+			local arg = cmd.args[i]
+			table.insert(argTypes, string_format("<%s: %s>", arg.name, argTypeLookup[arg.kind]))
+		end
+		local argFiller = table.concat(argTypes, " ")
 
 		-- Custom autocomplete table.
 		-- Probably add support for a function later.
