@@ -98,8 +98,8 @@ BSU.SetupCommand("unban", function(cmd)
 		steamid = BSU.ID64(steamid)
 
 		local ban = BSU.GetBanStatus(steamid)
-		if ban and (ban.admin and not self:CheckCanTargetSteamID(ban.admin) or caller:IsValid() and not caller:IsSuperAdmin()) then
-			error("You can't unban this player.")
+		if ban and caller:IsValid() and not caller:IsSuperAdmin() and ban.admin and not self:CheckCanTargetSteamID(ban.admin) then
+			error("You don't have permission to unban this player.")
 		end
 
 		BSU.RevokeSteamIDBan(steamid, caller) -- this also checks if the steam id is actually banned
