@@ -175,7 +175,7 @@ net.Receive("bsu_request_banlist", function()
 			bannedByName = net.ReadString(),
 			bannedBySteamID = net.ReadString(),
 		}
-		ban.dateNiceTime = os.date("%c", ban.time)
+		ban.dateNiceTime = os.date("%c", ban.date)
 
 		bans[i] = ban
 	end
