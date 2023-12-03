@@ -352,21 +352,23 @@ end)
 local maps = file.Find("maps/*.bsp", "GAME")
 
 -- Trim file ending
+local votemapOptions = {}
 local mapOptions = {}
 local mapLookup = {}
 for i, map in ipairs(maps) do
 	local mapname = string.sub(map, 1, #map - 4)
+	votemapOptions[i] = mapname
 	mapOptions[i] = mapname
 	mapLookup[mapname] = true
 end
-table.insert(mapOptions, 1, "Stay Here")
+table.insert(votemapOptions, 1, "Stay Here")
 
 BSU.SetupCommand("votemap", function(cmd)
 	cmd:SetDescription("Start a vote to change the map")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(_, caller)
-		BSU.StartVote("Map Vote", 60, caller, mapOptions, function(winner)
+		BSU.StartVote("Map Vote", 60, caller, votemapOptions, function(winner)
 			if not winner then return end
 			if winner == "Stay Here" then
 				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "Map will not change.")
@@ -393,7 +395,9 @@ BSU.SetupCommand("map", function(cmd)
 
 		RunConsoleCommand("changelevel", mapname)
 	end)
-	cmd:AddStringArg("mapname")
+	cmd:AddStringArg("mapname", {
+		autocomplete = mapOptions
+	})
 end)
 
 BSU.SetupCommand("maplist", function(cmd)
@@ -410,72 +414,3 @@ BSU.SetupCommand("maplist", function(cmd)
 	end)
 end)
 
-BSU.SetupCommand("votekick", function(cmd)
-	cmd:SetDescription("Start a vote to ban a player")
-	cmd:SetCategory("utility")
-	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self, caller, target, reason)
-		if BSU.HasActiveVote(caller) then
-			error("You already have a vote active!")
-		end
-
-		local title = string.format("Vote To Kick %s (%s)", target:Nick(), reason and reason or "No reason given")
-		local options = {"Yes", "No"}
-
-		BSU.StartVote(title, 30, caller, options, function(winner)
-			if not winner then
-				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "No one voted! (", BSU.CLR_PARAM, title, BSU.CLR_TEXT, ")")
-				return
-			end
-
-			if winner == "Yes" then
-				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "Vote kick passed, ", target, " will now be kicked!")
-				BSU.SafeRunCommand(caller, "kick", string.format("\"%s\" \"%s\"", target:Nick(), reason))
-			else
-				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "Vote kick failed, ", target, " will NOT be kicked!")
-			end
-		end)
-
-		self:BroadcastActionMsg("%caller% started a vote to kick %target% (%title%)", {target = target, title = title})
-	end)
-	cmd:AddPlayerArg("target", { check = true })
-	cmd:AddStringArg("reason", { optional = true, multi = true })
-end)
-
-BSU.SetupCommand("voteban", function(cmd)
-	cmd:SetDescription("Start a vote to ban a player")
-	cmd:SetCategory("utility")
-	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self, caller, target, duration, reason)
-		if BSU.HasActiveVote(caller) then
-			error("You already have a vote active!")
-		end
-
-		local targetSteamID = target:SteamID()
-		local title = string.format("Vote To Ban %s %s (%s)", target:Nick(), duration ~= 0 and "for " .. BSU.StringTime(duration, 10000) or "permanently", reason and reason or "No reason given")
-		local options = {"Yes", "No"}
-
-		BSU.StartVote(title, 30, caller, options, function(winner)
-			if not winner then
-				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "No one voted! (", BSU.CLR_PARAM, title, BSU.CLR_TEXT, ")")
-				return
-			end
-
-			if winner == "Yes" then
-				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "Vote ban passed, ", target, " will now be banned!")
-				BSU.BanSteamID(targetSteamID, reason, duration, caller:SteamID64())
-			else
-				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "Vote ban failed, ", target, " will NOT be banned!")
-			end
-		end)
-
-		self:BroadcastActionMsg("%caller% started a vote to ban %target% for %duration% (%title%)", {
-			target = target,
-			duration = duration ~= 0 and BSU.StringTime(duration, 10000) or nil,
-			title = title
-		})
-	end)
-	cmd:AddPlayerArg("target", { check = true })
-	cmd:AddNumberArg("duration", { default = 0, min = 0, allowtime = true })
-	cmd:AddStringArg("reason", { optional = true, multi = true })
-end)
