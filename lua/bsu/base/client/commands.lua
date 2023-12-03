@@ -25,7 +25,7 @@ local function autoComplete(_, argStr)
 			elseif arg.kind == 1 then
 				if not handler:GetNumberArg(i) then break end
 				n = n + 1
-			elseif arg.kind == 2 or arg.kind == 3 then
+			elseif arg.kind == 2 then
 				if not handler:GetPlayerArg(i) then break end
 				n = n + 1
 			elseif arg.kind == 3 then
@@ -48,18 +48,19 @@ local function autoComplete(_, argStr)
 
 		-- Custom autocomplete table.
 		-- Probably add support for a function later.
-		local autocomplete = cmd.autocomplete
+		local arg = cmd.args[n + 1]
+
+		local autocomplete = arg.autocomplete
 		if autocomplete then
 			local suggestions = { argFiller }
 			for _, v in ipairs(autocomplete) do
-				table.insert(suggestions, string_format(template, v))
+				table.insert(suggestions, string_format(template, string_format("\"%s\"", v)))
 			end
 
 			return suggestions
 		end
 
 		-- Player suggestions
-		local arg = cmd.args[n + 1]
 		if arg.kind == 2 or arg.kind == 3 then
 			local suggestions = { argFiller }
 
