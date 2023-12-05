@@ -3,6 +3,11 @@ BSU.SetupCommand("ban", function(cmd)
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self, caller, target, duration, reason)
+		local ban = BSU.GetBanStatus(target:SteamID64())
+		if ban and caller:IsValid() and not caller:IsSuperAdmin() and ban.admin and not self:CheckCanTargetSteamID(ban.admin) then
+			error("You don't have permission to overwrite this ban.")
+		end
+
 		BSU.BanPlayer(target, reason, duration, caller)
 
 		self:BroadcastActionMsg("%caller% banned %target%<%steamid%>" .. (duration ~= 0 and " for %duration%" or " permanently") .. (reason and " (%reason%)" or ""), {
@@ -25,6 +30,11 @@ BSU.SetupCommand("banid", function(cmd)
 		steamid = BSU.ID64(steamid)
 
 		self:CheckCanTargetSteamID(steamid, true) -- make sure caller is allowed to target this person
+
+		local ban = BSU.GetBanStatus(steamid)
+		if ban and caller:IsValid() and not caller:IsSuperAdmin() and ban.admin and not self:CheckCanTargetSteamID(ban.admin) then
+			error("You don't have permission to overwrite this ban.")
+		end
 
 		BSU.BanSteamID(steamid, reason, duration, caller:IsValid() and caller:SteamID64() or nil)
 
