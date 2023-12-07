@@ -245,6 +245,34 @@ BSU.SetupCommand("voteban", function(cmd)
 	cmd:AddStringArg("reason", { optional = true, multi = true, autocomplete = reasonAutocomplete })
 end)
 
+BSU.SetupCommand("bancheck", function(cmd)
+	cmd:SetDescription("Check if a player is banned")
+	cmd:SetCategory("moderation")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self, _, steamid)
+		steamid = BSU.ID64(steamid)
+
+		local ban = BSU.GetBanStatus(steamid)
+		if not ban then error("This player is not banned!") end
+
+		local admin = ban.admin and string.format("%s<%s>", BSU.GetPlayerDataBySteamID(ban.admin).name, util.SteamIDFrom64(ban.admin)) or "Console"
+		local reason = ban.reason or "N/A"
+		local banDate = os.date("%c", ban.time)
+		local duration = ban.duration or 0
+		local unbanDate = duration > 0 and os.date("%c", ban.time + duration * 60) or "Never"
+
+		self:PrintChatMsg(string.format(
+			"Admin: %s\nReason: %s\nBan date: %s\nDuration: %s\nUnban Date: %s",
+			admin,
+			reason,
+			banDate,
+			duration > 0 and BSU.StringTime(duration) or "Permanent",
+			unbanDate
+		))
+	end)
+	cmd:AddStringArg("steamid")
+end)
+
 BSU.SetupCommand("kick", function(cmd)
 	cmd:SetDescription("Kick a player")
 	cmd:SetCategory("moderation")
