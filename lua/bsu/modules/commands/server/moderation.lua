@@ -322,6 +322,11 @@ BSU.SetupCommand("votekick", function(cmd)
 	cmd:AddStringArg("reason", { optional = true, multi = true, autocomplete = reasonAutocomplete })
 end)
 
+local groupAutocomplete = {}
+for _, group in ipairs(BSU.GetAllGroups()) do
+	table.insert(groupAutocomplete, group.id)
+end
+
 BSU.SetupCommand("setgroup", function(cmd)
 	cmd:SetDescription("Set the group of a player")
 	cmd:SetCategory("moderation")
@@ -338,7 +343,7 @@ BSU.SetupCommand("setgroup", function(cmd)
 		BSU.SetPlayerGroup(target, groupid)
 	end)
 	cmd:AddPlayerArg("target", { check = true })
-	cmd:AddStringArg("group", { multi = true })
+	cmd:AddStringArg("group", { multi = true, autocomplete = groupAutocomplete })
 end)
 
 BSU.SetupCommand("setteam", function(cmd)
@@ -414,6 +419,21 @@ local function getNameFromPriv(priv)
 	return names[priv]
 end
 
+local groupprivAutocomplete = {
+	"model",
+	"mdl",
+	"npc",
+	"entity",
+	"sent",
+	"weapon",
+	"swep",
+	"tool",
+	"command",
+	"cmd",
+	"target",
+	"misc",
+}
+
 BSU.SetupCommand("grantgrouppriv", function(cmd)
 	cmd:SetDescription("Set a group to have access to a privilege")
 	cmd:SetCategory("moderation")
@@ -442,8 +462,8 @@ BSU.SetupCommand("grantgrouppriv", function(cmd)
 			name = getNameFromPriv(type)
 		})
 	end)
-	cmd:AddStringArg("group")
-	cmd:AddStringArg("name")
+	cmd:AddStringArg("group", { autocomplete = groupAutocomplete })
+	cmd:AddStringArg("name", { autocomplete = groupprivAutocomplete })
 	cmd:AddStringArg("value", { multi = true })
 end)
 
@@ -475,8 +495,8 @@ BSU.SetupCommand("revokegrouppriv", function(cmd)
 			name = getNameFromPriv(type)
 		})
 	end)
-	cmd:AddStringArg("group")
-	cmd:AddStringArg("name")
+	cmd:AddStringArg("group", { autocomplete = groupAutocomplete })
+	cmd:AddStringArg("name", { autocomplete = groupprivAutocomplete })
 	cmd:AddStringArg("value", { multi = true })
 end)
 
@@ -508,7 +528,7 @@ BSU.SetupCommand("cleargrouppriv", function(cmd)
 			name = getNameFromPriv(type),
 		})
 	end)
-	cmd:AddStringArg("group")
+	cmd:AddStringArg("group", { autocomplete = groupAutocomplete })
 	cmd:AddStringArg("name")
 	cmd:AddStringArg("value", { multi = true })
 end)
@@ -532,7 +552,7 @@ BSU.SetupCommand("setgrouplimit", function(cmd)
 			name = name
 		})
 	end)
-	cmd:AddStringArg("group")
+	cmd:AddStringArg("group", { autocomplete = groupAutocomplete })
 	cmd:AddStringArg("name")
 	cmd:AddNumberArg("amount")
 end)
@@ -555,7 +575,7 @@ BSU.SetupCommand("cleargrouplimit", function(cmd)
 			name = name
 		})
 	end)
-	cmd:AddStringArg("group")
+	cmd:AddStringArg("group", { autocomplete = groupAutocomplete })
 	cmd:AddStringArg("name")
 end)
 
