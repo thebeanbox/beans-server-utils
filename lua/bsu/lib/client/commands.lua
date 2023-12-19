@@ -10,6 +10,11 @@ function BSU.RunCommand(name, argStr, silent)
 	local cmd = BSU._cmds[name]
 	if not cmd then error("Command '" .. name .. "' does not exist") end
 
+	if cmd._serverside then
+		BSU.SendRunCommand(name, argStr, silent)
+		return
+	end
+
 	if hook.Run("BSU_PreRunCommand", cmd, argStr, silent) == false then return end
 
 	local handler = BSU.CommandHandler(LocalPlayer(), cmd, argStr, silent)
@@ -39,8 +44,8 @@ net.Receive("bsu_command_run", function()
 	BSU.SafeRunCommand(name, argStr, silent)
 end)
 
-local function callback(self)
-	BSU.SendRunCommand(self.cmd.name, table.concat(self.args, " "), self.silent)
+local function func()
+	error("Cannot run this command on the client")
 end
 
 function BSU.RegisterServerCommand(name, desc, category, args)
@@ -50,7 +55,7 @@ function BSU.RegisterServerCommand(name, desc, category, args)
 
 	cmd = BSU.Command(name, desc, category)
 	cmd.args = args
-	cmd.func = callback
+	cmd.func = func
 	cmd._serverside = true
 
 	BSU.RegisterCommand(cmd)
