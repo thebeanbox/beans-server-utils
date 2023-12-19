@@ -57,6 +57,7 @@ if SERVER then
 	BSU.SQL_BANS          = "bsu_bans"
 	BSU.SQL_GROUP_PRIVS   = "bsu_grp_privs"
 	BSU.SQL_GROUP_LIMITS  = "bsu_grp_limits"
+	BSU.SQL_CMD_LIMITS    = "bsu_cmd_limits"
 
 	-- command access values
 	BSU.CMD_CONSOLE    = 0 -- access only via the server console (command is also not networked to client)

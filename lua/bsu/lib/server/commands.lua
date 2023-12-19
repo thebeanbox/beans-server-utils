@@ -1,5 +1,25 @@
 -- lib/server/commands.lua
 
+function BSU.RegisterCommandLimit(groupid, cmd, arg, min, max)
+	BSU.RemoveCommandLimit(groupid, cmd, arg) -- replace with update?
+
+	BSU.SQLInsert(BSU.SQL_CMD_LIMITS, {
+		groupid = groupid,
+		cmd = cmd,
+		arg = arg,
+		min = min,
+		max = max,
+	})
+end
+
+function BSU.RemoveCommandLimit(groupid, cmd, arg)
+	BSU.SQLDeleteByValues(BSU.SQL_CMD_LIMITS, { groupid = groupid, cmd = cmd, arg = arg })
+end
+
+function BSU.GetCommandLimit(groupid, cmd, arg)
+	return BSU.SQLSelectByValues(BSU.SQL_CMD_LIMITS, { groupid = groupid, cmd = cmd, arg = arg })[1]
+end
+
 -- set whether a group must or mustn't have access to a command
 -- (setting this will ignore the command's access value)
 -- (access is granted by default)
