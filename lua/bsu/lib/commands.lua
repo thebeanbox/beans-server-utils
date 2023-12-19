@@ -661,7 +661,7 @@ local function getPlayersArg(arg, caller)
 end
 
 function objCmdHandler.GetArgs(self)
-	local groupid = self.caller:IsPlayer() and BSU.GetPlayerData(self.caller).groupid
+	local groupid = SERVER and self.caller:IsPlayer() and BSU.GetPlayerData(self.caller).groupid
 
 	local args = {}
 

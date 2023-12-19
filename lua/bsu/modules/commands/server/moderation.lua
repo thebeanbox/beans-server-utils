@@ -591,7 +591,7 @@ BSU.SetupCommand("setcommandlimit", function(cmd)
 
 		BSU.RegisterCommandLimit(groupid, command, arg, min, max)
 
-		self:BroadcastActionMsg("%caller% set a command limit on the group %groupid%. %command% (%max% > %arg% > %min%)", {
+		self:BroadcastActionMsg("%caller% set a command limit on the group %groupid% (%max% >= %command%.%arg% >= %min%)", {
 			groupid = groupid,
 			command = command,
 			max = max,
@@ -599,7 +599,7 @@ BSU.SetupCommand("setcommandlimit", function(cmd)
 			min = min,
 		})
 	end)
-	cmd:AddStringArg("group")
+	cmd:AddStringArg("group", { autocomplete = groupAutocomplete })
 	cmd:AddStringArg("command")
 	cmd:AddStringArg("arg")
 	cmd:AddNumberArg("min")
@@ -618,13 +618,13 @@ BSU.SetupCommand("clearcommandlimit", function(cmd)
 
 		BSU.RemoveCommandLimit(groupid, command, arg)
 
-		self:BroadcastActionMsg("%caller% cleared a command limit on the group %groupid%. %command% %arg%", {
+		self:BroadcastActionMsg("%caller% cleared a command limit on the group %groupid% (%command%.%arg%)", {
 			groupid = groupid,
 			command = command,
 			arg = arg,
 		})
 	end)
-	cmd:AddStringArg("group")
+	cmd:AddStringArg("group", { autocomplete = groupAutocomplete })
 	cmd:AddStringArg("command")
 	cmd:AddStringArg("arg")
 end)
