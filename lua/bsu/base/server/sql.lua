@@ -140,3 +140,25 @@ BSU.SQLCreateTable(BSU.SQL_GROUP_LIMITS, string.format(
 	]],
 		BSU.EscOrNULL(BSU.SQL_GROUPS, true)
 ))
+
+--[[
+	Command Limits
+
+	groupid - (text) id of the group
+	cmd     - (text) name of the command
+	arg     - (text) name of the arg
+	min     - (int)  min number
+	max     - (int)  max number
+]]
+
+BSU.SQLCreateTable(BSU.SQL_CMD_LIMITS, string.format(
+	[[
+		groupid TEXT NOT NULL REFERENCES %s(id),
+		cmd TEXT NOT NULL,
+		arg TEXT NOT NULL,
+		min INTEGER,
+		max INTEGER,
+		UNIQUE(cmd, arg)
+	]],
+		BSU.EscOrNULL(BSU.SQL_GROUPS, true)
+))

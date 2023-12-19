@@ -661,6 +661,8 @@ local function getPlayersArg(arg, caller)
 end
 
 function objCmdHandler.GetArgs(self)
+	local groupid = SERVER and self.caller:IsPlayer() and BSU.GetPlayerData(self.caller).groupid
+
 	local args = {}
 
 	local n = 1
@@ -679,8 +681,13 @@ function objCmdHandler.GetArgs(self)
 				n = n - 1
 			end
 			if arg then
-				if v.min then arg = math.max(arg, v.min) end
-				if v.max then arg = math.min(arg, v.max) end
+				local limit = groupid and BSU.GetCommandLimit(groupid, self.cmd.name, v.name) or {}
+
+				if limit.min then arg = math.max(arg, limit.min)
+				elseif v.min then arg = math.max(arg, v.min) end
+
+				if limit.max then arg = math.min(arg, limit.max)
+				elseif v.max then arg = math.min(arg, v.max) end
 			end
 			args[k] = arg
 		elseif v.kind == 2 then -- player

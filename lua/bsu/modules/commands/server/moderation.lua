@@ -579,6 +579,56 @@ BSU.SetupCommand("cleargrouplimit", function(cmd)
 	cmd:AddStringArg("name")
 end)
 
+BSU.SetupCommand("setcommandlimit", function(cmd)
+	cmd:SetDescription("Set a command limit")
+	cmd:SetCategory("moderation")
+	cmd:SetAccess(BSU.CMD_SUPERADMIN)
+	cmd:SetFunction(function(self, _, groupid, command, arg, min, max)
+		local group = BSU.GetGroupByID(groupid)
+		if not group then error("Group does not exist") end
+
+		if max < min then error("min cannot be less than max") end
+
+		BSU.RegisterCommandLimit(groupid, command, arg, min, max)
+
+		self:BroadcastActionMsg("%caller% set a command limit on the group %groupid% (%max% >= %command%.%arg% >= %min%)", {
+			groupid = groupid,
+			command = command,
+			max = max,
+			arg = arg,
+			min = min,
+		})
+	end)
+	cmd:AddStringArg("group", { autocomplete = groupAutocomplete })
+	cmd:AddStringArg("command")
+	cmd:AddStringArg("arg")
+	cmd:AddNumberArg("min")
+	cmd:AddNumberArg("max")
+end)
+
+BSU.SetupCommand("clearcommandlimit", function(cmd)
+	cmd:SetDescription("Clear a command limit")
+	cmd:SetCategory("moderation")
+	cmd:SetAccess(BSU.CMD_SUPERADMIN)
+	cmd:SetFunction(function(self, _, groupid, command, arg)
+		local group = BSU.GetGroupByID(groupid)
+		if not group then error("Group does not exist") end
+
+		if not BSU.GetCommandLimit(groupid, command, arg) then error("No command limit assigned to this group and command arg") end
+
+		BSU.RemoveCommandLimit(groupid, command, arg)
+
+		self:BroadcastActionMsg("%caller% cleared a command limit on the group %groupid% (%command%.%arg%)", {
+			groupid = groupid,
+			command = command,
+			arg = arg,
+		})
+	end)
+	cmd:AddStringArg("group", { autocomplete = groupAutocomplete })
+	cmd:AddStringArg("command")
+	cmd:AddStringArg("arg")
+end)
+
 BSU.SetupCommand("mute", function(cmd)
 	cmd:SetDescription("Prevent a player from speaking in text chat")
 	cmd:SetCategory("moderation")
