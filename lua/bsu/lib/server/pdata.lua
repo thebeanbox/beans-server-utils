@@ -30,7 +30,7 @@ function BSU.GetAllPDataBySteamID(steamid, network)
 
 	for i = 1, #query do
 		local entry = query[i]
-		if network ~= nil and entry.network == (network and 1 or 0) then continue end
+		if network ~= nil and entry.network == (network and 0 or 1) then continue end
 		data[entry.key] = entry.value
 	end
 
