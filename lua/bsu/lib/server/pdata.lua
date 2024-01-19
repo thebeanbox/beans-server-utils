@@ -30,7 +30,7 @@ function BSU.GetAllPDataBySteamID(steamid, network)
 
 	for i = 1, #query do
 		local entry = query[i]
-		if network ~= nil and entry.network == (network and 1 or 0) then continue end
+		if network ~= nil and entry.network == (network and 0 or 1) then continue end
 		data[entry.key] = entry.value
 	end
 
@@ -51,7 +51,16 @@ hook.Add("BSU_ClientReady", "BSU_NetworkPData", function(ply)
 		end
 	end
 
+	local ind = ply:EntIndex()
+	local data = pdataNetworkCache[ind]
+	if not data then
+		data = {}
+		pdataNetworkCache[ind] = data
+	end
+
 	for k, v in pairs(BSU.GetAllPData(ply, true)) do -- get only networked data
+		data[k] = v
+
 		net.Start("bsu_pdata")
 		net.WriteUInt(ply:EntIndex(), 8)
 		net.WriteString(k)
