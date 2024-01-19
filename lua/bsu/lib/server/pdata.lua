@@ -51,7 +51,16 @@ hook.Add("BSU_ClientReady", "BSU_NetworkPData", function(ply)
 		end
 	end
 
+	local ind = ply:EntIndex()
+	local data = pdataNetworkCache[ind]
+	if not data then
+		data = {}
+		pdataNetworkCache[ind] = data
+	end
+
 	for k, v in pairs(BSU.GetAllPData(ply, true)) do -- get only networked data
+		data[k] = v
+
 		net.Start("bsu_pdata")
 		net.WriteUInt(ply:EntIndex(), 8)
 		net.WriteString(k)
