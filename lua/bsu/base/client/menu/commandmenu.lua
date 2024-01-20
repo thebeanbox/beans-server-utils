@@ -58,7 +58,7 @@ function commandMenu:SelectCommand(cmd)
 	for i, arg in ipairs(self.cmdArgs) do
 		local argRow = vgui.Create("Panel", argPanel)
 		argRow:Dock(TOP)
-		
+
 		local argName = vgui.Create("DLabel", argRow)
 		local labelText = arg.name
 		if arg.optional then labelText = labelText .. " (optional)" end
@@ -66,7 +66,7 @@ function commandMenu:SelectCommand(cmd)
 		argName:SetTextColor(color_black)
 		argName:Dock(LEFT)
 		argName:SetWidth(self.commandProperties:GetWide() / 2)
-		
+
 		local kind = arg.kind
 		if kind == 0 then
 			local textEntry = vgui.Create("DTextEntry", argRow)
@@ -90,7 +90,7 @@ function commandMenu:SelectCommand(cmd)
 					return suggestions
 				end
 			end
-			
+
 			local clearButton = vgui.Create("DButton", textEntry)
 			clearButton:SetText("")
 			clearButton:SetIcon("icon16/cancel.png")
@@ -131,7 +131,7 @@ function commandMenu:SelectCommand(cmd)
 			textEntry.OnValueChange = function(s)
 				argvalues[i] = "\"" .. s:GetValue() .. "\""
 			end
-			
+
 			local optionButton = vgui.Create("DButton", textEntry)
 			optionButton:SetText("")
 			optionButton:SetIcon("icon16/group.png")
@@ -156,7 +156,7 @@ function commandMenu:SelectCommand(cmd)
 				
 				menu:Open()
 			end
-			
+
 			local clearButton = vgui.Create("DButton", textEntry)
 			clearButton:SetText("")
 			clearButton:SetIcon("icon16/cancel.png")
