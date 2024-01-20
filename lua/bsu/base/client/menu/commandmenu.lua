@@ -80,7 +80,7 @@ function commandMenu:SelectCommand(cmd)
 			end
 
 			if arg.autocomplete then
-				textEntry.GetAutoComplete = function(s, text)
+				textEntry.GetAutoComplete = function()
 					local suggestions = {}
 
 					for _, v in ipairs(arg.autocomplete) do
@@ -149,7 +149,7 @@ function commandMenu:SelectCommand(cmd)
 				end)
 
 				for _, ply in ipairs(player.GetAll()) do
-					local opt = menu:AddOption(ply:Nick(), function()
+					menu:AddOption(ply:Nick(), function()
 						textEntry:SetValue(textEntry:GetValue() .. "$" .. ply:SteamID())
 					end)
 				end
