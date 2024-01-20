@@ -78,15 +78,15 @@ function commandMenu:SelectCommand(cmd)
 			textEntry.OnValueChange = function(s)
 				argvalues[i] = "\"" .. s:GetValue() .. "\""
 			end
-			
+
 			if arg.autocomplete then
 				textEntry.GetAutoComplete = function(s, text)
 					local suggestions = {}
-					
+
 					for _, v in ipairs(arg.autocomplete) do
 						table.insert(suggestions, v)
 					end
-					
+
 					return suggestions
 				end
 			end
@@ -139,21 +139,21 @@ function commandMenu:SelectCommand(cmd)
 			optionButton:Dock(RIGHT)
 			optionButton.DoClick = function()
 				local menu = DermaMenu()
-				
+
 				menu:AddOption("[Yourself]", function()
 					textEntry:SetValue("^")
 				end)
-				
+
 				menu:AddOption("[Everyone]", function()
 					textEntry:SetValue("*")
 				end)
-				
+
 				for _, ply in ipairs(player.GetAll()) do
 					local opt = menu:AddOption(ply:Nick(), function()
 						textEntry:SetValue(textEntry:GetValue() .. "$" .. ply:SteamID())
 					end)
 				end
-				
+
 				menu:Open()
 			end
 
