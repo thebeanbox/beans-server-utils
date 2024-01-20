@@ -41,42 +41,130 @@ function commandMenu:SelectCommand(cmd)
 
 	local titleLabel = vgui.Create("DLabel", self.commandProperties)
 	titleLabel:SetText(cmd.name)
-	titleLabel:SetTextColor(Color(0, 0, 0))
+	titleLabel:SetTextColor(color_black)
 	titleLabel:Dock(TOP)
 	titleLabel:SetHeight(30)
 	titleLabel:SetFont("BSU_MenuTitle")
 
 	local descriptionLabel = vgui.Create("DLabel", self.commandProperties)
 	descriptionLabel:SetText(cmd.desc)
-	descriptionLabel:SetTextColor(Color(0, 0, 0))
+	descriptionLabel:SetTextColor(color_black)
 	descriptionLabel:Dock(TOP)
 	descriptionLabel:SetFont("BSU_MenuDesc")
 
-	local commandProperties = vgui.Create("DProperties", self.commandProperties)
-	commandProperties:Dock(FILL)
+	local argPanel = vgui.Create("Panel", self.commandProperties)
+	argPanel:Dock(FILL)
 
-	for argIndex, arg in ipairs(self.cmdArgs) do
-		local property = commandProperties:CreateRow("Arguments", arg.name)
-		property.DataChanged = function(_, val)
-			argvalues[argIndex] = val
-		end
-
-		if arg.kind == 0 then -- String
-			property:Setup("Generic")
-		elseif arg.kind == 1 then -- Number
-			local min = arg.min and cmd.args.min or 0
-			local max = arg.max and cmd.args.max or 10000
-			property:Setup("Int", {min = min, max = max})
-		elseif arg.kind == 2 then -- Player
-			property:Setup("Combo", {text = "Select a player"})
-			for _, v in ipairs(player.GetAll()) do
-				if v == LocalPlayer() then continue end
-				property:AddChoice(v:Nick(), "$" .. v:SteamID())
+	for i, arg in ipairs(self.cmdArgs) do
+		local argRow = vgui.Create("Panel", argPanel)
+		argRow:Dock(TOP)
+		
+		local argName = vgui.Create("DLabel", argRow)
+		local labelText = arg.name
+		if arg.optional then labelText = labelText .. " (optional)" end
+		argName:SetText(labelText)
+		argName:SetTextColor(color_black)
+		argName:Dock(LEFT)
+		argName:SetWidth(self.commandProperties:GetWide() / 2)
+		
+		local kind = arg.kind
+		if kind == 0 then
+			local textEntry = vgui.Create("DTextEntry", argRow)
+			textEntry:SetPlaceholderText(labelText)
+			textEntry:Dock(FILL)
+			textEntry.OnChange = function(s)
+				argvalues[i] = "\"" .. s:GetValue() .. "\""
 			end
-			property:AddChoice("[Myself]", "^")
-			property:AddChoice("[Random]", "?")
-		elseif arg.kind == 3 then -- Players
-			property:Setup("Generic")
+			textEntry.OnValueChange = function(s)
+				argvalues[i] = "\"" .. s:GetValue() .. "\""
+			end
+			
+			if arg.autocomplete then
+				textEntry.GetAutoComplete = function(s, text)
+					local suggestions = {}
+					
+					for _, v in ipairs(arg.autocomplete) do
+						table.insert(suggestions, v)
+					end
+					
+					return suggestions
+				end
+			end
+			
+			local clearButton = vgui.Create("DButton", textEntry)
+			clearButton:SetText("")
+			clearButton:SetIcon("icon16/cancel.png")
+			clearButton:SetWidth(24)
+			clearButton:Dock(RIGHT)
+			clearButton.DoClick = function()
+				textEntry:SetValue("")
+			end
+		elseif kind == 1 then
+			local numSlider = vgui.Create("DNumSlider", argRow)
+			numSlider:SetMin(arg.min and arg.min or 0)
+			numSlider:SetMax(arg.max and arg.max or 1000)
+			numSlider:SetValue(arg.default and arg.default or 1)
+			if arg.default then numSlider:SetDefaultValue(arg.default) end
+			numSlider:SetDark(true)
+			numSlider:Dock(FILL)
+			numSlider.OnValueChanged = function(_, newStr)
+				argvalues[i] = newStr
+			end
+		elseif kind == 2 then
+			local comboBox = vgui.Create("DComboBox", argRow)
+			comboBox:AddChoice("[Yourself]", "^")
+			for _, ply in ipairs(player.GetAll()) do
+				comboBox:AddChoice(ply:Nick(), "$" .. ply:SteamID())
+			end
+			comboBox:Dock(FILL)
+			comboBox.OnSelect = function(_, _, _, data)
+				argvalues[i] = data
+			end
+			comboBox:ChooseOptionID(1)
+		elseif kind == 3 then
+			local textEntry = vgui.Create("DTextEntry", argRow)
+			textEntry:SetPlaceholderText(labelText)
+			textEntry:Dock(FILL)
+			textEntry.OnChange = function(s)
+				argvalues[i] = "\"" .. s:GetValue() .. "\""
+			end
+			textEntry.OnValueChange = function(s)
+				argvalues[i] = "\"" .. s:GetValue() .. "\""
+			end
+			
+			local optionButton = vgui.Create("DButton", textEntry)
+			optionButton:SetText("")
+			optionButton:SetIcon("icon16/group.png")
+			optionButton:SetWidth(24)
+			optionButton:Dock(RIGHT)
+			optionButton.DoClick = function()
+				local menu = DermaMenu()
+				
+				menu:AddOption("[Yourself]", function()
+					textEntry:SetValue("^")
+				end)
+				
+				menu:AddOption("[Everyone]", function()
+					textEntry:SetValue("*")
+				end)
+				
+				for _, ply in ipairs(player.GetAll()) do
+					local opt = menu:AddOption(ply:Nick(), function()
+						textEntry:SetValue(textEntry:GetValue() .. "$" .. ply:SteamID())
+					end)
+				end
+				
+				menu:Open()
+			end
+			
+			local clearButton = vgui.Create("DButton", textEntry)
+			clearButton:SetText("")
+			clearButton:SetIcon("icon16/cancel.png")
+			clearButton:SetWidth(24)
+			clearButton:Dock(RIGHT)
+			clearButton.DoClick = function()
+				textEntry:SetValue("")
+			end
 		end
 	end
 
@@ -84,6 +172,7 @@ function commandMenu:SelectCommand(cmd)
 	executeButton:SetText("Execute")
 	executeButton.DoClick = function()
 		local argstr = table.concat(argvalues, " ")
+		print(cmd.name .. " " .. argstr)
 		BSU.SafeRunCommand(cmd.name, argstr, false)
 	end
 
