@@ -51,11 +51,10 @@ function bansmenu:Init()
 
 	local banList = vgui.Create("DListView", self)
 	banList:Dock(FILL)
-	banList:AddColumn("Name")
-	banList:AddColumn("SteamID")
+	banList:AddColumn("Player")
 	banList:AddColumn("Duration")
 	banList:AddColumn("Reason")
-	banList:AddColumn("Banned By")
+	banList:AddColumn("Admin")
 	banList:AddColumn("Date")
 	banList:SetHeaderHeight(25)
 	banList:SetDataHeight(25)
@@ -74,60 +73,112 @@ function bansmenu:LoadPage(n)
 end
 
 -- Called after internal bans table 
-function bansmenu:UpdatePage()
+function bansmenu:UpdatePage(bans)
+	self.bans = bans
 	self.banList:Clear()
 	self.pageLabel:SetText("Page: " .. self.page)
-	for _, ban in ipairs(self.bans) do
-		local newEntry = self:AddEntry(ban.name, ban.steamid, ban.duration, ban.reason, ban.bannedByName, ban.dateNiceTime)
-		newEntry.banDate = ban.date
-		newEntry.bannedBySteamID = ban.bannedBySteamID
 
-		newEntry.OnRightClick = function(s)
+	for _, ban in ipairs(self.bans) do
+		local banName = ban.name
+		local banSteamID = ban.steamid
+		local banDuration = ban.duration
+		local banDurationFormattedTime = (banDuration > 0) and BSU.StringTime(banDuration) or "[PERMANENT]"
+		local banReason = ban.reason
+		local banDate = ban.date
+		local banDateFormattedTime = os.date("%c", banDate)
+		local bannedByName = ban.bannedByName
+		local bannedBySteamID = ban.bannedBySteamID
+
+		local displayBanName = (banName == "N/A") and banSteamID or banName .. " <" .. banSteamID .. ">"
+		local displayAdminName = (bannedByName == "[CONSOLE]") and bannedByName or bannedByName .. " <" .. bannedBySteamID .. ">"
+		local newEntry = self:AddEntry(displayBanName, banDurationFormattedTime, banReason, displayAdminName, banDateFormattedTime)
+
+		newEntry.OnRightClick = function()
 			local menu = DermaMenu()
 
-			local copyName = menu:AddOption("Copy Name", function()
-				local str = s:GetColumnText(1)
+			local copySubMenu, copySubMenuOption = menu:AddSubMenu("Copy...")
+			copySubMenuOption:SetIcon("icon16/page_copy.png")
+
+			local copyName = copySubMenu:AddOption("Name", function()
+				local str = banName
 				SetClipboardText(str)
 				notification.AddLegacy("Copied Name \"" .. str .. "\"", NOTIFY_CLEANUP, 2)
 			end)
-			copyName:SetIcon("icon16/page_copy.png")
+			copyName:SetIcon("icon16/user.png")
 
-			local copySteamID = menu:AddOption("Copy SteamID", function()
-				local str = s:GetColumnText(2)
+			local copySteamID = copySubMenu:AddOption("SteamID", function()
+				local str = banSteamID
 				SetClipboardText(str)
 				notification.AddLegacy("Copied SteamID \"" .. str .. "\"", NOTIFY_CLEANUP, 2)
 			end)
-			copySteamID:SetIcon("icon16/page_copy.png")
+			copySteamID:SetIcon("icon16/user.png")
 
-			local copyReason = menu:AddOption("Copy Reason", function()
-				local str = s:GetColumnText(3)
+			local copyReason = copySubMenu:AddOption("Reason", function()
+				local str = banReason
 				SetClipboardText(str)
 				notification.AddLegacy("Copied Reason \"" .. str .. "\"", NOTIFY_CLEANUP, 2)
 			end)
-			copyReason:SetIcon("icon16/page_copy.png")
+			copyReason:SetIcon("icon16/text_align_left.png")
 
-			local copyBannedByName = menu:AddOption("Copy Admin Name", function()
-				local str = s:GetColumnText(4)
+			local copyBannedByName = copySubMenu:AddOption("Admin Name", function()
+				local str = bannedByName
 				SetClipboardText(str)
 				notification.AddLegacy("Copied Admin Name \"" .. str .. "\"", NOTIFY_CLEANUP, 2)
 			end)
-			copyBannedByName:SetIcon("icon16/page_copy.png")
+			copyBannedByName:SetIcon("icon16/user_red.png")
 
-			local copyBannedBySteamID = menu:AddOption("Copy Admin SteamID", function()
-				local str = s.bannedBySteamID
+			local copyBannedBySteamID = copySubMenu:AddOption("Admin SteamID", function()
+				local str = bannedBySteamID
 				SetClipboardText(str)
 				notification.AddLegacy("Copied Admin SteamID \"" .. str .. "\"", NOTIFY_CLEANUP, 2)
 			end)
-			copyBannedBySteamID:SetIcon("icon16/page_copy.png")
+			copyBannedBySteamID:SetIcon("icon16/user_red.png")
 
-			local copyDate = menu:AddOption("Copy Date", function()
-				local str = s.banDate
+			local copyDate = copySubMenu:AddOption("Date", function()
+				local str = banDate
 				SetClipboardText(str)
 				notification.AddLegacy("Copied Date \"" .. str .. "\"", NOTIFY_CLEANUP, 2)
 			end)
-			copyDate:SetIcon("icon16/page_copy.png")
+			copyDate:SetIcon("icon16/calendar.png")
 
 			menu:AddSpacer()
+
+			local actionsSubMenu, actionsSubMenuOption = menu:AddSubMenu("Actions...")
+			actionsSubMenuOption:SetIcon("icon16/shield.png")
+
+			local unbanPlayer = actionsSubMenu:AddOption("Unban Player...", function()
+				local prompt = vgui.Create("DFrame")
+				prompt:SetTitle("Confirmation Prompt")
+				prompt:SetSize(ScrW() * 0.15, ScrH() * 0.1)
+				prompt:Center()
+				prompt:MakePopup()
+
+				local label = vgui.Create("DLabel", prompt)
+				label:SetContentAlignment(5)
+				label:SetText("Are you sure you would like to unban\n" .. banName .. " <" .. banSteamID .. ">?")
+				label:Dock(FILL)
+
+				local panel = vgui.Create("Panel", prompt)
+				panel:Dock(BOTTOM)
+
+				local yesButton = vgui.Create("DButton", panel)
+				yesButton:SetText("YES")
+				yesButton:SetWidth(prompt:GetWide() / 4)
+				yesButton:Dock(LEFT)
+				yesButton.DoClick = function()
+					BSU.SafeRunCommand("unban", banSteamID, false)
+					notification.AddLegacy("Unbanned player " .. banName .. " <" .. banSteamID .. ">", NOTIFY_CLEANUP, 2)
+					prompt:Close()
+				end
+
+				local noButton = vgui.Create("DButton", panel)
+				noButton:SetText("NO")
+				noButton:Dock(FILL)
+				noButton.DoClick = function()
+					prompt:Close()
+				end
+			end)
+			unbanPlayer:SetIcon("icon16/shield_delete.png")
 
 			menu:Open()
 		end
@@ -141,7 +192,7 @@ function bansmenu:PreviousPage()
 end
 
 function bansmenu:NextPage()
-	if self.bansRemaining < 1 then return end
+	if #self.bans < self.bansPerPage then return end
 	self.page = self.page + 1
 	self:LoadPage(self.page)
 end
@@ -180,7 +231,5 @@ net.Receive("bsu_request_banlist", function()
 		bans[i] = ban
 	end
 
-	BSU.BansMenu.bans = bans
-	BSU.BansMenu:UpdatePage()
+	BSU.BansMenu:UpdatePage(bans)
 end)
-

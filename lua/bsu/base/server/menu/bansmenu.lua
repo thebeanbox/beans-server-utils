@@ -21,11 +21,17 @@ net.Receive("bsu_request_banlist", function(_, ply)
 
 	local pageOffset = page * bansPerPage
 
+	local sendBans = {}
+	for i = pageOffset, pageOffset + bansPerPage do
+		local ban = bans[i]
+		if not ban then continue end
+		table.insert(sendBans, ban)
+	end
+
 	net.Start("bsu_request_banlist")
-	net.WriteUInt(#bans, 8)
-	for i = 1, #bans do
-		local ban = bans[pageOffset + i]
-		if not ban then break end -- What?
+	net.WriteUInt(#sendBans, 8)
+	for i = 1, #sendBans do
+		local ban = sendBans[i]
 
 		local banUsername = BSU.IsValidIP(ban.identity) and ban.identity or (BSU.GetPlayerDataBySteamID(ban.identity) and BSU.GetPlayerDataBySteamID(ban.identity).name or "N/A")
 		local banSteamID = ban.identity
@@ -45,4 +51,3 @@ net.Receive("bsu_request_banlist", function(_, ply)
 	end
 	net.Send(ply)
 end)
-
