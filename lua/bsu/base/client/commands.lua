@@ -9,7 +9,7 @@ local argTypeLookup = {
 	[3] = "players",
 }
 
-local function autoComplete(_, argStr)
+local function autoComplete(concommand, argStr)
 	local name = string.match(argStr, "^ ([^%s]+)") or ""
 	local cmd = BSU.GetCommandByName(name)
 
@@ -36,7 +36,7 @@ local function autoComplete(_, argStr)
 		if n >= #cmd.args then return end
 
 		-- formatting magic
-		local template = string_format("bsu %s %s%%s", name, n > 0 and table.concat(handler.args, " ", 1, n) .. " " or "")
+		local template = string_format("%s %s %s%%s", concommand, name, n > 0 and table.concat(handler.args, " ", 1, n) .. " " or "")
 
 		-- Arg list
 		local argTypes = {}
@@ -64,7 +64,8 @@ local function autoComplete(_, argStr)
 		if arg.kind == 2 or arg.kind == 3 then
 			local suggestions = { argFiller }
 
-			local plyName = string.lower(handler.args[n + 1] or "")
+			local plyName = string.gsub(string.lower(handler.args[n + 1] or ""), "^\"", "")
+
 			for _, v in ipairs(player.GetAll()) do
 				if plyName == string.sub(string.lower(v:Nick()), 1, #plyName) then
 					table.insert(suggestions, string_format(template, string_format("\"%s\"", v:Nick())))
@@ -86,7 +87,7 @@ local function autoComplete(_, argStr)
 		table.sort(names, function(a, b) return #a < #b end)
 
 		for _, v in ipairs(names) do
-			table.insert(result, "bsu " .. v)
+			table.insert(result, string_format("%s %s", concommand, v))
 		end
 
 		return result
@@ -106,3 +107,4 @@ concommand.Add(BSU.CMD_CONCMD_SILENT, function(_, _, args, argStr)
 	local name = string.lower(args[1])
 	BSU.SafeRunCommand(name, string.sub(argStr, #name + 2), true)
 end, autoComplete)
+
