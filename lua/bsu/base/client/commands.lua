@@ -95,16 +95,51 @@ local function autoComplete(concommand, argStr)
 end
 
 -- concommand for using commands
-concommand.Add(BSU.CMD_CONCMD, function(_, _, args, argStr)
+concommand.Add("bsu", function(_, _, args, argStr)
 	if not args[1] then return end
 	local name = string.lower(args[1])
 	BSU.SafeRunCommand(name, string.sub(argStr, #name + 2))
 end, autoComplete)
 
 -- concommand for using commands silently
-concommand.Add(BSU.CMD_CONCMD_SILENT, function(_, _, args, argStr)
+concommand.Add("sbsu", function(_, _, args, argStr)
 	if not args[1] then return end
 	local name = string.lower(args[1])
 	BSU.SafeRunCommand(name, string.sub(argStr, #name + 2), true)
 end, autoComplete)
 
+-- concommand aliasing
+
+local callbacks, autocompletes = concommand.GetTable()
+
+local function updateAlias(cmd, new, old)
+	if old then
+		old = string.lower(old)
+		if old ~= cmd and callbacks[old] == callbacks[cmd] then
+			callbacks[old] = nil
+			autocompletes[old] = nil
+		end
+	end
+
+	new = string.Trim(string.lower(new))
+	if new == "" or callbacks[new] then return end
+
+	cmd = string.lower(cmd)
+	if not callbacks[cmd] then return end
+
+	callbacks[new] = callbacks[cmd]
+	autocompletes[new] = autocompletes[cmd]
+
+	Msg(string.format("Set '%s' as an alias for '%s'\n", new, cmd))
+end
+
+cvars.AddChangeCallback("bsu_alias", function(_, old, new)
+	updateAlias("bsu", new, old)
+end)
+
+cvars.AddChangeCallback("bsu_alias_silent", function(_, old, new)
+	updateAlias("sbsu", new, old)
+end)
+
+updateAlias("bsu", GetConVar("bsu_alias"):GetString())
+updateAlias("sbsu", GetConVar("bsu_alias_silent"):GetString())

@@ -31,6 +31,8 @@ end
 
 hook.Add("CheckPassword", "BSU_PasswordBanCheck", passwordBanCheck)
 
+local allowFamilySharing = GetConVar("bsu_allow_family_sharing")
+
 -- permaban players using family share to ban evade (also kicks players who are banned but somehow joined the server)
 local function authedBanCheck(ply)
 	local plyID = ply:SteamID64()
@@ -49,7 +51,7 @@ local function authedBanCheck(ply)
 			local ownerBan = BSU.GetBanStatus(ownerID)
 			if ownerBan then -- if the owner of the license is banned
 				BSU.BanPlayer(ply, string.format("%s (Steam Family Sharing with banned account: %s)", ownerBan.reason or "No reason given", util.SteamIDFrom64(ownerID)), 0, ownerBan.reason)
-			elseif not GetConVar("bsu_allow_family_sharing"):GetBool() then
+			elseif not allowFamilySharing:GetBool() then
 				game.KickID(ply:UserID(), "Steam Family Sharing is prohibited on this server")
 			end
 		end
