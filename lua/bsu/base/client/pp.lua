@@ -186,10 +186,12 @@ cvars.AddChangeCallback("bsu_propinfo_y", function(_, _, new)
 	hudY = tonumber(new)
 end)
 
+local showPropInfo = GetConVar("bsu_show_propinfo")
+
 local function drawPropProtectionHUD()
 	local ply = LocalPlayer()
 
-	if not GetConVar("bsu_show_propinfo"):GetBool() then return end
+	if not showPropInfo:GetBool() then return end
 
 	local trace = util.GetPlayerTrace(ply)
 	trace.mask = MASK_SHOT

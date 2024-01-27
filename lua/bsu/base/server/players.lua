@@ -3,17 +3,20 @@
 
 -- initialize player data
 hook.Add("OnGamemodeLoaded", "BSU_InitializePlayer", function()
-	local oldPlyInitSpawn = GAMEMODE.PlayerInitialSpawn
+	BSU._oldPlayerInitialSpawn = BSU._oldPlayerInitialSpawn or GAMEMODE.PlayerInitialSpawn
+
+	local defaultGroup = GetConVar("bsu_default_group")
+	local botGroup = GetConVar("bsu_bot_group")
 
 	function GAMEMODE.PlayerInitialSpawn(self, ply, transition)
-		oldPlyInitSpawn(self, ply, transition)
+		BSU._oldPlayerInitialSpawn(self, ply, transition)
 
 		local id64 = ply:SteamID64()
 		local plyData = BSU.GetPlayerData(ply)
 		local isPlayer = not ply:IsBot()
 
 		if not plyData then -- this is the first time this player has joined
-			BSU.RegisterPlayer(id64, isPlayer and GetConVar("bsu_default_group"):GetString() or GetConVar("bsu_bot_group"):GetString())
+			BSU.RegisterPlayer(id64, isPlayer and defaultGroup:GetString() or botGroup:GetString())
 			plyData = BSU.GetPlayerData(ply)
 		end
 

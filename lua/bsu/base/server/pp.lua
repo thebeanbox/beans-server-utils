@@ -14,6 +14,8 @@ hook.Add("BSU_PlayerKicked", "BSU_CleanupKickedPlayerProps", function(ply)
 	cleanupProps(ply:AccountID())
 end)
 
+local cleanupTime = GetConVar("bsu_cleanup_time")
+
 hook.Add("PlayerDisconnected", "BSU_HandleDisconnectedPlayerProps", function(ply)
 	local id = ply:AccountID()
 
@@ -28,7 +30,7 @@ hook.Add("PlayerDisconnected", "BSU_HandleDisconnectedPlayerProps", function(ply
 	end
 
 	-- cleanup after some time
-	timer.Create("BSU_CleanupDisconnected_" .. id, GetConVar("bsu_cleanup_time"):GetFloat(), 1, function()
+	timer.Create("BSU_CleanupDisconnected_" .. id, cleanupTime:GetFloat(), 1, function()
 		cleanupProps(id)
 	end)
 
