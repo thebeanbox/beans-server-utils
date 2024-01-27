@@ -1,14 +1,14 @@
 -- base/server/commands.lua
 
 -- create concommand for using commands
-concommand.Add(BSU.CMD_CONCMD, function(ply, _, args, argStr)
+concommand.Add("bsu", function(ply, _, args, argStr)
 	if not args[1] then return end
 	local name = string.lower(args[1])
 	BSU.SafeRunCommand(ply, name, string.sub(argStr, #name + 2))
 end)
 
 -- create concommand for using commands silently
-concommand.Add(BSU.CMD_CONCMD_SILENT, function(ply, _, args, argStr)
+concommand.Add("sbsu", function(ply, _, args, argStr)
 	if not args[1] then return end
 	local name = string.lower(args[1])
 	BSU.SafeRunCommand(ply, name, string.sub(argStr, #name + 2), true)

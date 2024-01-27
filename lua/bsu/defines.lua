@@ -42,9 +42,6 @@ BSU.LOG_CLR_ADVDUPE2 = Color(50, 225, 50)
 BSU.LOG_CLR_TEXT     = Color(200, 200, 200)
 BSU.LOG_CLR_PARAM    = Color(255, 255, 255)
 
-BSU.CMD_CONCMD        = "bsu"
-BSU.CMD_CONCMD_SILENT = "sbsu"
-
 BSU.CMD_PREFIX        = "!"
 BSU.CMD_PREFIX_SILENT = "/"
 

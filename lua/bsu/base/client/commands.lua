@@ -95,14 +95,14 @@ local function autoComplete(concommand, argStr)
 end
 
 -- concommand for using commands
-concommand.Add(BSU.CMD_CONCMD, function(_, _, args, argStr)
+concommand.Add("bsu", function(_, _, args, argStr)
 	if not args[1] then return end
 	local name = string.lower(args[1])
 	BSU.SafeRunCommand(name, string.sub(argStr, #name + 2))
 end, autoComplete)
 
 -- concommand for using commands silently
-concommand.Add(BSU.CMD_CONCMD_SILENT, function(_, _, args, argStr)
+concommand.Add("sbsu", function(_, _, args, argStr)
 	if not args[1] then return end
 	local name = string.lower(args[1])
 	BSU.SafeRunCommand(name, string.sub(argStr, #name + 2), true)
