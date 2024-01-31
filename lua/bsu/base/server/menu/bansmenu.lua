@@ -6,12 +6,13 @@ net.Receive("bsu_request_banlist", function(_, ply)
 
 	local page = net.ReadUInt(8) - 1
 	local bansPerPage = net.ReadUInt(8)
-	local allBans = BSU.GetAllBans()
+	local allBans = BSU.GetActiveBans()
 	local bans = {}
 
-	-- Filter out kicks and inactive bans
+	-- Filter out kicks, overwritten bans, and inactive bans
 	for _, ban in ipairs(allBans) do
-		if ban.duration and (not ban.unbanTime and (ban.duration == 0 or (ban.time + ban.duration * 60) > BSU.UTCTime())) then table.insert(bans, ban) end
+		local status = BSU.GetBanStatus(ban.identity)
+		if status and ban.time == status.time then table.insert(bans, ban) end
 	end
 
 	-- Sort remaining bans table
@@ -51,3 +52,4 @@ net.Receive("bsu_request_banlist", function(_, ply)
 	end
 	net.Send(ply)
 end)
+
