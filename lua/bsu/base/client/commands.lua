@@ -116,8 +116,7 @@ local function updateAlias(cmd, new, old)
 	if old then
 		old = string.lower(old)
 		if old ~= cmd and callbacks[old] == callbacks[cmd] then
-			callbacks[old] = nil
-			autocompletes[old] = nil
+			concommand.Remove(old)
 		end
 	end
 
@@ -127,10 +126,9 @@ local function updateAlias(cmd, new, old)
 	cmd = string.lower(cmd)
 	if not callbacks[cmd] then return end
 
-	callbacks[new] = callbacks[cmd]
-	autocompletes[new] = autocompletes[cmd]
+	concommand.Add(new, callbacks[cmd], autocompletes[cmd])
 
-	Msg(string.format("Set '%s' as an alias for '%s'\n", new, cmd))
+	MsgN(string.format("Set '%s' as an alias for '%s'", new, cmd))
 end
 
 cvars.AddChangeCallback("bsu_alias", function(_, old, new)
