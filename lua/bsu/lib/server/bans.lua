@@ -45,11 +45,11 @@ function BSU.GetBanHistory(identity)
 
 	if identity then
 		for _, ban in ipairs(allBans) do
-			if identity == ban.identity and ban.duration then table.insert(kicks, ban) end
+			if identity == ban.identity and ban.duration then table.insert(bans, ban) end
 		end
 	else
 		for _, ban in ipairs(allBans) do
-			if ban.duration then table.insert(kicks, ban) end
+			if ban.duration then table.insert(bans, ban) end
 		end
 	end
 
@@ -162,3 +162,4 @@ function BSU.FormatBanMsg(reason, duration, time, timezoneOffset)
 		}
 	)
 end
+
