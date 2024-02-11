@@ -7,6 +7,7 @@ hook.Add("PlayerSpawnObject", "BSU_BlockPlayer", block)
 hook.Add("PlayerSpawnSENT", "BSU_BlockPlayer", block)
 hook.Add("PlayerSpawnVehicle", "BSU_BlockPlayer", block)
 hook.Add("PlayerSpawnNPC", "BSU_BlockPlayer", block)
+hook.Add("PlayerSpawnSWEP", "BSU_BlockPlayer", block)
 hook.Add("CanPlayerSuicide", "BSU_BlockPlayer", block)
 
 -- if player respawns, add back any flags they should have
