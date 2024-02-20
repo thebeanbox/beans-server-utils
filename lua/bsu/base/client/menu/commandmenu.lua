@@ -102,7 +102,7 @@ function commandMenu:SelectCommand(cmd)
 		elseif kind == 1 then
 			local numSlider = vgui.Create("DNumSlider", argRow)
 			numSlider:SetMin(arg.min and arg.min or 0)
-			numSlider:SetMax(arg.max and arg.max or 1000)
+			numSlider:SetMax(arg.max and arg.max or 2147483647)
 			numSlider:SetValue(arg.default and arg.default or 1)
 			if arg.default then numSlider:SetDefaultValue(arg.default) end
 			numSlider:SetDark(true)
