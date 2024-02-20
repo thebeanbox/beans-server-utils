@@ -19,7 +19,7 @@ local bsuMenu = {}
 function bsuMenu:Init()
 	self:SetSize(ScrW() * 0.6, ScrH() * 0.6)
 	self:Center()
-	self:SetTitle("BeanBox Server Utilities Menu")
+	self:SetTitle("BSU Menu")
 	self:SetVisible(false)
 	self:SetDraggable(true)
 	self:ShowCloseButton(true)
