@@ -66,7 +66,7 @@ function BSU.CheckPlayerPermission(target, perm)
 	return bit.band(BSU.GetPlayerPermission(target), perm) == perm
 end
 
--- returns a table of current players on the server who are friends with the player, including admins (uses the toolgun permission)
+-- returns a table of current players on the server who are friends with the player or are superadmins (uses the toolgun permission)
 function BSU.GetPlayerFriends()
 	local plys = player.GetHumans()
 	if BSU.CheckGlobalPermission(BSU.PP_TOOLGUN) then return plys end

@@ -72,7 +72,7 @@ if SERVER then
 		return BSU.PlayerHasPermission(ply, self, BSU.PP_DAMAGE) ~= false
 	end
 
-	entMeta.CPPICanDrive = entMeta.CPPICanUse
+	entMeta.CPPIDrive = entMeta.CPPICanTool
 
 	entMeta.CPPICanProperty = entMeta.CPPICanTool
 
