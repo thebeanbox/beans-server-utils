@@ -45,7 +45,11 @@ AddCSLuaFile(clBaseDir .. "menu/bansmenu.lua")
 -- module loading
 BSU.LoadModules()
 
-net.Receive("bsu_client_ready", function(_, ply)
+gameevent.Listen("OnRequestFullUpdate")
+hook.Add("OnRequestFullUpdate", "BSU_ClientReady", function(data)
+	local ply = Player(data.userid)
+	if ply.bsu_client_ready then return end
+	ply.bsu_client_ready = true
 	hook.Run("BSU_ClientReady", ply)
 end)
 
