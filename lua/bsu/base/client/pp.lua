@@ -2,7 +2,7 @@
 
 concommand.Add("bsu_reset_permissions", function()
 	-- easiest way is to delete the table and recreate it
-	BSU.SQLQuery("DROP TABLE IF EXISTS %s", BSU.EscOrNULL(BSU.SQL_PP, true))
+	BSU.SQLQuery("DROP TABLE IF EXISTS %s", BSU.SQLEscIdent(BSU.SQL_PP))
 	BSU.SQLCreateTable(BSU.SQL_PP, string.format(
 		[[
 			steamid TEXT PRIMARY KEY,

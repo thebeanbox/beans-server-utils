@@ -452,7 +452,7 @@ BSU.SetupCommand("grantgrouppriv", function(cmd)
 		end
 
 		local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = type, value = value })[1]
-		if priv and priv.granted ~= 0 then error("Privilege is already granted to this group") end
+		if priv and priv.granted then error("Privilege is already granted to this group") end
 
 		BSU.RegisterGroupPrivilege(groupid, type, value, true)
 
@@ -485,7 +485,7 @@ BSU.SetupCommand("revokegrouppriv", function(cmd)
 		end
 
 		local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = type, value = value })[1]
-		if priv and priv.granted == 0 then error("Privilege is already revoked from this group") end
+		if priv and not priv.granted then error("Privilege is already revoked from this group") end
 
 		BSU.RegisterGroupPrivilege(groupid, type, value, false)
 
@@ -522,7 +522,7 @@ BSU.SetupCommand("cleargrouppriv", function(cmd)
 		BSU.RemoveGroupPrivilege(groupid, type, value)
 
 		self:BroadcastActionMsg("%caller% cleared a %kind% privilege on the group %groupid% for %value% (%name%)", {
-			kind = priv.granted ~= 0 and "granting" or "revoking",
+			kind = priv.granted and "granting" or "revoking",
 			groupid = groupid,
 			value = value,
 			name = getNameFromPriv(type),

@@ -1,9 +1,42 @@
 -- lib/sql.lua (SHARED)
 -- handles some sql stuff and holds useful functions
 
--- if nil or NULL then "NULL" otherwise escape danger
-function BSU.EscOrNULL(i, quotes)
-	return not i or i == NULL and "NULL" or sql.SQLStr("" .. i, quotes or type(i) == "number")
+local function sqlEscape(str, quotes)
+	str = tostring(str)
+
+	str = string.gsub(str, quotes, quotes .. quotes)
+
+	local null_chr = string.find(str, "\0")
+	if null_chr then
+		str = string.sub(str, 1, null_chr - 1)
+	end
+
+	return quotes .. str .. quotes
+end
+
+-- escapes an identifier to be put in a query
+function BSU.SQLEscIdent(i)
+	return sqlEscape(i, "\"")
+end
+
+-- escapes a value to be put in a query
+function BSU.SQLEscValue(v)
+	local t = type(v)
+	if t == "number" then
+		if v ~= v then -- sqlite converts NaN to NULL
+			return "NULL"
+		elseif v == math.huge then
+			return "1e999"
+		elseif v == -math.huge then
+			return "-1e999"
+		end
+		return tostring(v)
+	elseif t == "boolean" then
+		return v and "1" or "0"
+	elseif t == "string" then
+		return sqlEscape(v, "'")
+	end
+	return "NULL"
 end
 
 -- checks if query errored or not
@@ -25,7 +58,7 @@ end
 
 function BSU.SQLGetColumnData(tbl)
 	local data = {}
-	for _, v in ipairs(BSU.SQLQuery(string.format("PRAGMA table_info(%s)", BSU.EscOrNULL(tbl, true)))) do
+	for _, v in ipairs(BSU.SQLQuery("PRAGMA table_info(%s)", BSU.SQLEscIdent(tbl))) do
 		local name = v.name
 		v.name = nil
 		data[name] = v
@@ -49,8 +82,22 @@ function BSU.SQLParse(data, tbl)
 				data[k] = nil
 			else
 				local t = columnData[k].type
-				if t == "INTEGER" or t == "REAL" or t == "NUMERIC" or t == "BOOLEAN" then
-					data[k] = tonumber(v)
+				if t == "INTEGER" or t == "REAL" or t == "NUMERIC" then
+					-- note: GMod sqlite's handling of Infinity and -Infinity
+					--[[
+						> PrintTable(sql.QueryRow("SELECT 1e999, -1e999"))...
+						-1e999  =       -Inf
+						1e999   =       Inf
+					]]
+					if v == "Inf" then
+						data[k] = math.huge
+					elseif v == "-Inf" then
+						data[k] = -math.huge
+					else
+						data[k] = tonumber(v)
+					end
+				elseif t == "BOOLEAN" then
+					data[k] = tonumber(v) ~= 0
 				end
 			end
 		end
@@ -61,23 +108,23 @@ end
 
 -- inserts data into a sql table (keys are the column names)
 function BSU.SQLInsert(tbl, data)
-	local keys, values = {}, {}
+	local columns, values = {}, {}
 
 	for k, v in pairs(data) do
-		table.insert(keys, BSU.EscOrNULL(k, true))
-		table.insert(values, BSU.EscOrNULL(v))
+		table.insert(columns, BSU.SQLEscIdent(k))
+		table.insert(values, BSU.SQLEscValue(v))
 	end
 
-	return BSU.SQLQuery("INSERT INTO '%s' (%s) VALUES(%s)",
-		BSU.EscOrNULL(tbl, true),
-		table.concat(keys, ","),
+	return BSU.SQLQuery("INSERT INTO %s (%s) VALUES(%s)",
+		BSU.SQLEscIdent(tbl),
+		table.concat(columns, ","),
 		table.concat(values, ",")
 	)
 end
 
 -- returns every entry in a sql table
 function BSU.SQLSelectAll(tbl)
-	local query = BSU.SQLQuery("SELECT * FROM '%s'", BSU.EscOrNULL(tbl, true))
+	local query = BSU.SQLQuery("SELECT * FROM %s", BSU.SQLEscIdent(tbl))
 
 	if query then
 		return BSU.SQLParse(query, tbl)
@@ -91,11 +138,11 @@ function BSU.SQLSelectByValues(tbl, values)
 
 	local conditions = {}
 	for k, v in pairs(values) do
-		table.insert(conditions, BSU.EscOrNULL(k, true) .. "=" .. BSU.EscOrNULL(v))
+		table.insert(conditions, string.format("%s = %s", BSU.SQLEscIdent(k), BSU.SQLEscValue(v)))
 	end
 
-	local query = BSU.SQLQuery("SELECT * FROM '%s' WHERE %s",
-		BSU.EscOrNULL(tbl, true),
+	local query = BSU.SQLQuery("SELECT * FROM %s WHERE %s",
+		BSU.SQLEscIdent(tbl),
 		table.concat(conditions, " AND ")
 	)
 
@@ -111,11 +158,11 @@ function BSU.SQLDeleteByValues(tbl, values)
 
 	local conditions = {}
 	for k, v in pairs(values) do
-		table.insert(conditions, BSU.EscOrNULL(k, true) .. "=" .. BSU.EscOrNULL(v))
+		table.insert(conditions, string.format("%s = %s", BSU.SQLEscIdent(k), BSU.SQLEscValue(v)))
 	end
 
-	return BSU.SQLQuery("DELETE FROM '%s' WHERE %s",
-		BSU.EscOrNULL(tbl, true),
+	return BSU.SQLQuery("DELETE FROM %s WHERE %s",
+		BSU.SQLEscIdent(tbl),
 		table.concat(conditions, " AND ")
 	)
 end
@@ -126,25 +173,25 @@ function BSU.SQLUpdateByValues(tbl, values, updatedValues)
 
 	local conditions = {}
 	for k, v in pairs(values) do
-		table.insert(conditions, BSU.EscOrNULL(k, true) .. "=" .. BSU.EscOrNULL(v))
+		table.insert(conditions, string.format("%s = %s", BSU.SQLEscIdent(k), BSU.SQLEscValue(v)))
 	end
 
 	local updates = {}
 	for k, v in pairs(updatedValues) do
-		table.insert(updates, BSU.EscOrNULL(k, true) .. "=" .. BSU.EscOrNULL(v))
+		table.insert(updates, string.format("%s = %s", BSU.SQLEscIdent(k), BSU.SQLEscValue(v)))
 	end
 
-	return BSU.SQLQuery("UPDATE '%s' SET %s WHERE %s",
-		BSU.EscOrNULL(tbl, true),
+	return BSU.SQLQuery("UPDATE %s SET %s WHERE %s",
+		BSU.SQLEscIdent(tbl),
 		table.concat(updates, ","),
 		table.concat(conditions, " AND ")
 	)
 end
 
--- tries to create a new db table if it does not exist already
+-- helper function to create a new db table if it does not exist already
 function BSU.SQLCreateTable(name, values)
-	return BSU.SQLQuery("CREATE TABLE IF NOT EXISTS '%s' (%s)",
-		BSU.EscOrNULL(name, true),
-		BSU.EscOrNULL(values, true)
+	return BSU.SQLQuery("CREATE TABLE IF NOT EXISTS %s (%s)",
+		BSU.SQLEscIdent(name),
+		values -- this isn't sanitized correctly but you shouldn't be letting clients create tables anyway
 	)
 end

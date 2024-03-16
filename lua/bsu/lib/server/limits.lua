@@ -35,10 +35,9 @@ function BSU.GetAllGroupLimits()
 end
 
 function BSU.GetGroupWildcardLimits(groupid)
-	local query = BSU.SQLQuery("SELECT * FROM '%s' WHERE groupid = %s AND name LIKE '%s'",
-		BSU.EscOrNULL(BSU.SQL_GROUP_LIMITS, true),
-		BSU.EscOrNULL(groupid),
-		"%*%"
+	local query = BSU.SQLQuery("SELECT * FROM %s WHERE groupid = %s AND name LIKE '%%*%%'",
+		BSU.SQLEscIdent(BSU.SQL_GROUP_LIMITS),
+		BSU.SQLEscValue(groupid)
 	)
 	return query and BSU.SQLParse(query, BSU.SQL_GROUP_LIMITS) or {}
 end

@@ -32,8 +32,8 @@ BSU.SQLCreateTable(BSU.SQL_GROUPS, string.format(
 		usergroup TEXT NOT NULL DEFAULT user,
 		inherit TEXT REFERENCES %s(id)
 	]],
-		BSU.EscOrNULL(BSU.SQL_TEAMS, true),
-		BSU.EscOrNULL(BSU.SQL_GROUPS, true)
+		BSU.SQLEscIdent(BSU.SQL_TEAMS),
+		BSU.SQLEscIdent(BSU.SQL_GROUPS)
 ))
 
 --[[
@@ -54,8 +54,8 @@ BSU.SQLCreateTable(BSU.SQL_PLAYERS, string.format(
 		groupid TEXT NOT NULL REFERENCES %s(id),
 		ip TEXT
 	]],
-		BSU.EscOrNULL(BSU.SQL_TEAMS, true),
-		BSU.EscOrNULL(BSU.SQL_GROUPS, true)
+		BSU.SQLEscIdent(BSU.SQL_TEAMS),
+		BSU.SQLEscIdent(BSU.SQL_GROUPS)
 ))
 
 --[[
@@ -74,7 +74,7 @@ BSU.SQLCreateTable(BSU.SQL_PDATA, string.format(
 		value TEXT NOT NULL,
 		network BOOLEAN NOT NULL CHECK (network in (0, 1))
 	]],
-		BSU.EscOrNULL(BSU.SQL_PLAYERS, true)
+		BSU.SQLEscIdent(BSU.SQL_PLAYERS)
 ))
 
 --[[
@@ -101,8 +101,8 @@ BSU.SQLCreateTable(BSU.SQL_BANS, string.format(
 		unbanTime INTEGER,
 		unbanAdmin TEXT REFERENCES %s(steamid)
 	]],
-		BSU.EscOrNULL(BSU.SQL_PLAYERS, true),
-		BSU.EscOrNULL(BSU.SQL_PLAYERS, true)
+		BSU.SQLEscIdent(BSU.SQL_PLAYERS),
+		BSU.SQLEscIdent(BSU.SQL_PLAYERS)
 ))
 
 --[[
@@ -121,7 +121,7 @@ BSU.SQLCreateTable(BSU.SQL_GROUP_PRIVS, string.format(
 		value TEXT NOT NULL,
 		granted BOOLEAN NOT NULL CHECK (granted in (0, 1))
 	]],
-		BSU.EscOrNULL(BSU.SQL_GROUPS, true)
+		BSU.SQLEscIdent(BSU.SQL_GROUPS)
 ))
 
 --[[
@@ -138,7 +138,7 @@ BSU.SQLCreateTable(BSU.SQL_GROUP_LIMITS, string.format(
 		name TEXT NOT NULL,
 		amount INTEGER NOT NULL
 	]],
-		BSU.EscOrNULL(BSU.SQL_GROUPS, true)
+		BSU.SQLEscIdent(BSU.SQL_GROUPS)
 ))
 
 --[[
@@ -160,5 +160,5 @@ BSU.SQLCreateTable(BSU.SQL_CMD_LIMITS, string.format(
 		max INTEGER,
 		UNIQUE(cmd, arg)
 	]],
-		BSU.EscOrNULL(BSU.SQL_GROUPS, true)
+		BSU.SQLEscIdent(BSU.SQL_GROUPS)
 ))
