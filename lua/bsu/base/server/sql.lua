@@ -72,7 +72,8 @@ BSU.SQLCreateTable(BSU.SQL_PDATA, string.format(
 		steamid TEXT NOT NULL REFERENCES %s(steamid),
 		key TEXT NOT NULL,
 		value TEXT NOT NULL,
-		network BOOLEAN NOT NULL CHECK (network in (0, 1))
+		network BOOLEAN NOT NULL CHECK (network in (0, 1)),
+		UNIQUE (steamid, key)
 	]],
 		BSU.SQLEscIdent(BSU.SQL_PLAYERS)
 ))
@@ -119,7 +120,8 @@ BSU.SQLCreateTable(BSU.SQL_GROUP_PRIVS, string.format(
 		groupid TEXT NOT NULL REFERENCES %s(id),
 		type INTEGER NOT NULL,
 		value TEXT NOT NULL,
-		granted BOOLEAN NOT NULL CHECK (granted in (0, 1))
+		granted BOOLEAN NOT NULL CHECK (granted in (0, 1)),
+		UNIQUE (groupid, type, value)
 	]],
 		BSU.SQLEscIdent(BSU.SQL_GROUPS)
 ))
@@ -136,7 +138,8 @@ BSU.SQLCreateTable(BSU.SQL_GROUP_LIMITS, string.format(
 	[[
 		groupid TEXT NOT NULL REFERENCES %s(id),
 		name TEXT NOT NULL,
-		amount INTEGER NOT NULL
+		amount INTEGER NOT NULL,
+		UNIQUE (groupid, name)
 	]],
 		BSU.SQLEscIdent(BSU.SQL_GROUPS)
 ))
@@ -158,7 +161,7 @@ BSU.SQLCreateTable(BSU.SQL_CMD_LIMITS, string.format(
 		arg TEXT NOT NULL,
 		min INTEGER,
 		max INTEGER,
-		UNIQUE(cmd, arg)
+		UNIQUE (groupid, cmd, arg)
 	]],
 		BSU.SQLEscIdent(BSU.SQL_GROUPS)
 ))
