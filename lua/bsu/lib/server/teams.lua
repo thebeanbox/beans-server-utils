@@ -3,7 +3,7 @@
 function BSU.RegisterTeam(id, name, color)
 	if not isnumber(id) then error("Team id must be a number") end
 
-	BSU.SQLInsert(BSU.SQL_TEAMS, {
+	BSU.SQLInsertOrReplace(BSU.SQL_TEAMS, {
 		id = id,
 		name = name,
 		color = IsColor(color) and BSU.ColorToHex(color) or isstring(color) and string.gsub(color, "#", "") or "ffffff"

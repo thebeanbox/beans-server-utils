@@ -2,10 +2,7 @@
 -- functions for managing group and player privileges
 
 function BSU.RegisterGroupPrivilege(groupid, type, value, granted)
-	-- incase this privilege is already registered, remove the old one
-	BSU.RemoveGroupPrivilege(groupid, type, value) -- sqlite's REPLACE INTO could've been implemented but removing and inserting is practically the same
-
-	BSU.SQLInsert(BSU.SQL_GROUP_PRIVS, {
+	BSU.SQLInsertOrReplace(BSU.SQL_GROUP_PRIVS, {
 		groupid = groupid,
 		type = type,
 		value = value,

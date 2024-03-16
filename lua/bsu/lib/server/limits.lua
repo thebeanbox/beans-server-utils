@@ -3,9 +3,6 @@
 function BSU.RegisterGroupLimit(groupid, name, amount)
 	name = string.lower(name)
 
-	-- incase this limit is already registered, remove the old one
-	BSU.RemoveGroupLimit(groupid, name) -- sqlite's REPLACE INTO could've been implemented but removing and inserting is practically the same
-
 	-- fix amount
 	if not amount then
 		local cvar = GetConVar("sbox_max" .. name)
@@ -14,7 +11,7 @@ function BSU.RegisterGroupLimit(groupid, name, amount)
 		amount = math.floor(amount)
 	end
 
-	BSU.SQLInsert(BSU.SQL_GROUP_LIMITS, {
+	BSU.SQLInsertOrReplace(BSU.SQL_GROUP_LIMITS, {
 		groupid = groupid,
 		name = name,
 		amount = amount

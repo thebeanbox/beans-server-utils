@@ -4,9 +4,7 @@ util.AddNetworkString("bsu_pdata")
 function BSU.RegisterPData(steamid, key, value, network)
 	steamid = BSU.ID64(steamid)
 
-	BSU.RemovePData(steamid, key)
-
-	BSU.SQLInsert(BSU.SQL_PDATA, {
+	BSU.SQLInsertOrReplace(BSU.SQL_PDATA, {
 		steamid = steamid,
 		key = key,
 		value = value,
