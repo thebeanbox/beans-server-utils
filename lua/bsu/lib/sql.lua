@@ -122,6 +122,22 @@ function BSU.SQLInsert(tbl, data)
 	)
 end
 
+-- inserts or replaces data into a sql table
+function BSU.SQLInsertOrReplace(tbl, data)
+	local columns, values = {}, {}
+
+	for k, v in pairs(data) do
+		table.insert(columns, BSU.SQLEscIdent(k))
+		table.insert(values, BSU.SQLEscValue(v))
+	end
+
+	return BSU.SQLQuery("INSERT OR REPLACE INTO %s (%s) VALUES(%s)",
+		BSU.SQLEscIdent(tbl),
+		table.concat(columns, ","),
+		table.concat(values, ",")
+	)
+end
+
 -- returns every entry in a sql table
 function BSU.SQLSelectAll(tbl)
 	local query = BSU.SQLQuery("SELECT * FROM %s", BSU.SQLEscIdent(tbl))
