@@ -136,7 +136,7 @@ local debrisGroups = {
 }
 
 BSU.SetupCommand("cleardebris", function(cmd)
-	cmd:SetDescription("Clear all debris")
+	cmd:SetDescription("Clear all entities that are considered debris")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
@@ -150,14 +150,37 @@ BSU.SetupCommand("cleardebris", function(cmd)
 	end)
 end)
 
-BSU.SetupCommand("removeragdolls", function(cmd)
-	cmd:SetDescription("Remove all clientside ragdolls")
+BSU.SetupCommand("clearprops", function(cmd)
+	cmd:SetDescription("Clear all clientside props")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		BSU.ClientRPC(nil, "game.RemoveRagdolls")
+		BSU.RemoveClientProps()
 
-		self:BroadcastActionMsg("%caller% removed ragdolls")
+		self:BroadcastActionMsg("%caller% cleared clientside props")
+	end)
+end)
+BSU.AliasCommand("cleargibs", "clearprops")
+
+BSU.SetupCommand("clearragdolls", function(cmd)
+	cmd:SetDescription("Clear all clientside ragdolls")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		BSU.RemoveClientRagdolls()
+
+		self:BroadcastActionMsg("%caller% cleared clientside ragdolls")
+	end)
+end)
+
+BSU.SetupCommand("cleareffects", function(cmd)
+	cmd:SetDescription("Clear all clientside effects")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		BSU.RemoveClientEffects()
+
+		self:BroadcastActionMsg("%caller% cleared clientside effects")
 	end)
 end)
 
