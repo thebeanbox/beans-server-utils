@@ -163,3 +163,33 @@ function BSU.FixMsgCArgs(...)
 
 	return unpack(args)
 end
+
+local function removeByClass(class)
+	for _, v in ipairs(ents.FindByClass(class)) do
+		v:Remove()
+	end
+end
+
+function BSU.RemoveClientProps(plys)
+	if SERVER then
+		BSU.ClientRPC(plys, "BSU.RemoveClientProps")
+		return
+	end
+	removeByClass("class C_PhysPropClientside")
+end
+
+function BSU.RemoveClientRagdolls(plys)
+	if SERVER then
+		BSU.ClientRPC(plys, "BSU.RemoveClientRagdolls")
+		return
+	end
+	removeByClass("class C_PhysPropClientside")
+end
+
+function BSU.RemoveClientEffects(plys)
+	if SERVER then
+		BSU.ClientRPC(plys, "BSU.RemoveClientEffects")
+		return
+	end
+	removeByClass("class CLuaEffect")
+end
