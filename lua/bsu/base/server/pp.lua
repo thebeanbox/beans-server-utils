@@ -6,8 +6,15 @@ local function cleanupProps(id)
 	end
 end
 
-hook.Add("BSU_PlayerBanned", "BSU_CleanupBannedPlayerProps", function(ply)
-	cleanupProps(ply:SteamID64())
+hook.Add("BSU_SteamIDBanned", "BSU_CleanupBannedPlayerProps", function(id)
+	cleanupProps(id)
+end)
+
+hook.Add("BSU_IPBanned", "BSU_CleanupBannedPlayerProps", function(ip)
+	local data = BSU.GetPlayerDataByIPAddress(ip) -- find any players associated with this ip
+	for i = 1, #data do
+		cleanupProps(data[i].steamid)
+	end
 end)
 
 hook.Add("BSU_PlayerKicked", "BSU_CleanupKickedPlayerProps", function(ply)
