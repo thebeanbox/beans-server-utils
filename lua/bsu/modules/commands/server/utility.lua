@@ -115,19 +115,6 @@ BSU.SetupCommand("nolag", function(cmd)
 	end)
 end)
 
-BSU.SetupCommand("cleardecals", function(cmd)
-	cmd:SetDescription("Clear all decals")
-	cmd:SetCategory("utility")
-	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self)
-		for _, ply in pairs(player.GetHumans()) do
-			ply:ConCommand("r_cleardecals")
-		end
-
-		self:BroadcastActionMsg("%caller% cleared decals")
-	end)
-end)
-
 local debrisGroups = {
 	[COLLISION_GROUP_DEBRIS] = true,
 	[COLLISION_GROUP_DEBRIS_TRIGGER] = true,
@@ -135,18 +122,46 @@ local debrisGroups = {
 	[COLLISION_GROUP_INTERACTIVE] = true
 }
 
-BSU.SetupCommand("cleardebris", function(cmd)
-	cmd:SetDescription("Clear all entities that are considered debris")
+BSU.SetupCommand("cleanupdebris", function(cmd)
+	cmd:SetDescription("Cleanup all entities that are considered debris")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		for _, v in pairs(ents.GetAll()) do
+		for _, v in ipairs(ents.GetAll()) do
+			-- BSU.GetOwner returns nil if the entity is ownerless
 			if not BSU.GetOwner(v) and debrisGroups[v:GetCollisionGroup()] then
 				v:Remove()
 			end
 		end
 
 		self:BroadcastActionMsg("%caller% cleared debris")
+	end)
+end)
+
+BSU.SetupCommand("cleanupdisconnected", function(cmd)
+	cmd:SetDescription("Cleanup all entities that are owned by disconnected players")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		for _, v in ipairs(ents.GetAll()) do
+			-- BSU.GetOwner returns NULL if the player owner disconnected
+			-- (do not use IsValid or IsPlayer here otherwise world-owned entities will get removed too)
+			if BSU.GetOwner(v) == NULL then
+				v:Remove()
+			end
+	end)
+end)
+
+BSU.SetupCommand("cleardecals", function(cmd)
+	cmd:SetDescription("Clear all clientside decals")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		for _, ply in ipairs(player.GetHumans()) do
+			ply:ConCommand("r_cleardecals")
+		end
+
+		self:BroadcastActionMsg("%caller% cleared decals")
 	end)
 end)
 
@@ -436,4 +451,3 @@ BSU.SetupCommand("maplist", function(cmd)
 		self:PrintConsoleMsg(unpack(msg))
 	end)
 end)
-
