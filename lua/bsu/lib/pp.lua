@@ -210,7 +210,6 @@ end
 
 -- returns owner of the entity (can be a player or the world, NULL entity if player is disconnected, nil if entity is ownerless)
 function BSU.GetOwner(ent)
-	if not IsValid(ent) then return end
 	local userid = BSU.GetOwnerInfo(ent, "userid")
 	if not userid then return end
 	if userid == -1 then return game.GetWorld() end
