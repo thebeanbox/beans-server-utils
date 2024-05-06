@@ -134,7 +134,7 @@ BSU.SetupCommand("cleanupdebris", function(cmd)
 			end
 		end
 
-		self:BroadcastActionMsg("%caller% cleared debris")
+		self:BroadcastActionMsg("%caller% cleaned up debris")
 	end)
 end)
 
@@ -149,6 +149,9 @@ BSU.SetupCommand("cleanupdisconnected", function(cmd)
 			if BSU.GetOwner(v) == NULL then
 				v:Remove()
 			end
+		end
+
+		self:BroadcastActionMsg("%caller% cleaned up disconnected")
 	end)
 end)
 
