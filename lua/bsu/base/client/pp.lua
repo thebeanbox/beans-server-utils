@@ -197,8 +197,7 @@ local function drawPropProtectionHUD()
 	trace.mask = MASK_SHOT
 	local ent = util.TraceLine(trace).Entity
 	if ent:IsValid() and not ent:IsPlayer() then
-		local name, steamid = BSU.GetOwnerName(ent) or "N/A", BSU.GetOwnerSteamID(ent)
-		local text = "Owner: " .. name .. (steamid and "<" .. steamid .. ">" or "") .. "\n" .. ent:GetModel() .. "\n" .. tostring(ent)
+		local text = string.format("Owner: %s\n%s\n%s", BSU.GetOwnerString(ent), ent:GetModel(), tostring(ent))
 		surface.SetFont(font)
 		local w, h = surface.GetTextSize(text)
 		draw.RoundedBox(4, hudX, hudY, w + 8, h + 8, hudColorBG)
