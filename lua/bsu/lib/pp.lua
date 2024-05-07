@@ -71,7 +71,7 @@ end
 
 -- periodically send owner updates
 -- if ownership updates keep happening every tick, the above timer will keep resetting and never finish (this makes sure updates get sent atleast every so often)
-timer.Create("BSU_ForceSendOwnerUpdates", 1, 0, sendOwnerUpdates)
+if SERVER then timer.Create("BSU_ForceSendOwnerUpdates", 1, 0, sendOwnerUpdates) end
 
 local function updateOwnerInfo(id, key, value)
 	if not isstring(key) or value == nil then return end
@@ -97,10 +97,12 @@ local function clearEntityOwner(entindex)
 	if not id then return end -- already ownerless
 
 	BSU._entowners[entindex] = nil
-	BSU._ownerents[id][entindex] = nil
-	if id > 0 and not Player(id):IsValid() and next(BSU._ownerents[id]) == nil then
-		BSU._owners[id] = nil -- delete owner data (owner is disconnected player with no props)
+	-- clear all owner data for disconnected players who own no entities
+	if id ~= WORLD_ID and next(BSU._ownerents[id]) == nil and not Player(BSU._owners[id].userid):IsValid() then
+		BSU._owners[id] = nil
 		BSU._ownerents[id] = nil
+	else
+		BSU._ownerents[id][entindex] = nil
 	end
 
 	if SERVER then
