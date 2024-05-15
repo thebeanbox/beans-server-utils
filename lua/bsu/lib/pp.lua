@@ -1,12 +1,12 @@
 -- lib/pp.lua (SHARED)
 
 BSU._owners = BSU._owners or {} -- owner data
-BSU._entowners = BSU._entowners or {} -- entity index -> steamid3 lookup
-BSU._ownerents = BSU._ownerents or {} -- steamid3 -> entity index lookup lookup
+BSU._entowners = BSU._entowners or {} -- [entindex] = steamid64
+BSU._ownerents = BSU._ownerents or {} -- [steamid64] = entindex
 
 local infoUpdates, entsUpdates = {}, {}
 
-local WORLD_ID = 2 ^ 32 - 1 -- owner id for the world (whoever gets this steamid, TOO BAD!)
+local WORLD_ID = "18446744073709551615" -- owner id for the world
 
 -- used for determining amount of bits needed to network owner info and ents (these do not limit anything serverside)
 
@@ -18,7 +18,7 @@ local function sendOwnerUpdates()
 		for id, info in pairs(infoUpdates) do
 			for k, v in pairs(info) do
 				net.Start("bsu_owner_info")
-					net.WriteUInt(id, 32)
+					net.WriteUInt64(id)
 					net.WriteString(k)
 					net.WriteType(v)
 				net.Broadcast()
@@ -44,7 +44,7 @@ local function sendOwnerUpdates()
 			for id, ents in pairs(owners) do
 				for _, entindex in ipairs(ents) do
 					net.Start("bsu_set_owner")
-						net.WriteUInt(id, 32)
+						net.WriteUInt64(id)
 						net.WriteUInt(entindex, 13)
 					net.Broadcast()
 				end
@@ -71,7 +71,7 @@ end
 
 -- periodically send owner updates
 -- if ownership updates keep happening every tick, the above timer will keep resetting and never finish (this makes sure updates get sent atleast every so often)
-timer.Create("BSU_ForceSendOwnerUpdates", 1, 0, sendOwnerUpdates)
+if SERVER then timer.Create("BSU_ForceSendOwnerUpdates", 1, 0, sendOwnerUpdates) end
 
 local function updateOwnerInfo(id, key, value)
 	if not isstring(key) or value == nil then return end
@@ -97,10 +97,12 @@ local function clearEntityOwner(entindex)
 	if not id then return end -- already ownerless
 
 	BSU._entowners[entindex] = nil
-	BSU._ownerents[id][entindex] = nil
-	if id > 0 and not Player(id):IsValid() and next(BSU._ownerents[id]) == nil then
-		BSU._owners[id] = nil -- delete owner data (owner is disconnected player with no props)
+	-- clear all owner data for disconnected players who own no entities
+	if id ~= WORLD_ID and next(BSU._ownerents[id]) == nil and not Player(BSU._owners[id].userid):IsValid() then
+		BSU._owners[id] = nil
 		BSU._ownerents[id] = nil
+	else
+		BSU._ownerents[id][entindex] = nil
 	end
 
 	if SERVER then
@@ -125,7 +127,7 @@ end
 
 function BSU.SetOwnerInfo(owner, key, value)
 	if not IsValid(owner) or (not owner:IsPlayer() and not owner:IsWorld()) then return end
-	local id = owner:IsPlayer() and owner:AccountID() or WORLD_ID
+	local id = owner:IsPlayer() and owner:SteamID64() or WORLD_ID
 	updateOwnerInfo(id, key, value)
 end
 
@@ -138,7 +140,7 @@ end
 function BSU.SetOwner(ent, owner)
 	if not IsValid(ent) or ent:IsPlayer() then return end
 	if not IsValid(owner) or not owner:IsPlayer() then return end
-	local id = owner:AccountID()
+	local id = owner:SteamID64()
 	updateOwnerInfo(id, "name", owner:Nick()) -- used for HUD display
 	updateOwnerInfo(id, "userid", owner:UserID()) -- used for getting the owner entity
 	setEntityOwner(ent:EntIndex(), id)
@@ -186,18 +188,20 @@ function BSU.GetOwnerEntities(id)
 	return ents
 end
 
--- returns steamid3 of the entity's owner (WORLD_ID if owner is the world, nil if entity is ownerless)
+-- returns steamid64 of the entity owner (WORLD_ID if owner is the world, nil if entity is ownerless)
 function BSU.GetOwnerID(ent)
 	if not IsValid(ent) then return end
 	return BSU._entowners[ent:EntIndex()]
 end
 
--- returns STEAM_0 style id of the entity owner (nil if entity is ownerless or owned by the world)
-function BSU.GetOwnerSteamID(ent)
+-- returns string of the entity owner ("Name<STEAM_X:Y:Z>" if owner is a player, "World" if owner is the world, "N/A" if entity is ownerless)
+function BSU.GetOwnerString(ent)
 	if not IsValid(ent) then return end
 	local id = BSU._entowners[ent:EntIndex()]
-	if not id or id == WORLD_ID then return end
-	return BSU.SteamIDFrom3(id)
+	if not id then return "N/A" end
+	local name = BSU._owners[id].name or ""
+	if id == WORLD_ID then return name end
+	return string.format("%s<%s>", name, util.SteamIDFrom64(id))
 end
 
 -- returns info about the entity owner (nil if entity is ownerless or there's no info with the key)
@@ -210,7 +214,6 @@ end
 
 -- returns owner of the entity (can be a player or the world, NULL entity if player is disconnected, nil if entity is ownerless)
 function BSU.GetOwner(ent)
-	if not IsValid(ent) then return end
 	local userid = BSU.GetOwnerInfo(ent, "userid")
 	if not userid then return end
 	if userid == -1 then return game.GetWorld() end
@@ -237,7 +240,7 @@ if SERVER then
 		net.Start("bsu_init_owners")
 			net.WriteUInt(table.Count(BSU._owners), 7)
 		for id, info in pairs(BSU._owners) do
-			net.WriteUInt(id, 32)
+			net.WriteUInt64(id)
 
 			local infoTotal = math.min(table.Count(info), OWNER_INFO_MAX)
 			net.WriteUInt(infoTotal, infoBits)
@@ -266,7 +269,7 @@ end
 net.Receive("bsu_init_owners", function()
 	local owners = net.ReadUInt(7)
 	for _ = 1, owners do
-		local id = net.ReadUInt(32)
+		local id = net.ReadUInt64()
 
 		local info = net.ReadUInt(infoBits)
 		for _ = 1, info do
@@ -283,12 +286,12 @@ net.Receive("bsu_init_owners", function()
 end)
 
 net.Receive("bsu_owner_info", function()
-	local id, key, value = net.ReadUInt(32), net.ReadString(), net.ReadType()
+	local id, key, value = net.ReadUInt64(), net.ReadString(), net.ReadType()
 	updateOwnerInfo(id, key, value)
 end)
 
 net.Receive("bsu_set_owner", function()
-	local id, entindex = net.ReadUInt(32), net.ReadUInt(13)
+	local id, entindex = net.ReadUInt64(), net.ReadUInt(13)
 	setEntityOwner(entindex, id)
 end)
 

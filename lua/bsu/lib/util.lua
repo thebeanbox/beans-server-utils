@@ -24,24 +24,24 @@ function BSU.LocalTime()
 	return os.time(os.date("!*t"))
 end
 
-function BSU.SteamIDTo3(id)
+function BSU.SteamIDToAccount(id)
 	local y, z = string.match(id, "^STEAM_0:([01]):(%d+)$")
 	if not y then return 0 end
 	return bit.lshift(z, 1) + y
 end
 
-function BSU.SteamIDFrom3(id3)
-	local y, z = bit.band(id3, 1), bit.rshift(id3, 1)
+function BSU.SteamIDFromAccount(acc)
+	local y, z = bit.band(acc, 1), bit.rshift(acc, 1)
 	return string.format("STEAM_0:%u:%u", y, z)
 end
 
-function BSU.SteamID64To3(id64)
+function BSU.SteamID64ToAccount(id64)
 	local id = util.SteamIDFrom64(id64)
-	return BSU.SteamIDTo3(id)
+	return BSU.SteamIDToAccount(id)
 end
 
-function BSU.SteamID64From3(id3)
-	local id = BSU.SteamIDFrom3(id3)
+function BSU.SteamID64FromAccount(acc)
+	local id = BSU.SteamIDFromAccount(acc)
 	return util.SteamIDTo64(id)
 end
 
@@ -162,4 +162,34 @@ function BSU.FixMsgCArgs(...)
 	end
 
 	return unpack(args)
+end
+
+local function removeByClass(class)
+	for _, v in ipairs(ents.FindByClass(class)) do
+		v:Remove()
+	end
+end
+
+function BSU.RemoveClientProps(plys)
+	if SERVER then
+		BSU.ClientRPC(plys, "BSU.RemoveClientProps")
+		return
+	end
+	removeByClass("class C_PhysPropClientside")
+end
+
+function BSU.RemoveClientRagdolls(plys)
+	if SERVER then
+		BSU.ClientRPC(plys, "BSU.RemoveClientRagdolls")
+		return
+	end
+	removeByClass("class C_PhysPropClientside")
+end
+
+function BSU.RemoveClientEffects(plys)
+	if SERVER then
+		BSU.ClientRPC(plys, "BSU.RemoveClientEffects")
+		return
+	end
+	removeByClass("class CLuaEffect")
 end

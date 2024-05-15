@@ -101,6 +101,8 @@ function BSU.BanSteamID(steamid, reason, duration, adminid)
 	BSU.RegisterBan(steamid, reason, duration or 0, adminid and BSU.ID64(adminid) or nil)
 
 	game.KickID(util.SteamIDFrom64(steamid), "(Banned) " .. (reason or "No reason given"))
+
+	hook.Run("BSU_SteamIDBanned", steamid, reason, duration, adminid)
 end
 
 -- ban a player by ip (this adds a new ban entry so it will be the new ban status for this player)
@@ -114,6 +116,8 @@ function BSU.BanIP(ip, reason, duration, adminid)
 			game.KickID(v:UserID(), "(Banned) " .. (reason or "No reason given"))
 		end
 	end
+
+	hook.Run("BSU_IPBanned", ip, reason, duration, adminid)
 end
 
 -- unban a player by steam id
@@ -135,12 +139,13 @@ end
 function BSU.BanPlayer(ply, reason, duration, admin)
 	if ply:IsBot() then return error("Unable to ban a bot, try kicking") end
 	BSU.BanSteamID(ply:SteamID64(), reason, duration, IsValid(admin) and admin:SteamID64() or nil)
-	hook.Run("BSU_PlayerBanned", ply, reason, duration, admin)
+	hook.Run("BSU_PlayerBanned", ply, reason, duration, admin) -- redundant hook? see BSU_SteamIDBanned and BSU_IPBanned
 end
 
 function BSU.IPBanPlayer(ply, reason, duration, admin)
 	if ply:IsBot() then return error("Unable to ip ban a bot, try kicking") end
 	BSU.BanIP(ply:IPAddress(), reason, duration, IsValid(admin) and admin:SteamID64() or nil)
+	hook.Run("BSU_PlayerBanned", ply, reason, duration, admin) -- redundant hook? see BSU_SteamIDBanned and BSU_IPBanned
 end
 
 function BSU.KickPlayer(ply, reason, admin)

@@ -6,18 +6,25 @@ local function cleanupProps(id)
 	end
 end
 
-hook.Add("BSU_PlayerBanned", "BSU_CleanupBannedPlayerProps", function(ply)
-	cleanupProps(ply:AccountID())
+hook.Add("BSU_SteamIDBanned", "BSU_CleanupBannedPlayerProps", function(id)
+	cleanupProps(id)
+end)
+
+hook.Add("BSU_IPBanned", "BSU_CleanupBannedPlayerProps", function(ip)
+	local data = BSU.GetPlayerDataByIPAddress(ip) -- find any players associated with this ip
+	for i = 1, #data do
+		cleanupProps(data[i].steamid)
+	end
 end)
 
 hook.Add("BSU_PlayerKicked", "BSU_CleanupKickedPlayerProps", function(ply)
-	cleanupProps(ply:AccountID())
+	cleanupProps(ply:SteamID64())
 end)
 
 local cleanupTime = GetConVar("bsu_cleanup_time")
 
 hook.Add("PlayerDisconnected", "BSU_HandleDisconnectedPlayerProps", function(ply)
-	local id = ply:AccountID()
+	local id = ply:SteamID64()
 
 	-- freeze props
 	for _, ent in ipairs(BSU.GetOwnerEntities(id)) do
@@ -36,12 +43,12 @@ hook.Add("PlayerDisconnected", "BSU_HandleDisconnectedPlayerProps", function(ply
 
 	-- clear permissions granted to disconnected players
 	if not ply:IsBot() then
-		BSU.ClearPermissionTo(ply:SteamID())
+		BSU.ClearPermissionTo(ply:SteamID64())
 	end
 end)
 
 hook.Add("PlayerInitialSpawn", "BSU_RemoveCleanupDisconnected", function(ply)
-	local id = ply:AccountID()
+	local id = ply:SteamID64()
 	timer.Remove("BSU_CleanupDisconnected_" .. id) -- try remove the prop cleanup timer so they keep their props
 end)
 
