@@ -252,13 +252,14 @@ local function ragdollPlayer(ply, owner)
 
 	for i = 0, ragdoll:GetPhysicsObjectCount() - 1 do
 		local phys = ragdoll:GetPhysicsObjectNum(i)
-		if IsValid(phys) then
-			local boneid = ragdoll:TranslatePhysBoneToBone(i)
-			local matrix = ply:GetBoneMatrix(boneid)
-			phys:SetPos(matrix:GetTranslation())
-			phys:SetAngles(matrix:GetAngles())
-			phys:AddVelocity(vel)
-		end
+		if not IsValid(phys) then continue end
+		local boneid = ragdoll:TranslatePhysBoneToBone(i)
+		if boneid < 0 then continue end
+		local matrix = ply:GetBoneMatrix(boneid)
+		if not matrix then continue end
+		phys:SetPos(matrix:GetTranslation())
+		phys:SetAngles(matrix:GetAngles())
+		phys:AddVelocity(vel)
 	end
 
 	if ply:InVehicle() then ply:ExitVehicle() end
