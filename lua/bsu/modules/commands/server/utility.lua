@@ -168,17 +168,34 @@ BSU.SetupCommand("cleardecals", function(cmd)
 	end)
 end)
 
-BSU.SetupCommand("clearprops", function(cmd)
-	cmd:SetDescription("Clear all clientside props")
+BSU.SetupCommand("cleargibs", function(cmd)
+	cmd:SetDescription("Clear all clientside gibs")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
 		BSU.RemoveClientProps()
 
-		self:BroadcastActionMsg("%caller% cleared clientside props")
+		self:BroadcastActionMsg("%caller% cleared clientside gibs")
 	end)
 end)
-BSU.AliasCommand("cleargibs", "clearprops")
+
+BSU.SetupCommand("clearprops", function(cmd)
+	cmd:SetDescription("Clear a player's props")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self, caller, target)
+		for _, ent in ipairs(BSU.GetOwnerEntities(target:SteamID64())) do
+			if not ent:GetPhysicsObject():IsValid() then continue end
+			ent:Remove()
+		end
+
+		self:BroadcastActionMsg("%caller% cleared %target%'s props", {
+			target = target
+		})
+	end)
+	cmd:AddPlayerArg("target", { check = true })
+end)
+
 
 BSU.SetupCommand("clearragdolls", function(cmd)
 	cmd:SetDescription("Clear all clientside ragdolls")
