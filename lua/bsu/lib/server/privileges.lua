@@ -2,14 +2,11 @@
 -- functions for managing group and player privileges
 
 function BSU.RegisterGroupPrivilege(groupid, type, value, granted)
-	-- incase this privilege is already registered, remove the old one
-	BSU.RemoveGroupPrivilege(groupid, type, value) -- sqlite's REPLACE INTO could've been implemented but removing and inserting is practically the same
-
-	BSU.SQLInsert(BSU.SQL_GROUP_PRIVS, {
+	BSU.SQLReplace(BSU.SQL_GROUP_PRIVS, {
 		groupid = groupid,
 		type = type,
 		value = value,
-		granted = granted and 1 or 0
+		granted = granted
 	})
 end
 
@@ -26,11 +23,10 @@ function BSU.GetAllGroupPrivileges()
 end
 
 function BSU.GetGroupWildcardPrivileges(groupid, type)
-	local query = BSU.SQLQuery("SELECT * FROM '%s' WHERE groupid = %s AND type = %s AND value LIKE '%s'",
-		BSU.EscOrNULL(BSU.SQL_GROUP_PRIVS, true),
-		BSU.EscOrNULL(groupid),
-		BSU.EscOrNULL(type),
-		"%*%"
+	local query = BSU.SQLQuery("SELECT * FROM %s WHERE groupid = %s AND type = %s AND value LIKE '%%*%%'",
+		BSU.SQLEscIdent(BSU.SQL_GROUP_PRIVS),
+		BSU.SQLEscValue(groupid),
+		BSU.SQLEscValue(type)
 	)
 	return query and BSU.SQLParse(query, BSU.SQL_GROUP_PRIVS) or {}
 end
@@ -46,7 +42,7 @@ function BSU.CheckGroupPrivilege(groupid, type, value, checkwildcards)
 	local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = type, value = value })[1]
 
 	if priv then
-		return priv.granted ~= 0
+		return priv.granted
 	else
 		-- check wildcard privileges
 		if checkwildcards then
@@ -55,7 +51,7 @@ function BSU.CheckGroupPrivilege(groupid, type, value, checkwildcards)
 
 			for _, v in ipairs(wildcards) do
 				if string.find(value, string.Replace(v.value, "*", "(.-)")) ~= nil then
-					return v.granted ~= 0
+					return v.granted
 				end
 			end
 		end

@@ -4,13 +4,11 @@ util.AddNetworkString("bsu_pdata")
 function BSU.RegisterPData(steamid, key, value, network)
 	steamid = BSU.ID64(steamid)
 
-	BSU.RemovePData(steamid, key)
-
-	BSU.SQLInsert(BSU.SQL_PDATA, {
+	BSU.SQLReplace(BSU.SQL_PDATA, {
 		steamid = steamid,
 		key = key,
 		value = value,
-		network = network and 1 or 0
+		network = network
 	})
 end
 
@@ -26,11 +24,13 @@ end
 
 function BSU.GetAllPDataBySteamID(steamid, network)
 	local query = BSU.SQLSelectByValues(BSU.SQL_PDATA, { steamid = BSU.ID64(steamid) })
+	network = network or false
+
 	local data = {}
 
 	for i = 1, #query do
 		local entry = query[i]
-		if network ~= nil and entry.network == (network and 0 or 1) then continue end
+		if network ~= nil and entry.network == network then continue end
 		data[entry.key] = entry.value
 	end
 

@@ -1,9 +1,7 @@
 -- lib/server/commands.lua
 
 function BSU.RegisterCommandLimit(groupid, cmd, arg, min, max)
-	BSU.RemoveCommandLimit(groupid, cmd, arg) -- replace with update?
-
-	BSU.SQLInsert(BSU.SQL_CMD_LIMITS, {
+	BSU.SQLReplace(BSU.SQL_CMD_LIMITS, {
 		groupid = groupid,
 		cmd = cmd,
 		arg = arg,

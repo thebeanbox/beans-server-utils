@@ -32,8 +32,8 @@ BSU.SQLCreateTable(BSU.SQL_GROUPS, string.format(
 		usergroup TEXT NOT NULL DEFAULT user,
 		inherit TEXT REFERENCES %s(id)
 	]],
-		BSU.EscOrNULL(BSU.SQL_TEAMS, true),
-		BSU.EscOrNULL(BSU.SQL_GROUPS, true)
+		BSU.SQLEscIdent(BSU.SQL_TEAMS),
+		BSU.SQLEscIdent(BSU.SQL_GROUPS)
 ))
 
 --[[
@@ -54,8 +54,8 @@ BSU.SQLCreateTable(BSU.SQL_PLAYERS, string.format(
 		groupid TEXT NOT NULL REFERENCES %s(id),
 		ip TEXT
 	]],
-		BSU.EscOrNULL(BSU.SQL_TEAMS, true),
-		BSU.EscOrNULL(BSU.SQL_GROUPS, true)
+		BSU.SQLEscIdent(BSU.SQL_TEAMS),
+		BSU.SQLEscIdent(BSU.SQL_GROUPS)
 ))
 
 --[[
@@ -72,9 +72,10 @@ BSU.SQLCreateTable(BSU.SQL_PDATA, string.format(
 		steamid TEXT NOT NULL REFERENCES %s(steamid),
 		key TEXT NOT NULL,
 		value TEXT NOT NULL,
-		network BOOLEAN NOT NULL CHECK (network in (0, 1))
+		network BOOLEAN NOT NULL CHECK (network in (0, 1)),
+		UNIQUE (steamid, key)
 	]],
-		BSU.EscOrNULL(BSU.SQL_PLAYERS, true)
+		BSU.SQLEscIdent(BSU.SQL_PLAYERS)
 ))
 
 --[[
@@ -101,8 +102,8 @@ BSU.SQLCreateTable(BSU.SQL_BANS, string.format(
 		unbanTime INTEGER,
 		unbanAdmin TEXT REFERENCES %s(steamid)
 	]],
-		BSU.EscOrNULL(BSU.SQL_PLAYERS, true),
-		BSU.EscOrNULL(BSU.SQL_PLAYERS, true)
+		BSU.SQLEscIdent(BSU.SQL_PLAYERS),
+		BSU.SQLEscIdent(BSU.SQL_PLAYERS)
 ))
 
 --[[
@@ -119,9 +120,10 @@ BSU.SQLCreateTable(BSU.SQL_GROUP_PRIVS, string.format(
 		groupid TEXT NOT NULL REFERENCES %s(id),
 		type INTEGER NOT NULL,
 		value TEXT NOT NULL,
-		granted BOOLEAN NOT NULL CHECK (granted in (0, 1))
+		granted BOOLEAN NOT NULL CHECK (granted in (0, 1)),
+		UNIQUE (groupid, type, value)
 	]],
-		BSU.EscOrNULL(BSU.SQL_GROUPS, true)
+		BSU.SQLEscIdent(BSU.SQL_GROUPS)
 ))
 
 --[[
@@ -136,9 +138,10 @@ BSU.SQLCreateTable(BSU.SQL_GROUP_LIMITS, string.format(
 	[[
 		groupid TEXT NOT NULL REFERENCES %s(id),
 		name TEXT NOT NULL,
-		amount INTEGER NOT NULL
+		amount INTEGER NOT NULL,
+		UNIQUE (groupid, name)
 	]],
-		BSU.EscOrNULL(BSU.SQL_GROUPS, true)
+		BSU.SQLEscIdent(BSU.SQL_GROUPS)
 ))
 
 --[[
@@ -158,7 +161,7 @@ BSU.SQLCreateTable(BSU.SQL_CMD_LIMITS, string.format(
 		arg TEXT NOT NULL,
 		min INTEGER,
 		max INTEGER,
-		UNIQUE(cmd, arg)
+		UNIQUE (groupid, cmd, arg)
 	]],
-		BSU.EscOrNULL(BSU.SQL_GROUPS, true)
+		BSU.SQLEscIdent(BSU.SQL_GROUPS)
 ))
