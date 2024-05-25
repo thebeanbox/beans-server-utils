@@ -115,6 +115,22 @@ BSU.SetupCommand("nolag", function(cmd)
 	end)
 end)
 
+BSU.SetupCommand("cleanup", function(cmd)
+	cmd:SetDescription("Cleanup all props that are owned by a player")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self, _, target)
+		for _, v in ipairs(BSU.GetOwnerEntities(target:SteamID64())) do
+			if v:GetPhysicsObject():IsValid() then
+				v:Remove()
+			end
+		end
+
+		self:BroadcastActionMsg("%caller% cleaned up %target%'s props", { target = target })
+	end)
+	cmd:AddPlayerArg("target", { check = true })
+end)
+
 local debrisGroups = {
 	[COLLISION_GROUP_DEBRIS] = true,
 	[COLLISION_GROUP_DEBRIS_TRIGGER] = true,
@@ -123,7 +139,7 @@ local debrisGroups = {
 }
 
 BSU.SetupCommand("cleanupdebris", function(cmd)
-	cmd:SetDescription("Cleanup all entities that are considered debris")
+	cmd:SetDescription("Cleanup all props that are considered debris")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
@@ -139,7 +155,7 @@ BSU.SetupCommand("cleanupdebris", function(cmd)
 end)
 
 BSU.SetupCommand("cleanupdisconnected", function(cmd)
-	cmd:SetDescription("Cleanup all entities that are owned by disconnected players")
+	cmd:SetDescription("Cleanup all props that are owned by disconnected players")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
@@ -178,24 +194,6 @@ BSU.SetupCommand("cleargibs", function(cmd)
 		self:BroadcastActionMsg("%caller% cleared clientside gibs")
 	end)
 end)
-
-BSU.SetupCommand("clearprops", function(cmd)
-	cmd:SetDescription("Clear a player's props")
-	cmd:SetCategory("utility")
-	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self, caller, target)
-		for _, ent in ipairs(BSU.GetOwnerEntities(target:SteamID64())) do
-			if not ent:GetPhysicsObject():IsValid() then continue end
-			ent:Remove()
-		end
-
-		self:BroadcastActionMsg("%caller% cleared %target%'s props", {
-			target = target
-		})
-	end)
-	cmd:AddPlayerArg("target", { check = true })
-end)
-
 
 BSU.SetupCommand("clearragdolls", function(cmd)
 	cmd:SetDescription("Clear all clientside ragdolls")
