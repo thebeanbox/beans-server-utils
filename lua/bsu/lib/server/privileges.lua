@@ -2,7 +2,7 @@
 -- functions for managing group and player privileges
 
 function BSU.RegisterGroupPrivilege(groupid, type, value, granted)
-	BSU.SQLInsertOrReplace(BSU.SQL_GROUP_PRIVS, {
+	BSU.SQLReplace(BSU.SQL_GROUP_PRIVS, {
 		groupid = groupid,
 		type = type,
 		value = value,

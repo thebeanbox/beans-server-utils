@@ -5,7 +5,7 @@ function BSU.RegisterGroup(id, team, usergroup, inherit)
 	id = string.match(id, "^[%w_]+$")
 	if not id then error("Group id can only have letters, digits, and underscores") end
 
-	BSU.SQLInsertOrReplace(BSU.SQL_GROUPS, {
+	BSU.SQLReplace(BSU.SQL_GROUPS, {
 		id = string.lower(id),
 		team = team,
 		usergroup = usergroup,

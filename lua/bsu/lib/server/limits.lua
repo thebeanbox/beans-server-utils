@@ -11,7 +11,7 @@ function BSU.RegisterGroupLimit(groupid, name, amount)
 		amount = math.floor(amount)
 	end
 
-	BSU.SQLInsertOrReplace(BSU.SQL_GROUP_LIMITS, {
+	BSU.SQLReplace(BSU.SQL_GROUP_LIMITS, {
 		groupid = groupid,
 		name = name,
 		amount = amount

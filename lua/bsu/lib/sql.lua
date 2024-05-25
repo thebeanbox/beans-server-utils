@@ -122,8 +122,8 @@ function BSU.SQLInsert(tbl, data)
 	)
 end
 
--- inserts or replaces data into a sql table
-function BSU.SQLInsertOrReplace(tbl, data)
+-- replaces data into a sql table (equivalent of doing a delete then insert)
+function BSU.SQLReplace(tbl, data)
 	local columns, values = {}, {}
 
 	for k, v in pairs(data) do
@@ -131,7 +131,7 @@ function BSU.SQLInsertOrReplace(tbl, data)
 		table.insert(values, BSU.SQLEscValue(v))
 	end
 
-	return BSU.SQLQuery("INSERT OR REPLACE INTO %s (%s) VALUES(%s)",
+	return BSU.SQLQuery("REPLACE INTO %s (%s) VALUES(%s)",
 		BSU.SQLEscIdent(tbl),
 		table.concat(columns, ","),
 		table.concat(values, ",")
