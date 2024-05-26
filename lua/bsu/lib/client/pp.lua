@@ -18,7 +18,7 @@ function BSU.ClearPermission(steamid)
 end
 
 function BSU.GetPermission(steamid)
-	local query = BSU.SQLSelectByValues(BSU.SQL_PP, { steamid = BSU.ID64(steamid) })[1]
+	local query = BSU.SQLSelectByValues(BSU.SQL_PP, { steamid = BSU.ID64(steamid) }, 1)[1]
 	return query and query.permission or 0
 end
 
@@ -46,7 +46,7 @@ function BSU.ClearGlobalPermission()
 end
 
 function BSU.GetGlobalPermission()
-	local query = BSU.SQLSelectByValues(BSU.SQL_PP, { steamid = GLOBAL_ID })[1]
+	local query = BSU.SQLSelectByValues(BSU.SQL_PP, { steamid = GLOBAL_ID }, 1)[1]
 	return query and query.permission or 0
 end
 

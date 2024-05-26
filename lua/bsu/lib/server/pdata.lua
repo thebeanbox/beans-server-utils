@@ -17,7 +17,7 @@ function BSU.RemovePData(steamid, key)
 end
 
 function BSU.GetPDataBySteamID(steamid, key, default)
-	local query = BSU.SQLSelectByValues(BSU.SQL_PDATA, { steamid = BSU.ID64(steamid), key = key })[1]
+	local query = BSU.SQLSelectByValues(BSU.SQL_PDATA, { steamid = BSU.ID64(steamid), key = key }, 1)[1]
 	if query then return query.value end
 	return default
 end

@@ -15,7 +15,7 @@ function BSU.RemoveCommandLimit(groupid, cmd, arg)
 end
 
 function BSU.GetCommandLimit(groupid, cmd, arg)
-	return BSU.SQLSelectByValues(BSU.SQL_CMD_LIMITS, { groupid = groupid, cmd = cmd, arg = arg })[1]
+	return BSU.SQLSelectByValues(BSU.SQL_CMD_LIMITS, { groupid = groupid, cmd = cmd, arg = arg }, 1)[1]
 end
 
 -- set whether a group must or mustn't have access to a command

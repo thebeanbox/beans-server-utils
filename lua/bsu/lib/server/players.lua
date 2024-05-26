@@ -20,7 +20,7 @@ end
 
 -- get player data using their steam id
 function BSU.GetPlayerDataBySteamID(steamid)
-	return BSU.SQLSelectByValues(BSU.SQL_PLAYERS, { steamid = BSU.ID64(steamid) })[1]
+	return BSU.SQLSelectByValues(BSU.SQL_PLAYERS, { steamid = BSU.ID64(steamid) }, 1)[1]
 end
 
 -- get player data using their ip address

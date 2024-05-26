@@ -43,7 +43,7 @@ end
 function BSU.GetGroupLimit(groupid, name, checkwildcards)
 	name = string.lower(name)
 
-	local limit = BSU.SQLSelectByValues(BSU.SQL_GROUP_LIMITS, { groupid = groupid, name = name })[1]
+	local limit = BSU.SQLSelectByValues(BSU.SQL_GROUP_LIMITS, { groupid = groupid, name = name }, 1)[1]
 
 	if limit then
 		return limit.amount
@@ -73,7 +73,7 @@ function BSU.GetPlayerLimit(steamid, name, checkwildcards)
 	steamid = BSU.ID64(steamid)
 
 	-- check for limit in player's group
-	local data = BSU.SQLSelectByValues(BSU.SQL_PLAYERS, { steamid = steamid })[1]
+	local data = BSU.SQLSelectByValues(BSU.SQL_PLAYERS, { steamid = steamid }, 1)[1]
 	if data then
 		return BSU.GetGroupLimit(data.groupid, name, checkwildcards)
 	end

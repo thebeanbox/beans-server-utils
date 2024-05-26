@@ -20,12 +20,12 @@ end
 
 -- get team by its numeric id
 function BSU.GetTeamByID(id)
-	return BSU.SQLSelectByValues(BSU.SQL_TEAMS, { id = id })[1]
+	return BSU.SQLSelectByValues(BSU.SQL_TEAMS, { id = id }, 1)[1]
 end
 
 -- get team by its display name
 function BSU.GetTeamByName(name)
-	return BSU.SQLSelectByValues(BSU.SQL_TEAMS, { name = name })[1]
+	return BSU.SQLSelectByValues(BSU.SQL_TEAMS, { name = name }, 1)[1]
 end
 
 function BSU.SetTeamData(id, values)

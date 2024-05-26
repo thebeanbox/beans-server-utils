@@ -451,7 +451,7 @@ BSU.SetupCommand("grantgrouppriv", function(cmd)
 			value = string.lower(value)
 		end
 
-		local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = type, value = value })[1]
+		local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = type, value = value }, 1)[1]
 		if priv and priv.granted then error("Privilege is already granted to this group") end
 
 		BSU.RegisterGroupPrivilege(groupid, type, value, true)
@@ -484,7 +484,7 @@ BSU.SetupCommand("revokegrouppriv", function(cmd)
 			value = string.lower(value)
 		end
 
-		local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = type, value = value })[1]
+		local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = type, value = value }, 1)[1]
 		if priv and not priv.granted then error("Privilege is already revoked from this group") end
 
 		BSU.RegisterGroupPrivilege(groupid, type, value, false)
@@ -516,7 +516,7 @@ BSU.SetupCommand("cleargrouppriv", function(cmd)
 			value = string.lower(value)
 		end
 
-		local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = type, value = value })[1]
+		local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = type, value = value }, 1)[1]
 		if not priv then error("Privilege is not set on this group") end
 
 		BSU.RemoveGroupPrivilege(groupid, type, value)
@@ -541,7 +541,7 @@ BSU.SetupCommand("setgrouplimit", function(cmd)
 		local group = BSU.GetGroupByID(groupid)
 		if not group then error("Group does not exist") end
 
-		local limit = BSU.SQLSelectByValues(BSU.SQL_GROUP_LIMITS, { groupid = groupid, name = name })[1]
+		local limit = BSU.SQLSelectByValues(BSU.SQL_GROUP_LIMITS, { groupid = groupid, name = name }, 1)[1]
 		if limit == amount then error("Limit is already set to this amount on this group") end
 
 		BSU.RegisterGroupLimit(groupid, name, amount)
@@ -565,7 +565,7 @@ BSU.SetupCommand("cleargrouplimit", function(cmd)
 		local group = BSU.GetGroupByID(groupid)
 		if not group then error("Group does not exist") end
 
-		local limit = BSU.SQLSelectByValues(BSU.SQL_GROUP_LIMITS, { groupid = groupid, name = name })[1]
+		local limit = BSU.SQLSelectByValues(BSU.SQL_GROUP_LIMITS, { groupid = groupid, name = name }, 1)[1]
 		if not limit then error("Limit is not set on this group") end
 
 		BSU.RemoveGroupLimit(groupid, name)

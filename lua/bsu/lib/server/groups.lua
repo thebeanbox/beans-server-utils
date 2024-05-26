@@ -23,7 +23,7 @@ end
 
 -- get group by its numeric id
 function BSU.GetGroupByID(id)
-	return BSU.SQLSelectByValues(BSU.SQL_GROUPS, { id = id })[1]
+	return BSU.SQLSelectByValues(BSU.SQL_GROUPS, { id = id }, 1)[1]
 end
 
 -- get groups by with the same team

@@ -32,14 +32,14 @@ function BSU.GetGroupWildcardPrivileges(groupid, type)
 end
 
 function BSU.GetGroupInherit(groupid)
-	local query = BSU.SQLSelectByValues(BSU.SQL_GROUPS, { id = groupid })[1]
+	local query = BSU.SQLSelectByValues(BSU.SQL_GROUPS, { id = groupid }, 1)[1]
 	return query and query.inherit or nil
 end
 
 -- returns bool if the group is granted the privilege (or nothing if the privilege is not registered)
 function BSU.CheckGroupPrivilege(groupid, type, value, checkwildcards)
 	-- check for group privilege
-	local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = type, value = value })[1]
+	local priv = BSU.SQLSelectByValues(BSU.SQL_GROUP_PRIVS, { groupid = groupid, type = type, value = value }, 1)[1]
 
 	if priv then
 		return priv.granted
@@ -69,7 +69,7 @@ function BSU.CheckPlayerPrivilege(steamid, type, value, checkwildcards)
 	steamid = BSU.ID64(steamid)
 
 	-- check for privilege in player's group
-	local data = BSU.SQLSelectByValues(BSU.SQL_PLAYERS, { steamid = steamid })[1]
+	local data = BSU.SQLSelectByValues(BSU.SQL_PLAYERS, { steamid = steamid }, 1)[1]
 	if data then
 		return BSU.CheckGroupPrivilege(data.groupid, type, value, checkwildcards)
 	end

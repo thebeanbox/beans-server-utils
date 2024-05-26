@@ -70,7 +70,7 @@ end
 function BSU.SQLParse(data, tbl)
 	if not tbl then return error("Tried to parse but SQL table wasn't specified!") end
 
-	if table.IsSequential(data) then -- multiple entries
+	if #data > 0 then -- sequential table with multiple entries
 		for k, v in ipairs(data) do
 			data[k] = BSU.SQLParse(v, tbl)
 		end
@@ -139,8 +139,12 @@ function BSU.SQLReplace(tbl, data)
 end
 
 -- returns every entry in a sql table
-function BSU.SQLSelectAll(tbl)
-	local query = BSU.SQLQuery("SELECT * FROM %s", BSU.SQLEscIdent(tbl))
+function BSU.SQLSelectAll(tbl, limit, offset)
+	local query = BSU.SQLQuery("SELECT * FROM %s%s%s",
+		BSU.SQLEscIdent(tbl),
+		limit and " LIMIT " .. limit or "",
+		offset and " OFFSET " .. offset or ""
+	)
 
 	if query then
 		return BSU.SQLParse(query, tbl)
@@ -149,7 +153,7 @@ function BSU.SQLSelectAll(tbl)
 end
 
 -- returns every entry in a sql table where a column equals the values
-function BSU.SQLSelectByValues(tbl, values)
+function BSU.SQLSelectByValues(tbl, values, limit, offset)
 	if next(values) == nil then return {} end
 
 	local conditions = {}
@@ -157,9 +161,11 @@ function BSU.SQLSelectByValues(tbl, values)
 		table.insert(conditions, string.format("%s = %s", BSU.SQLEscIdent(k), BSU.SQLEscValue(v)))
 	end
 
-	local query = BSU.SQLQuery("SELECT * FROM %s WHERE %s",
+	local query = BSU.SQLQuery("SELECT * FROM %s WHERE %s%s%s",
 		BSU.SQLEscIdent(tbl),
-		table.concat(conditions, " AND ")
+		table.concat(conditions, " AND "),
+		limit and " LIMIT " .. limit or "",
+		offset and " OFFSET " .. offset or ""
 	)
 
 	if query then
@@ -197,7 +203,7 @@ function BSU.SQLUpdateByValues(tbl, values, updatedValues)
 		table.insert(updates, string.format("%s = %s", BSU.SQLEscIdent(k), BSU.SQLEscValue(v)))
 	end
 
-	return BSU.SQLQuery("UPDATE %s SET %s WHERE %s",
+	BSU.SQLQuery("UPDATE %s SET %s WHERE %s",
 		BSU.SQLEscIdent(tbl),
 		table.concat(updates, ","),
 		table.concat(conditions, " AND ")
