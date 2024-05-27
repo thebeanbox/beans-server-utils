@@ -18,6 +18,7 @@ hook.Add("OnGamemodeLoaded", "BSU_InitializePlayer", function()
 		if not plyData then -- this is the first time this player has joined
 			BSU.RegisterPlayer(id64, isPlayer and defaultGroup:GetString() or botGroup:GetString())
 			plyData = BSU.GetPlayerData(ply)
+			BSU.SetPData(ply, "first_visit", BSU.UTCTime(), true)
 		end
 
 		-- update some sql data
