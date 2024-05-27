@@ -53,8 +53,6 @@ local function updatePlayerTime()
 		if hook.Run("BSU_PlayerTotalTime", v, totalTime) ~= false then
 			BSU.SetPData(v, "total_time", totalTime + 1, true) -- increment by 1 sec
 		end
-
-		BSU.SetPData(v, "last_visit", BSU.UTCTime(), true)
 	end
 end
 
