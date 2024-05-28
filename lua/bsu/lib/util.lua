@@ -183,7 +183,7 @@ function BSU.RemoveClientRagdolls(plys)
 		BSU.ClientRPC(plys, "BSU.RemoveClientRagdolls")
 		return
 	end
-	removeByClass("class C_PhysPropClientside")
+	removeByClass("class C_ClientRagdoll")
 end
 
 function BSU.RemoveClientEffects(plys)
