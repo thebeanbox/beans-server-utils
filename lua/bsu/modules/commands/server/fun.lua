@@ -242,10 +242,12 @@ local function ragdollPlayer(ply, owner)
 	ragdoll:Spawn()
 	ragdoll:Activate()
 	ragdoll:CallOnRemove("BSU_Ragdoll", function()
-		if ply:IsValid() then
-			ply.bsu_ragdoll = nil
-			ragdollPlayer(ply, owner)
-		end
+		timer.Simple(0, function()
+			if ply:IsValid() and not IsValid(ply.bsu_ragdoll) then
+				ply.bsu_ragdoll = nil
+				ragdollPlayer(ply, owner)
+			end
+		end)
 	end)
 
 	local vel = ply:GetVelocity()
