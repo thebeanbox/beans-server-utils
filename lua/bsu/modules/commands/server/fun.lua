@@ -167,63 +167,6 @@ BSU.SetupCommand("ungod", function(cmd)
 	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
-local function getSpawnInfo(ply)
-	if ply.bsu_spawnInfo then return end
-
-	local data = {}
-	data.health = ply:Health()
-	data.armor = ply:Armor()
-
-	local weps = {}
-	for _, wep in ipairs(ply:GetWeapons()) do
-		weps[wep:GetClass()] = {
-			clip1 = wep:Clip1(),
-			clip2 = wep:Clip2(),
-			ammo1 = ply:GetAmmoCount(wep:GetPrimaryAmmoType()),
-			ammo2 = ply:GetAmmoCount(wep:GetSecondaryAmmoType())
-		}
-	end
-
-	data.weps = weps
-
-	local active = ply:GetActiveWeapon()
-	if IsValid(active) then data.activewep = active:GetClass() end
-
-	ply.bsu_spawnInfo = data
-end
-
-local function setWeapons(ply, weps, active)
-	ply:StripAmmo()
-	ply:StripWeapons()
-
-	for class, data in pairs(weps) do
-		local wep = ply:Give(class)
-		if wep:IsValid() then
-			wep:SetClip1(data.clip1)
-			wep:SetClip2(data.clip2)
-			ply:SetAmmo(data.ammo1, wep:GetPrimaryAmmoType())
-			ply:SetAmmo(data.ammo2, wep:GetSecondaryAmmoType())
-		end
-	end
-
-	if active then ply:SelectWeapon(active) end
-end
-
-local function doSpawn(ply)
-	ply:Spawn()
-	local data = ply.bsu_spawnInfo
-	if data then
-		ply:SetHealth(data.health)
-		ply:SetArmor(data.armor)
-		timer.Simple(0, function()
-			if ply:IsValid() and not IsValid(ply.bsu_ragdoll) then
-				setWeapons(ply, data.weps, data.activewep)
-			end
-		end)
-		ply.bsu_spawnInfo = nil
-	end
-end
-
 local function ragdollPlayer(ply, owner)
 	if IsValid(ply.bsu_ragdoll) then return false end
 
@@ -266,7 +209,7 @@ local function ragdollPlayer(ply, owner)
 
 	if ply:InVehicle() then ply:ExitVehicle() end
 
-	getSpawnInfo(ply)
+	ply.bsu_spawninfo = BSU.GetSpawnInfo(ply)
 
 	ply.bsu_ragdoll = ragdoll
 	ply:SetParent(ragdoll)
@@ -282,11 +225,16 @@ local function unragdollPlayer(ply)
 
 	local oldPos = ply:GetPos()
 	local oldAngles = ply:EyeAngles()
+
 	ply:SetParent()
 	ply:UnSpectate()
-	doSpawn(ply)
+
+	BSU.SpawnWithInfo(ply, ply.bsu_spawninfo)
+	ply.bsu_spawninfo = nil
+
 	ply:SetPos(oldPos)
 	ply:SetEyeAngles(oldAngles)
+
 	ply:SetVelocity(ply.bsu_ragdoll:GetVelocity())
 
 	ply.bsu_ragdoll:RemoveCallOnRemove("BSU_Ragdoll")

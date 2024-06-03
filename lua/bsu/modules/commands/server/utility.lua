@@ -247,15 +247,16 @@ BSU.SetupCommand("spectate", function(cmd)
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetSilent(true)
 	cmd:SetFunction(function(self, caller, target)
-		getSpawnInfo(target)
-
 		caller.bsu_spectating = true
+
+		caller.bsu_spawninfo = BSU.GetSpawnInfo(caller)
+
 		caller:SetColor(Color(0, 0, 0, 0))
 		caller:Spectate(OBS_MODE_IN_EYE)
 		caller:SpectateEntity(target)
 		caller:StripWeapons()
 
-		self:PrintChatMsg("Spectating ", target)
+		self:PrintChatMsg("Now spectating ", target)
 	end)
 	cmd:SetValidCaller(true)
 	cmd:AddPlayerArg("target", { check = true })
@@ -266,15 +267,15 @@ BSU.SetupCommand("unspectate", function(cmd)
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetSilent(true)
-	cmd:SetFunction(function(self, caller)
-		if caller.bsu_spectating then
-			caller.bsu_spectating = nil
-			caller:UnSpectate()
-			doSpawn(caller)
-			caller:SetColor(Color(255, 255, 255, 255))
-		end
+	cmd:SetFunction(function(_, caller)
+		if not caller.bsu_spectating then return end
 
-		self:PrintChatMsg("Stopped spectating")
+		caller.bsu_spectating = nil
+		caller:UnSpectate()
+		caller:SetColor(Color(255, 255, 255, 255))
+
+		BSU.SpawnWithInfo(caller, caller.bsu_spawninfo)
+		caller.bsu_spawninfo = nil
 	end)
 	cmd:SetValidCaller(true)
 end)
