@@ -73,3 +73,55 @@ function BSU.SendConsoleMsg(plys, ...)
 		end
 	end
 end
+
+function BSU.GetSpawnInfo(ply)
+	local data = {}
+	data.health = ply:Health()
+	data.armor = ply:Armor()
+
+	local weps = {}
+	for _, wep in ipairs(ply:GetWeapons()) do
+		weps[wep:GetClass()] = {
+			clip1 = wep:Clip1(),
+			clip2 = wep:Clip2(),
+			ammo1 = ply:GetAmmoCount(wep:GetPrimaryAmmoType()),
+			ammo2 = ply:GetAmmoCount(wep:GetSecondaryAmmoType())
+		}
+	end
+
+	data.weps = weps
+
+	local active = ply:GetActiveWeapon()
+	if IsValid(active) then data.activewep = active:GetClass() end
+
+	return data
+end
+
+local function setWeapons(ply, weps, active)
+	ply:StripAmmo()
+	ply:StripWeapons()
+
+	for class, data in pairs(weps) do
+		if not weapons.Get(class) then continue end
+		local wep = ply:Give(class)
+		if not wep:IsValid() then continue end
+		wep:SetClip1(data.clip1)
+		wep:SetClip2(data.clip2)
+		ply:SetAmmo(data.ammo1, wep:GetPrimaryAmmoType())
+		ply:SetAmmo(data.ammo2, wep:GetSecondaryAmmoType())
+	end
+
+	if active then ply:SelectWeapon(active) end
+end
+
+function BSU.SpawnWithInfo(ply, spawninfo)
+	ply:Spawn()
+	if not spawninfo then return end
+	ply:SetHealth(spawninfo.health)
+	ply:SetArmor(spawninfo.armor)
+	timer.Simple(0, function()
+		if ply:IsValid() and ply:IsAlive() and ply:GetObserverMode() == OBS_MODE_NONE then
+			setWeapons(ply, spawninfo.weps, spawninfo.activewep)
+		end
+	end)
+end
