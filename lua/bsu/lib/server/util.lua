@@ -120,7 +120,7 @@ function BSU.SpawnWithInfo(ply, spawninfo)
 	ply:SetHealth(spawninfo.health)
 	ply:SetArmor(spawninfo.armor)
 	timer.Simple(0, function()
-		if ply:IsValid() and ply:IsAlive() and ply:GetObserverMode() == OBS_MODE_NONE then
+		if ply:IsValid() and ply:Alive() and ply:GetObserverMode() == OBS_MODE_NONE then
 			setWeapons(ply, spawninfo.weps, spawninfo.activewep)
 		end
 	end)
