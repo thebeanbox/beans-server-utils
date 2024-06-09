@@ -120,8 +120,13 @@ BSU.SetupCommand("cleanup", function(cmd)
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self, _, target)
+		local weps = {}
+		for _, v in ipairs(target:GetWeapons()) do
+			weps[v] = true
+		end
+
 		for _, v in ipairs(BSU.GetOwnerEntities(target:SteamID64())) do
-			if v:GetPhysicsObject():IsValid() then
+			if not weps[v] then -- don't strip their weapons
 				v:Remove()
 			end
 		end
