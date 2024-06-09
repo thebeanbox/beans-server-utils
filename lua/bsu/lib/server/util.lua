@@ -97,12 +97,14 @@ function BSU.GetSpawnInfo(ply)
 	return data
 end
 
+local weapons = list.Get("Weapon")
+
 local function setWeapons(ply, weps, active)
 	ply:StripAmmo()
 	ply:StripWeapons()
 
 	for class, data in pairs(weps) do
-		if not weapons.Get(class) then continue end
+		if not weapons[class] then continue end
 		local wep = ply:Give(class)
 		if not wep:IsValid() then continue end
 		wep:SetClip1(data.clip1)
