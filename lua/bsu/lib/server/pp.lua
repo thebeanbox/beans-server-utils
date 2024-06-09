@@ -27,27 +27,27 @@ function BSU.CheckPermission(plyID, tarID, perm)
 end
 
 function BSU.SetPlayerPermission(ply, target, perm)
-	if not ply:IsPlayer() then return end
-	if not target:IsPlayer() then return end
-	return BSU.SetPermission(ply:SteamID64(), target:SteamID64(), perm)
+	if not ply:IsValid() or not ply:IsPlayer() then return end
+	if not target:IsValid() or not target:IsPlayer() then return end
+	BSU.SetPermission(ply:SteamID64(), target:SteamID64(), perm)
 end
 
 function BSU.GetPlayerPermission(ply, target)
-	if not ply:IsPlayer() then return end
-	if not target:IsPlayer() then return end
+	if not ply:IsValid() or not ply:IsPlayer() then return end
+	if not target:IsValid() or not target:IsPlayer() then return end
 	return BSU.GetPermission(ply:SteamID64(), target:SteamID64())
 end
 
 -- returns bool if player has granted permission to the target player
 function BSU.CheckPlayerPermission(ply, target, perm)
-	if not ply:IsPlayer() then return end
-	if not target:IsPlayer() then return end
+	if not ply:IsValid() or not ply:IsPlayer() then return end
+	if not target:IsValid() or not target:IsPlayer() then return end
 	return BSU.CheckPermission(ply:SteamID64(), target:SteamID64(), perm)
 end
 
 -- returns a table of current players on the server who are friends with the player, including admins (uses the toolgun permission)
 function BSU.GetPlayerFriends(ply)
-	if not ply:IsPlayer() then return {} end
+	if not ply:IsValid() or not ply:IsPlayer() then return {} end
 	local friends = {}
 	for _, v in ipairs(player.GetHumans()) do
 		if v:IsSuperAdmin() or BSU.CheckPlayerPermission(ply, v, BSU.PP_TOOLGUN) then
@@ -90,7 +90,7 @@ function BSU.PlayerHasPermission(ply, ent, perm)
 
 	if ply == ent then return end
 
-	if ent:IsPlayer() then
+	if ent:IsValid() and ent:IsPlayer() then
 		if BSU.CheckPlayerPermission(ent, ply, perm) ~= false then return end
 	elseif ent:IsWorld() then
 		if BSU.CheckWorldPermission(perm) ~= false then return end
