@@ -97,11 +97,11 @@ function BSU.GetSpawnInfo(ply)
 	return data
 end
 
-local weapons = list.Get("Weapon")
-
 local function setWeapons(ply, weps, active)
 	ply:StripAmmo()
 	ply:StripWeapons()
+
+	local weapons = list.Get("Weapon")
 
 	for class, data in pairs(weps) do
 		if not weapons[class] then continue end
