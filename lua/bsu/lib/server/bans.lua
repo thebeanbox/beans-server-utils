@@ -7,7 +7,7 @@ function BSU.RegisterBan(identity, reason, duration, admin) -- this is also used
 		reason = reason,
 		duration = duration,
 		time = BSU.UTCTime(),
-		admin = admin and BSU.ID64(admin)
+		admin = admin and BSU.ID64(admin) or nil
 	})
 end
 
