@@ -13,9 +13,11 @@ BSU.SetupCommand("ban", function(cmd)
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self, caller, target, duration, reason)
-		local ban = BSU.GetBanStatus(target:SteamID64())
-		if ban and caller:IsValid() and not caller:IsSuperAdmin() and ban.admin and not self:CheckCanTargetSteamID(ban.admin) then
-			error("You don't have permission to overwrite this ban.")
+		if caller:IsValid() and not caller:IsSuperAdmin() then
+			local ban = BSU.GetBanStatus(target:SteamID64())
+			if ban and (not ban.admin or not self:CheckCanTargetSteamID(ban.admin)) then
+				error("You don't have permission to overwrite this player's ban")
+			end
 		end
 
 		BSU.BanPlayer(target, reason, duration, caller)
@@ -39,11 +41,12 @@ BSU.SetupCommand("banid", function(cmd)
 	cmd:SetFunction(function(self, caller, steamid, duration, reason)
 		steamid = BSU.ID64(steamid)
 
-		self:CheckCanTargetSteamID(steamid, true) -- make sure caller is allowed to target this person
-
-		local ban = BSU.GetBanStatus(steamid)
-		if ban and caller:IsValid() and not caller:IsSuperAdmin() and ban.admin and not self:CheckCanTargetSteamID(ban.admin) then
-			error("You don't have permission to overwrite this ban.")
+		if caller:IsValid() and not caller:IsSuperAdmin() then
+			self:CheckCanTargetSteamID(steamid, true) -- make sure caller is allowed to target this person
+			local ban = BSU.GetBanStatus(steamid)
+			if ban and (not ban.admin or not self:CheckCanTargetSteamID(ban.admin)) then
+				error("You don't have permission to overwrite this player's ban")
+			end
 		end
 
 		BSU.BanSteamID(steamid, reason, duration, caller:IsValid() and caller:SteamID64() or nil)
@@ -111,15 +114,17 @@ BSU.SetupCommand("banip", function(cmd)
 end)
 
 BSU.SetupCommand("unban", function(cmd)
-	cmd:SetDescription("Unban a player")
+	cmd:SetDescription("Unban a player by steamid")
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self, caller, steamid)
 		steamid = BSU.ID64(steamid)
 
-		local ban = BSU.GetBanStatus(steamid)
-		if ban and caller:IsValid() and not caller:IsSuperAdmin() and ban.admin and not self:CheckCanTargetSteamID(ban.admin) then
-			error("You don't have permission to unban this player.")
+		if caller:IsValid() and not caller:IsSuperAdmin() then
+			local ban = BSU.GetBanStatus(steamid)
+			if ban and (not ban.admin or not self:CheckCanTargetSteamID(ban.admin)) then
+				error("You don't have permission to unban this steamid")
+			end
 		end
 
 		BSU.RevokeSteamIDBan(steamid, caller) -- this also checks if the steam id is actually banned
@@ -142,6 +147,13 @@ BSU.SetupCommand("unbanip", function(cmd)
 	cmd:SetSilent(true)
 	cmd:SetFunction(function(self, caller, ip)
 		ip = BSU.Address(ip)
+
+		if caller:IsValid() and not caller:IsSuperAdmin() then
+			local ban = BSU.GetBanStatus(ip)
+			if ban and (not ban.admin or not self:CheckCanTargetSteamID(ban.admin)) then
+				error("You don't have permission to unban this ip")
+			end
+		end
 
 		BSU.RevokeIPBan(ip, caller) -- this also checks if the steam id is actually banned
 
