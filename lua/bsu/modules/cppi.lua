@@ -25,8 +25,12 @@ end
 
 function entMeta:CPPIGetOwner()
 	local owner = BSU.GetOwner(self)
-	if owner and owner:IsPlayer() then
-		return owner, CPPI_NOTIMPLEMENTED
+	if owner then
+		if owner:IsValid() then
+			return owner, CPPI_NOTIMPLEMENTED
+		else
+			return nil, CPPI_NOTIMPLEMENTED
+		end
 	end
 end
 
@@ -38,7 +42,7 @@ if SERVER then
 	function entMeta:CPPISetOwner(ply)
 		if ply == nil then
 			BSU.SetOwnerless(self)
-		elseif isentity(ply) and ply:IsPlayer() then
+		elseif isentity(ply) and ply:IsValid() and ply:IsPlayer() then
 			BSU.SetOwner(self, ply)
 		else
 			return false
