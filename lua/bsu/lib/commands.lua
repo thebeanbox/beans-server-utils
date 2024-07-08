@@ -71,7 +71,7 @@ end
 
 -- returns table of players via prefixed command argument
 -- returns empty table if failed to retrieve (ex: invalid player name, invalid player steamid, invalid group name, or no prefixes matched)
-function parsePlayerArg(user, str)
+local function parsePlayerArg(user, str)
 	str = string.Trim(parseArgs(str or "")[1] or "")
 	if str == "" then return {} end
 
