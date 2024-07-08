@@ -798,6 +798,17 @@ if SERVER then
 
 	function objCmdHandler.CheckCanTarget(self, target, fail)
 		if not self.caller:IsValid() or self.caller:IsSuperAdmin() then return true end -- is server console or superadmin
+		do
+			local allow = hook.Run("BSU_OnCommandCheckCanTarget", self, target)
+			if allow ~= nil then
+				if allow then
+					return true
+				elseif fail then
+					error("You cannot select this target")
+				end
+				return false
+			end
+		end
 		return self:CheckCanTargetSteamID(target:SteamID64(), fail)
 	end
 
