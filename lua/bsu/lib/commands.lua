@@ -103,15 +103,24 @@ local prefixes = {
 	["%"] = function(str) -- all players in the group (with inheritance)
 		local val = string.lower(string.sub(str, 2))
 		local groups = { [val] = true }
-		while true do
-			local inherit = BSU.GetGroupInherit(val)
-			if not inherit then break end
-			groups[inherit] = true
-			val = inherit
-		end
 		local found = {}
 		for _, ply in player.Iterator() do
-			if groups[BSU.GetPlayerData(ply).groupid] then
+			local groupid = BSU.GetPlayerData(ply).groupid
+			if groups[groupid] == nil then
+				while true do
+					local inherit = BSU.GetGroupInherit(groupid)
+					if not inherit then
+						groups[groupid] = false
+						break
+					end
+					if groups[inherit] then
+						groups[groupid] = true
+						break
+					end
+					groupid = inherit
+				end
+			end
+			if groups[groupid] then
 				found[#found + 1] = ply
 			end
 		end
