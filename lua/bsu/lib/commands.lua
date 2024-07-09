@@ -69,7 +69,7 @@ local function parseArgs(input, inclusive)
 	return newArgs
 end
 
-local prefixes = {
+local playerArgPrefixes = {
 	["^"] = function(str, pre, caller) -- the caller
 		if str == pre then return { caller } end
 	end,
@@ -152,7 +152,7 @@ local function parsePlayerArgPrefix(caller, str)
 		return found
 	end
 
-	local func = prefixes[pre]
+	local func = playerArgPrefixes[pre]
 	return func and func(str, pre, caller) or {}
 end
 
@@ -751,28 +751,114 @@ function objCmdHandler.GetSilent(self)
 end
 
 if SERVER then
-	function objCmdHandler.FilterTargets(self, targets, fail)
-		targets = hook.Run("BSU_OnCommandFilterTargets", self, targets) or targets
+	local canTargetPrefixes = {
+		["^"] = function(str, pre, steamid, targetid) -- if self
+			return str == pre and steamid == targetid
+		end,
+		["*"] = function(str, pre) -- always
+			return str == pre
+		end,
+		["$"] = function(str, _, _, targetid) -- if matches targetid
+			local val = string.sub(str, 2)
+			return targetid == val
+		end,
+		["#"] = function(str, _, _, targetid) -- if targetid in group
+			local data = BSU.GetPlayerDataBySteamID(targetid)
+			if not data then return false end
+			local val = string.lower(string.sub(str, 2))
+			return data.groupid == val
+		end,
+		["%"] = function(str, _, _, targetid) -- if targetid in group (with inheritance)
+			local data = BSU.GetPlayerDataBySteamID(targetid)
+			if not data then return false end
+			local val = string.lower(string.sub(str, 2))
+			local groupid = data.groupid
+			if groupid == val then return true end
+			while true do
+				local inherit = BSU.GetGroupInherit(groupid)
+				if not inherit then return false end
+				if inherit == val then return true end
+				groupid = inherit
+			end
+		end
+	}
 
+	local function parseCanTargetPrefix(steamid, targetid, str)
+		local pre = string.sub(str, 1, 1)
+
+		-- parse argument but take opposite of result
+		if pre == "!" then
+			local val = string.sub(str, 2)
+			return not parseCanTargetSteamID(steamid, targetid, val)
+		end
+
+		local func = canTargetPrefixes[pre]
+		return func and func(str, pre, steamid, targetid) or false
+	end
+
+	function objCmdHandler.CheckCanTargetSteamID(self, targetid, fail)
 		local caller = self.caller
 		if not caller:IsValid() or caller:IsSuperAdmin() then return true end
 
+		targetid = BS.ID64(targetid)
+
+		local target = player.GetBySteamID64(targetid)
+		if IsValid(target) then return self:CheckCanTarget(target, fail) end
+
+		if hook.Run("BSU_OnCommandCheckCanTargetSteamID", self, targetid) == false then
+			if fail then error("You cannot target this player") end
+			return false
+		end
+
 		local cantarget = BSU.GetGroupCanTarget(BSU.GetPlayerData(caller).groupid, self.cmd.name)
 
+		local steamid = caller:SteamID64()
+
+		-- parse prefix strings until one of them allows targeting targetid
+		local strs = string.Split(cantarget, ",")
+		for _, s in ipairs(strs) do
+			local result = parseCanTargetPrefix(steamid, targetid, s)
+			if result then return true end
+		end
+
+		if fail then error("You cannot target this player") end
+		return false
+	end
+
+	function objCmdHandler.FilterTargets(self, targets, fail)
+		local caller = self.caller
+		if not caller:IsValid() or caller:IsSuperAdmin() then return true end
+
+		local num = #targets
 		local remaining = {}
+		local found = {}
+
 		for _, ply in ipairs(targets) do
+			local allow = hook.Run("BSU_OnCommandCheckCanTarget", self, ply)
+			if allow ~= nil and allow then
+				found[#found + 1] = ply
+			end
 			remaining[ply] = true
 		end
 
+		if next(remaining) == nil then
+			if fail and next(found) == nil then
+				error("You cannot select " .. (num == 1 and "this target" or "these targets"))
+			end
+			return found
+		end
+
+		local cantarget = BSU.GetGroupCanTarget(BSU.GetPlayerData(caller).groupid, self.cmd.name)
+
+		-- parse prefix strings until all remaining are found
 		local strs = string.Split(cantarget, ",")
-		local found = {}
 		for _, s in ipairs(strs) do
 			local result = parsePlayerArgPrefix(caller, s)
 			for _, ply in ipairs(result) do
 				if remaining[ply] then
 					remaining[ply] = nil
 					found[#found + 1] = ply
-					if next(remaining) == nil then -- all players can be targeted, return early to avoid unnecessary computation
+					if next(remaining) == nil then
 						return found
 					end
 				end
@@ -780,7 +866,7 @@ if SERVER then
 		end
 
 		if fail and next(found) == nil then
-			error("You cannot select " .. (#targets == 1 and "this target" or "these targets"))
+			error("You cannot select " .. (num == 1 and "this target" or "these targets"))
 		end
 		return found
 	end
