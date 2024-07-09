@@ -1,5 +1,21 @@
 -- lib/server/commands.lua
 
+function BSU.RegisterCommandTarget(groupid, cmd, filter)
+	BSU.SQLReplace(BSU.SQL_CMD_TARGETS, {
+		groupid = groupid,
+		cmd = cmd,
+		filter = filter
+	})
+end
+
+function BSU.RemoveCommandTarget(groupid, cmd)
+	BSU.SQLDeleteByValues(BSU.SQL_CMD_TARGETS, { groupid = groupid, cmd = cmd })
+end
+
+function BSU.GetCommandTarget(groupid, cmd)
+	return BSU.SQLSelectByValues(BSU.SQL_CMD_TARGETS, { groupid = groupid, cmd = cmd }, 1)[1]
+end
+
 function BSU.RegisterCommandLimit(groupid, cmd, arg, min, max)
 	BSU.SQLReplace(BSU.SQL_CMD_LIMITS, {
 		groupid = groupid,
@@ -16,36 +32,6 @@ end
 
 function BSU.GetCommandLimit(groupid, cmd, arg)
 	return BSU.SQLSelectByValues(BSU.SQL_CMD_LIMITS, { groupid = groupid, cmd = cmd, arg = arg }, 1)[1]
-end
-
--- set whether a group must or mustn't have access to a command
--- (setting this will ignore the command's access value)
--- (access is granted by default)
-function BSU.AddGroupCommandAccess(groupid, cmd, access)
-	BSU.RegisterGroupPrivilege(groupid, BSU.PRIV_CMD, string.lower(cmd), access == nil and true or access)
-end
-
--- set whether a player must or mustn't have access to a command
--- (setting this will ignore the command's access value)
--- (access is granted by default)
-function BSU.AddPlayerCommandAccess(steamid, cmd, access)
-	BSU.RegisterPlayerPrivilege(steamid, BSU.PRIV_CMD, string.lower(cmd), access == nil and true or access)
-end
-
-function BSU.RemoveGroupCommandAccess(groupid, cmd)
-	BSU.RemoveGroupPrivilege(groupid, BSU.PRIV_CMD, string.lower(cmd))
-end
-
-function BSU.RemovePlayerCommandAccess(steamid, cmd)
-	BSU.RemovePlayerPrivilege(steamid, BSU.PRIV_CMD, string.lower(cmd))
-end
-
-function BSU.AddGroupTargetAccess(groupid, target, access)
-	BSU.RegisterGroupPrivilege(groupid, BSU.PRIV_TARGET, string.lower(target), access == nil and true or access)
-end
-
-function BSU.RemoveGroupTargetAccess(groupid, target)
-	BSU.RemoveGroupPrivilege(groupid, BSU.PRIV_TARGET, string.lower(target))
 end
 
 -- returns bool if the player has access to the command

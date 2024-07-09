@@ -408,7 +408,6 @@ local privs = {
 	tool    = BSU.PRIV_TOOL,
 	command = BSU.PRIV_CMD,
 	cmd     = BSU.PRIV_CMD,
-	target  = BSU.PRIV_TARGET,
 	misc    = BSU.PRIV_MISC,
 }
 
@@ -423,7 +422,6 @@ local names = {
 	[BSU.PRIV_SWEP]   = "weapon",
 	[BSU.PRIV_TOOL]   = "tool",
 	[BSU.PRIV_CMD]    = "command",
-	[BSU.PRIV_TARGET] = "target",
 	[BSU.PRIV_MISC]   = "misc",
 }
 
@@ -459,7 +457,7 @@ BSU.SetupCommand("grantgrouppriv", function(cmd)
 		if not type then error("Unknown privilege type") end
 
 		-- command names should be lowercase
-		if type == BSU.PRIV_CMD or type == BSU.PRIV_TARGET then
+		if type == BSU.PRIV_CMD then
 			value = string.lower(value)
 		end
 
@@ -492,7 +490,7 @@ BSU.SetupCommand("revokegrouppriv", function(cmd)
 		if not type then error("Unknown privilege type") end
 
 		-- command names should be lowercase
-		if type == BSU.PRIV_CMD or type == BSU.PRIV_TARGET then
+		if type == BSU.PRIV_CMD then
 			value = string.lower(value)
 		end
 
@@ -524,7 +522,7 @@ BSU.SetupCommand("cleargrouppriv", function(cmd)
 		if not type then error("Unknown privilege type") end
 
 		-- command names should be lowercase
-		if type == BSU.PRIV_CMD or type == BSU.PRIV_TARGET then
+		if type == BSU.PRIV_CMD then
 			value = string.lower(value)
 		end
 

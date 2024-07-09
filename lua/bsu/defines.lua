@@ -8,8 +8,7 @@ BSU.PRIV_SENT   = 2
 BSU.PRIV_SWEP   = 3
 BSU.PRIV_TOOL   = 4
 BSU.PRIV_CMD    = 5
-BSU.PRIV_TARGET = 6
-BSU.PRIV_MISC   = 7
+BSU.PRIV_MISC   = 6
 
 -- prop protection enums
 BSU.PP_PHYSGUN = 1
@@ -47,14 +46,15 @@ BSU.CMD_PREFIX_SILENT = "/"
 
 if SERVER then
 	-- server SQL database table names
-	BSU.SQL_TEAMS         = "bsu_teams"
-	BSU.SQL_GROUPS        = "bsu_groups"
-	BSU.SQL_PLAYERS       = "bsu_players"
-	BSU.SQL_PDATA         = "bsu_pdata"
-	BSU.SQL_BANS          = "bsu_bans"
-	BSU.SQL_GROUP_PRIVS   = "bsu_grp_privs"
-	BSU.SQL_GROUP_LIMITS  = "bsu_grp_limits"
-	BSU.SQL_CMD_LIMITS    = "bsu_cmd_limits"
+	BSU.SQL_TEAMS        = "bsu_teams"
+	BSU.SQL_GROUPS       = "bsu_groups"
+	BSU.SQL_PLAYERS      = "bsu_players"
+	BSU.SQL_PDATA        = "bsu_pdata"
+	BSU.SQL_BANS         = "bsu_bans"
+	BSU.SQL_GROUP_PRIVS  = "bsu_grp_privs"
+	BSU.SQL_GROUP_LIMITS = "bsu_grp_limits"
+	BSU.SQL_CMD_TARGETS  = "bsu_cmd_targets"
+	BSU.SQL_CMD_LIMITS   = "bsu_cmd_limits"
 
 	-- command access values
 	BSU.CMD_CONSOLE    = 0 -- access only via the server console (command is also not networked to client)
