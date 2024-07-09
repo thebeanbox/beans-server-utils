@@ -751,15 +751,17 @@ function objCmdHandler.GetSilent(self)
 end
 
 if SERVER then
-	local function findTargets(caller, targets)
+	function objCmdHandler.FilterTargets(self, targets, fail)
+		targets = hook.Run("BSU_OnCommandFilterTargets", self, targets) or targets
+
+		local caller = self.caller
 		if not caller:IsValid() or caller:IsSuperAdmin() then return true end
 
-		local groupid = BSU.GetPlayerData(caller).groupid
-		local cantarget = BSU.GetGroupByID(groupid).cantarget
+		local cantarget = BSU.GetGroupCanTarget(BSU.GetPlayerData(caller).groupid, self.cmd.name)
 
-		local tbl = {}
+		local remaining = {}
 		for _, ply in ipairs(targets) do
-			tbl[ply] = true
+			remaining[ply] = true
 		end
 
 		local strs = string.Split(cantarget, ",")
@@ -767,21 +769,16 @@ if SERVER then
 		for _, s in ipairs(strs) do
 			local result = parsePlayerArgPrefix(caller, s)
 			for _, ply in ipairs(result) do
-				if tbl[ply] then
-					tbl[ply] = nil
+				if remaining[ply] then
+					remaining[ply] = nil
 					found[#found + 1] = ply
-					if next(tbl) == nil then
-						return true
+					if next(remaining) == nil then -- all players can be targeted, return early to avoid unnecessary computation
+						return found
 					end
 				end
 			end
 		end
 
-		return found
-	end
-
-	function objCmdHandler.FilterTargets(self, targets, fail)
-		local found = findTargets(self.caller, targets)
 		if fail and next(found) == nil then
 			error("You cannot select " .. (#targets == 1 and "this target" or "these targets"))
 		end
