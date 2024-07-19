@@ -751,7 +751,7 @@ function objCmdHandler.GetSilent(self)
 end
 
 if SERVER then
-	local canTargetPrefixes = {
+	local targetPrefixes = {
 		["^"] = function(str, pre, steamid, targetid) -- if self
 			return str == pre and steamid == targetid
 		end,
@@ -766,6 +766,7 @@ if SERVER then
 			local data = BSU.GetPlayerDataBySteamID(targetid)
 			if not data then return false end
 			local val = string.lower(string.sub(str, 2))
+			print(targetid, data.groupid, val)
 			return data.groupid == val
 		end,
 		["%"] = function(str, _, _, targetid) -- if targetid in group (with inheritance)
@@ -783,16 +784,16 @@ if SERVER then
 		end
 	}
 
-	local function parseCanTargetPrefix(steamid, targetid, str)
+	local function parseTargetPrefix(steamid, targetid, str)
 		local pre = string.sub(str, 1, 1)
 
 		-- parse argument but take opposite of result
 		if pre == "!" then
 			local val = string.sub(str, 2)
-			return not parseCanTargetSteamID(steamid, targetid, val)
+			return not parseTargetPrefix(steamid, targetid, val)
 		end
 
-		local func = canTargetPrefixes[pre]
+		local func = targetPrefixes[pre]
 		return func and func(str, pre, steamid, targetid) or false
 	end
 
@@ -800,7 +801,7 @@ if SERVER then
 		local caller = self.caller
 		if not caller:IsValid() or caller:IsSuperAdmin() then return true end
 
-		targetid = BS.ID64(targetid)
+		targetid = BSU.ID64(targetid)
 
 		local target = player.GetBySteamID64(targetid)
 		if IsValid(target) then return self:CheckCanTarget(target, fail) end
@@ -817,7 +818,7 @@ if SERVER then
 		-- parse prefix strings until one of them allows targeting targetid
 		local strs = string.Split(cantarget, ",")
 		for _, s in ipairs(strs) do
-			local result = parseCanTargetPrefix(steamid, targetid, s)
+			local result = parseTargetPrefix(steamid, targetid, s)
 			if result then return true end
 		end
 
@@ -827,18 +828,29 @@ if SERVER then
 
 	function objCmdHandler.FilterTargets(self, targets, fail)
 		local caller = self.caller
-		if not caller:IsValid() or caller:IsSuperAdmin() then return true end
 
 		local num = #targets
-		local remaining = {}
 		local found = {}
 
-		for _, ply in ipairs(targets) do
-			local allow = hook.Run("BSU_OnCommandCheckCanTarget", self, ply)
-			if allow ~= nil and allow then
-				found[#found + 1] = ply
+		-- if console or superadmin, return all targets
+		if not caller:IsValid() or caller:IsSuperAdmin() then
+			for i = 1, num do
+				found[#found + 1] = targets[i]
 			end
-			remaining[ply] = true
+			return found
+		end
+
+		local remaining = {}
+
+		for i = 1, num do
+			local ply = targets[i]
+			-- check if a hook wants to override target filtering
+			local allow = hook.Run("BSU_OnCommandCheckCanTarget", self, ply)
+			if allow ~= nil then
+				if allow then found[#found + 1] = ply end
+			else
+				remaining[ply] = true
+			end
 		end
 
 		if next(remaining) == nil then
@@ -850,7 +862,7 @@ if SERVER then
 
 		local cantarget = BSU.GetGroupCanTarget(BSU.GetPlayerData(caller).groupid, self.cmd.name)
 
-		-- parse prefix strings until all remaining are found
+		-- parse prefix strings until the remaining are found
 		local strs = string.Split(cantarget, ",")
 		for _, s in ipairs(strs) do
 			local result = parsePlayerArgPrefix(caller, s)
