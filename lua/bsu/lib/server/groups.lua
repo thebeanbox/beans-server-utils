@@ -8,8 +8,8 @@ function BSU.RegisterGroup(id, team, usergroup, cantarget, inherit)
 	BSU.SQLReplace(BSU.SQL_GROUPS, {
 		id = string.lower(id),
 		team = team,
-		usergroup = usergroup,
-		cantarget = cantarget,
+		usergroup = usergroup or "user",
+		cantarget = cantarget or "*",
 		inherit = inherit
 	})
 end
