@@ -30,8 +30,8 @@ BSU.SQLCreateTable(BSU.SQL_GROUPS, string.format(
 	[[
 		id TEXT PRIMARY KEY,
 		team INTEGER NOT NULL REFERENCES %s(id),
-		usergroup TEXT NOT NULL DEFAULT user,
-		cantarget TEXT NOT NULL DEFAULT *,
+		usergroup TEXT NOT NULL,
+		cantarget TEXT NOT NULL,
 		inherit TEXT REFERENCES %s(id)
 	]],
 		BSU.SQLEscIdent(BSU.SQL_TEAMS),
@@ -159,7 +159,7 @@ BSU.SQLCreateTable(BSU.SQL_CMD_TARGETS, string.format(
 		groupid TEXT NOT NULL REFERENCES %s(id),
 		cmd TEXT NOT NULL,
 		filter TEXT NOT NULL,
-		UNIQUE (groupid, cmd, filter)
+		UNIQUE (groupid, cmd)
 	]],
 		BSU.SQLEscIdent(BSU.SQL_GROUPS)
 ))
