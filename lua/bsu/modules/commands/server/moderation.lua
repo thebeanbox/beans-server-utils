@@ -591,6 +591,46 @@ BSU.SetupCommand("cleargrouplimit", function(cmd)
 	cmd:AddStringArg("name")
 end)
 
+BSU.SetupCommand("setgroupcmdtarget", function(cmd)
+	cmd:SetDescription("Set a command target filter for a group")
+	cmd:SetCategory("moderation")
+	cmd:SetAccess(BSU.CMD_SUPERADMIN)
+	cmd:SetFunction(function(self, _, groupid, command, filter)
+		checkGroupisValid(groupid)
+
+		BSU.RegisterCommandTarget(groupid, command, filter)
+
+		self:BroadcastActionMsg("%caller% set a command target filter on the group %groupid% (%command% %filter%)", {
+			groupid = groupid,
+			command = command,
+			filter = filter
+		})
+	end)
+	cmd:AddStringArg("group", { autocomplete = groupAutocomplete })
+	cmd:AddStringArg("command")
+	cmd:AddStringArg("filter")
+end)
+
+BSU.SetupCommand("cleargroupcmdtarget", function(cmd)
+	cmd:SetDescription("Clear an existing command target filter for a group")
+	cmd:SetCategory("moderation")
+	cmd:SetAccess(BSU.CMD_SUPERADMIN)
+	cmd:SetFunction(function(self, _, groupid, command)
+		checkGroupisValid(groupid)
+
+		if not BSU.GetCommandTarget(groupid, command) then error("Command target filter is not set on this group") end
+
+		BSU.RemoveCommandTarget(groupid, command)
+
+		self:BroadcastActionMsg("%caller% cleared a command target filter on the group %groupid% (%command%)", {
+			groupid = groupid,
+			command = command
+		})
+	end)
+	cmd:AddStringArg("group", { autocomplete = groupAutocomplete })
+	cmd:AddStringArg("command")
+end)
+
 BSU.SetupCommand("setgroupcmdlimit", function(cmd)
 	cmd:SetDescription("Set a command limit on a group")
 	cmd:SetCategory("moderation")
