@@ -2,13 +2,13 @@
 -- defines some values on both the server and client
 
 -- privilege types
-BSU.PRIV_MODEL  = 0
-BSU.PRIV_NPC    = 1
-BSU.PRIV_SENT   = 2
-BSU.PRIV_SWEP   = 3
-BSU.PRIV_TOOL   = 4
-BSU.PRIV_CMD    = 5
-BSU.PRIV_MISC   = 6
+BSU.PRIV_MISC  = 0
+BSU.PRIV_MODEL = 1
+BSU.PRIV_NPC   = 2
+BSU.PRIV_SENT  = 3
+BSU.PRIV_SWEP  = 4
+BSU.PRIV_TOOL  = 5
+BSU.PRIV_CMD   = 6
 
 -- prop protection enums
 BSU.PP_PHYSGUN = 1
