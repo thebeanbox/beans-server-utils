@@ -1,5 +1,7 @@
 -- lib/server/commands.lua
 
+util.AddNetworkString("bsu_command_run")
+
 function BSU.RegisterCommandTarget(groupid, cmd, filter)
 	BSU.SQLReplace(BSU.SQL_CMD_TARGETS, {
 		groupid = groupid,
