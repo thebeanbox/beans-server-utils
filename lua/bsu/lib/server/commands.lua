@@ -103,9 +103,34 @@ function BSU.SendRunCommand(ply, name, argStr, silent)
 	net.Send(ply)
 end
 
+local cmdRateLimit = {}
+
 net.Receive("bsu_command_run", function(_, ply)
+	if not ply:IsSuperAdmin() then
+		local num = cmdRateLimit[ply] or 0
+		if num >= 20 then
+			if num >= 60 then
+				BSU.KickPlayer(ply, "Commandaholic")
+				return
+			end
+			cmdRateLimit[ply] = num + 1
+			BSU.SendChatMsg(ply, BSU.CLR_ERROR, "Slow down buddy, the commands aren't going anywhere")
+			return
+		end
+		cmdRateLimit[ply] = num + 1
+	end
 	local name = net.ReadString()
 	local argStr = net.ReadString()
 	local silent = net.ReadBool()
 	BSU.SafeRunCommand(ply, name, argStr, silent)
+end)
+
+timer.Create("BSU_UpdateCommandRateLimit", 1, 0, function()
+	for ply in pairs(cmdRateLimit) do
+		if ply:IsValid() then
+			cmdRateLimit[ply] = cmdRateLimit[ply] - 1
+			if cmdRateLimit[ply] > 0 then continue end
+		end
+		cmdRateLimit[ply] = nil
+	end
 end)
