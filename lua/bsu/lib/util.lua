@@ -176,6 +176,7 @@ function BSU.RemoveClientProps(plys)
 		return
 	end
 	removeByClass("class C_PhysPropClientside")
+	removeByClass("20C_PhysPropClientside")
 end
 
 function BSU.RemoveClientRagdolls(plys)
@@ -184,6 +185,7 @@ function BSU.RemoveClientRagdolls(plys)
 		return
 	end
 	removeByClass("class C_ClientRagdoll")
+	removeByClass("15C_ClientRagdoll")
 end
 
 function BSU.RemoveClientEffects(plys)
@@ -192,4 +194,5 @@ function BSU.RemoveClientEffects(plys)
 		return
 	end
 	removeByClass("class CLuaEffect")
+	removeByClass("10CLuaEffect")
 end
