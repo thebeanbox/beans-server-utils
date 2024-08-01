@@ -149,9 +149,13 @@ BSU.SetupCommand("cleanupdebris", function(cmd)
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
 		for _, v in ipairs(ents.GetAll()) do
-			-- BSU.GetOwner returns nil if the entity is ownerless
-			if not BSU.GetOwner(v) and debrisGroups[v:GetCollisionGroup()] then
-				v:Remove()
+			-- remove all entities that are debris and ownerless or world-owned
+			if debrisGroups[v:GetCollisionGroup()] then
+				-- BSU.GetOwner returns nil if the entity is ownerless
+				local owner = BSU.GetOwner(v)
+				if not owner or owner:IsWorld() then
+					v:Remove()
+				end
 			end
 		end
 

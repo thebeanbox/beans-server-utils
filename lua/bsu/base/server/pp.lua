@@ -43,7 +43,7 @@ hook.Add("PlayerDisconnected", "BSU_HandleDisconnectedPlayerProps", function(ply
 
 	-- clear permissions granted to disconnected players
 	if not ply:IsBot() then
-		BSU.ClearPermissionTo(ply:SteamID64())
+		BSU.ClearPermissionTo(id)
 	end
 end)
 
@@ -110,28 +110,30 @@ end)
 
 -- try set the owner of newly created entities
 hook.Add("OnEntityCreated", "BSU_SetOwnerEntities", function(ent)
-	if ent:IsValid() then
-		timer.Simple(0, function() -- need to wait a tick to ensure some data to be available
-			if ent:IsValid() then
-				if ent:CreatedByMap() then
-					BSU.SetOwnerWorld(ent)
-				else
-					-- seems to always be a player, an npc (zombie that dropped a headcrab) or NULL
-					-- i don't think this will ever be nil, but just incase, it will fallback to NULL
-					local owner = ent:GetInternalVariable("m_hOwnerEntity") or NULL
-					-- sometimes is set to a weapon for projectile ents (has been seen to be nil)
-					if owner == NULL then owner = ent:GetInternalVariable("m_hOwner") or NULL end
-					if owner == NULL then return end
+	if not ent:IsValid() then return end
+	-- need to wait a tick for the entity to initialize and other hooks/detours to have a chance to set owner
+	timer.Simple(0, function()
+		if not ent:IsValid() or BSU.GetOwner(ent) then return end
 
-					if owner:IsPlayer() then
-						BSU.SetOwner(ent, owner)
-					else
-						BSU.CopyOwner(owner, ent) -- try set the owner of the ent to the owner of it's internal owner
-					end
-				end
-			end
-		end)
-	end
+		BSU.SetOwnerWorld(ent)
+
+		if ent:CreatedByMap() then return end
+
+		-- try fix the owner of engine entities not created by the map (this mostly fixes ents spawned by npcs or weapons)
+
+		-- seems to always be a player, npc (zombie that dropped a headcrab) or NULL
+		-- i don't think this will ever be nil, but just incase, it will fallback to NULL
+		local owner = ent:GetInternalVariable("m_hOwnerEntity") or NULL
+		-- sometimes is set to a weapon for projectile ents (has been seen to be nil)
+		if owner == NULL then owner = ent:GetInternalVariable("m_hOwner") or NULL end
+		if owner == NULL then return end
+
+		if owner:IsPlayer() then
+			BSU.SetOwner(ent, owner)
+		else
+			BSU.CopyOwner(owner, ent) -- try set the owner of the ent to the owner of it's internal owner
+		end
+	end)
 end)
 
 -- override some functions to catch players spawning entities and properly set entity owner
@@ -154,68 +156,72 @@ function plyMeta:AddCleanup(type, ent, ...)
 	return BSU._oldAddCleanup(self, type, ent, ...)
 end
 
-BSU._oldCleanupAdd = BSU._oldCleanupAdd or cleanup.Add
-function cleanup.Add(ply, type, ent, ...)
-	if IsValid(ply) and IsValid(ent) then
-		BSU.SetOwner(ent, ply)
+if cleanup then
+	BSU._oldCleanupAdd = BSU._oldCleanupAdd or cleanup.Add
+	function cleanup.Add(ply, type, ent, ...)
+		if IsValid(ply) and IsValid(ent) then
+			BSU.SetOwner(ent, ply)
+		end
+		return BSU._oldCleanupAdd(ply, type, ent, ...)
 	end
-	return BSU._oldCleanupAdd(ply, type, ent, ...)
-end
 
-BSU._oldCleanupReplaceEntity = BSU._oldCleanupReplaceEntity or cleanup.ReplaceEntity
-function cleanup.ReplaceEntity(from, to, ...)
-	local ret = { BSU._oldCleanupReplaceEntity(from, to, ...) }
-	if ret[1] and IsValid(from) and IsValid(to) then
-		BSU.ReplaceOwner(from, to)
+	BSU._oldCleanupReplaceEntity = BSU._oldCleanupReplaceEntity or cleanup.ReplaceEntity
+	function cleanup.ReplaceEntity(from, to, ...)
+		local ret = { BSU._oldCleanupReplaceEntity(from, to, ...) }
+		if ret[1] and IsValid(from) and IsValid(to) then
+			BSU.ReplaceOwner(from, to)
+		end
+		return unpack(ret)
 	end
-	return unpack(ret)
 end
 
-BSU._oldUndoReplaceEntity = BSU._oldUndoReplaceEntity or undo.ReplaceEntity
-function undo.ReplaceEntity(from, to, ...)
-	local ret = { BSU._oldUndoReplaceEntity(from, to, ...) }
-	if ret[1] and IsValid(from) and IsValid(to) then
-		BSU.ReplaceOwner(from, to)
+if undo then
+	BSU._oldUndoReplaceEntity = BSU._oldUndoReplaceEntity or undo.ReplaceEntity
+	function undo.ReplaceEntity(from, to, ...)
+		local ret = { BSU._oldUndoReplaceEntity(from, to, ...) }
+		if ret[1] and IsValid(from) and IsValid(to) then
+			BSU.ReplaceOwner(from, to)
+		end
+		return unpack(ret)
 	end
-	return unpack(ret)
-end
 
-local currentUndo
+	local currentUndo
 
-BSU._oldUndoCreate = BSU._oldUndoCreate or undo.Create
-function undo.Create(...)
-	currentUndo = { ents = {} }
-	return BSU._oldUndoCreate(...)
-end
-
-BSU._oldUndoAddEntity = BSU._oldUndoAddEntity or undo.AddEntity
-function undo.AddEntity(ent, ...)
-	if currentUndo and IsValid(ent) then
-		table.insert(currentUndo.ents, ent)
+	BSU._oldUndoCreate = BSU._oldUndoCreate or undo.Create
+	function undo.Create(...)
+		currentUndo = { ents = {} }
+		return BSU._oldUndoCreate(...)
 	end
-	return BSU._oldUndoAddEntity(ent, ...)
-end
 
-BSU._oldUndoSetPlayer = BSU._oldUndoSetPlayer or undo.SetPlayer
-function undo.SetPlayer(ply, ...)
-	if currentUndo and IsValid(ply) then
-		currentUndo.owner = ply
+	BSU._oldUndoAddEntity = BSU._oldUndoAddEntity or undo.AddEntity
+	function undo.AddEntity(ent, ...)
+		if currentUndo and IsValid(ent) then
+			table.insert(currentUndo.ents, ent)
+		end
+		return BSU._oldUndoAddEntity(ent, ...)
 	end
-	return BSU._oldUndoSetPlayer(ply, ...)
-end
 
-BSU._oldUndoFinish = BSU._oldUndoFinish or undo.Finish
-function undo.Finish(...)
-	if currentUndo then
-		local ply = currentUndo.owner
-		if IsValid(ply) then
-			for _, ent in ipairs(currentUndo.ents) do
-				if IsValid(ent) then
-					BSU.SetOwner(ent, ply)
+	BSU._oldUndoSetPlayer = BSU._oldUndoSetPlayer or undo.SetPlayer
+	function undo.SetPlayer(ply, ...)
+		if currentUndo and IsValid(ply) then
+			currentUndo.owner = ply
+		end
+		return BSU._oldUndoSetPlayer(ply, ...)
+	end
+
+	BSU._oldUndoFinish = BSU._oldUndoFinish or undo.Finish
+	function undo.Finish(...)
+		if currentUndo then
+			local ply = currentUndo.owner
+			if IsValid(ply) then
+				for _, ent in ipairs(currentUndo.ents) do
+					if IsValid(ent) then
+						BSU.SetOwner(ent, ply)
+					end
 				end
 			end
 		end
+		currentUndo = nil
+		return BSU._oldUndoFinish(...)
 	end
-	currentUndo = nil
-	return BSU._oldUndoFinish(...)
 end
