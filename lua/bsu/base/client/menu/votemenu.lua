@@ -20,11 +20,12 @@ function voteEntry:SetVote(vote)
 	title:Dock(TOP)
 
 	function title.DoClick()
+		-- No ':' in function definition, self refers to the voteEntry.
 		self.opened = not self.opened
 	end
 
 	local dropDown = vgui.Create("DScrollPanel", self)
-	dropDown:SetHeight(200)
+	dropDown:SetHeight(400)
 	dropDown:Dock(FILL)
 	self.dropDown = dropDown
 
@@ -47,6 +48,8 @@ end
 
 function voteEntry:PlayerVote(ply, optionIndex)
 	local avatar = self.players[ply]
+	local option = self.options[optionIndex]
+
 	if not avatar then
 		avatar = vgui.Create("AvatarImage", self)
 		avatar:SetPlayer(ply, 32)
@@ -54,7 +57,12 @@ function voteEntry:PlayerVote(ply, optionIndex)
 		avatar:Dock(RIGHT)
 		self.players[ply] = avatar
 	end
-	avatar:SetParent(self.options[optionIndex])
+
+	local oldParent = avatar:GetParent()
+	avatar:SetParent(option)
+	if oldParent then
+		oldParent:InvalidateLayout()
+	end
 end
 
 function voteEntry:Think()
@@ -64,11 +72,11 @@ function voteEntry:Think()
 	if self.opened then
 		if self.openFactor < 1 then
 			self.openFactor = math.min(self.openFactor + FrameTime() * 2, 1)
-			self:SetHeight(Lerp(self.openFactor, 0, 200) + 32)
+			self:SetHeight(Lerp(self.openFactor, 0, 400) + 32)
 		end
 	elseif self.openFactor > 0 then
 		self.openFactor = math.max(self.openFactor - FrameTime() * 2, 0)
-		self:SetHeight(Lerp(self.openFactor, 0, 200) + 32)
+		self:SetHeight(Lerp(self.openFactor, 0, 400) + 32)
 	end
 end
 

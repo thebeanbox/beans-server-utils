@@ -4,6 +4,7 @@ net.Receive("bsu_vote", function()
 	local id = net.ReadString()
 	if net.ReadBool() then
 		local title = net.ReadString()
+		local start = net.ReadUInt(32)
 		local duration = net.ReadUInt(32)
 		local author = net.ReadEntity()
 
@@ -16,6 +17,7 @@ net.Receive("bsu_vote", function()
 		local vote = {
 			id = id,
 			title = title,
+			start = start,
 			duration = duration,
 			author = author,
 			options = options,
