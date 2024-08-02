@@ -103,7 +103,16 @@ hook.Add("EntityTakeDamage", "BSU_DamagePermission", function(ent, dmg)
 
 	if not attacker:IsPlayer() then attacker = BSU.GetOwner(attacker) end
 
-	if not attacker or attacker:IsWorld() or not attacker:IsValid() or BSU.PlayerHasPermission(attacker, ent, BSU.PP_DAMAGE) == false then
+	if not attacker then return true end
+
+	if attacker:IsWorld() then -- let world-owned ents damage other world-owned ents
+		local owner = BSU.GetOwner(ent)
+		if owner and owner:IsWorld() then
+			return
+		end
+	end
+
+	if not attacker:IsValid() or BSU.PlayerHasPermission(attacker, ent, BSU.PP_DAMAGE) == false then
 		return true -- unlike the GravGun* and Can* hooks, this hook requires true to prevent it
 	end
 end)
