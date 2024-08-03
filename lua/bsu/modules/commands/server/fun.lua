@@ -457,29 +457,28 @@ BSU.SetupCommand("slay", function(cmd)
 end)
 BSU.AliasCommand("kill", "slay")
 
-BSU.SetupCommand("disintegrate", function(cmd)
-	cmd:SetDescription("Disintegrate players")
+BSU.SetupCommand("dissolve", function(cmd)
+	cmd:SetDescription("Dissolve players")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self, _, targets)
-		local dmgInfo = DamageInfo()
-		dmgInfo:SetDamageType(DMG_DISSOLVE)
-
 		for _, v in ipairs(targets) do
-			dmgInfo:SetDamage(math.max(v:Health(), 1))
-			dmgInfo:SetAttacker(v)
-			v:RemoveFlags(FL_GODMODE)
-			v:SetArmor(0)
-			v:TakeDamageInfo(dmgInfo)
+			v:Kill()
+			v:CreateRagdoll()
+			local ent = v:GetRagdollEntity()
+			if ent:IsValid() then
+				ent:Dissolve(1)
+				ent:EmitSound(string.format("ambient/levels/labs/electric_explosion%d.wav", math.random(1, 3)), nil, nil, nil, CHAN_STATIC)
+			end
 		end
 
 		if next(targets) ~= nil then
-			self:BroadcastActionMsg("%caller% disintegrated %targets%", { targets = targets })
+			self:BroadcastActionMsg("%caller% dissolved %targets%", { targets = targets })
 		end
 	end)
 	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
-BSU.AliasCommand("smite", "disintegrate")
+BSU.AliasCommand("smite", "dissolve")
 
 BSU.SetupCommand("explode", function(cmd)
 	cmd:SetDescription("Explode players")
