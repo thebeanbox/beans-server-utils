@@ -122,7 +122,7 @@ hook.Add("OnEntityCreated", "BSU_SetOwnerEntities", function(ent)
 	if not ent:IsValid() then return end
 	-- need to wait a tick for the entity to initialize and other hooks/detours to have a chance to set owner
 	timer.Simple(0, function()
-		if not ent:IsValid() or BSU.GetOwner(ent) then return end
+		if not ent:IsValid() or IsValid(BSU.GetOwner(ent)) then return end
 
 		BSU.SetOwnerWorld(ent)
 
