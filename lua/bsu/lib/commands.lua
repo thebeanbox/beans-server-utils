@@ -896,6 +896,25 @@ if SERVER then
 		end
 	end
 
+	function objCmdHandler.CanSeeCommandAction(self, target)
+		local val = hook.Run("BSU_CanSeeCommandAction", target, self)
+		if val ~= nil then return val ~= false end
+
+		-- default behavior: can see if not silent, target is server console, target is caller, target is equal or higher admin than caller
+		-- (server console is considered higher than superadmin)
+
+		if not self.silent or not target:IsValid() then return true end
+
+		local caller = self.caller
+		if caller == target then return true end
+
+		if not caller:IsValid() then return false end
+		if caller:IsSuperAdmin() and not target:IsSuperAdmin() then return false end
+		if caller:IsAdmin() and not target:IsAdmin() then return false end
+
+		return true
+	end
+
 	-- broadcast a formatted message (intended for command actions)
 	function objCmdHandler.BroadcastActionMsg(self, msg, args)
 		if not istable(plys) then plys = { plys } end
@@ -904,17 +923,17 @@ if SERVER then
 		args = args or {}
 
 		for _, v in ipairs(player.GetHumans()) do
-			if v:IsValid() then
-				local val = hook.Run("BSU_ShowActionMessage", self.caller, v, silent) -- expects nil for default behavior, 2 for chat, 1 for console, 0 or anything else for hidden
-				if val == nil and (not self.silent or (v:IsSuperAdmin() or v == self.caller)) or val == 2 then
+			if self:CanSeeCommandAction(v) then
+				local val = math.floor(v:GetInfoNum(silent and "bsu_show_silent_actions" or "bsu_show_actions", 2))
+				if val == 2 then
 					BSU.SendChatMsg(v, self:FormatMsg(self.caller, v, msg, args))
 				elseif val == 1 then
 					BSU.SendConsoleMsg(v, self:FormatMsg(self.caller, v, msg, args))
-				end -- 0 or anything else for hidden
+				end
 			end
 		end
 
-		BSU.SendChatMsg(NULL, self:FormatMsg(self.caller, NULL, msg, args)) -- also send to server console (it doesn't matter if this is SendConsoleMsg instead)
+		BSU.SendConsoleMsg(NULL, self:FormatMsg(self.caller, NULL, msg, args)) -- also send to server console (SendChatMsg also works for server console)
 	end
 end
 
