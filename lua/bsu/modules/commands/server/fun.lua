@@ -653,8 +653,11 @@ BSU.SetupCommand("limammo", function(cmd)
 	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
-local function collideOnlyPlayers(_, ent1, ent2)
-	if not ent1:IsPlayer() and not ent2:IsPlayer() then return false end
+local function setCollisionTarget(ent, target)
+	hook.Add("ShouldCollide", ent, function(_, ent1, ent2)
+		if ent1 ~= target and ent2 ~= target then return false end
+	end)
+	ent:SetCustomCollisionCheck(true)
 end
 
 BSU.SetupCommand("bathe", function(cmd)
@@ -672,9 +675,7 @@ BSU.SetupCommand("bathe", function(cmd)
 			bath:SetModel("models/props_interiors/BathTub01a.mdl")
 			bath:SetAngles(Angle(0, 180, 0))
 			bath:SetPos(v:GetPos() + Vector(750, 0, 50))
-
-			hook.Add("ShouldCollide", bath, collideOnlyPlayers)
-			bath:SetCustomCollisionCheck(true)
+			setCollisionTarget(bath, v)
 			bath:Spawn()
 
 			local phys = bath:GetPhysicsObject()
@@ -683,7 +684,7 @@ BSU.SetupCommand("bathe", function(cmd)
 				phys:SetMass(50000)
 				phys:SetVelocity(Vector(-100000, 0, 0))
 			end
-			bath:EmitSound("Physics.WaterSplash", 130, 100, 1, 0, 0)
+			bath:EmitSound("Physics.WaterSplash", 100)
 
 			timer.Simple(3, function() if bath:IsValid() then bath:Remove() end end)
 		end
@@ -708,9 +709,7 @@ BSU.SetupCommand("trainwreck", function(cmd)
 			train:SetModel("models/props_trainstation/train001.mdl")
 			train:SetAngles(Angle(0, 90, 0))
 			train:SetPos(v:GetPos() + Vector(750, 0, 150))
-
-			hook.Add("ShouldCollide", train, collideOnlyPlayers)
-			train:SetCustomCollisionCheck(true)
+			setCollisionTarget(train, v)
 			train:Spawn()
 
 			local phys = train:GetPhysicsObject()
@@ -719,7 +718,7 @@ BSU.SetupCommand("trainwreck", function(cmd)
 				phys:SetMass(50000)
 				phys:SetVelocity(Vector(-100000, 0, 0))
 			end
-			train:EmitSound("ambient/alarms/train_horn2.wav", 130, 100, 1, 0, 0)
+			train:EmitSound("ambient/alarms/train_horn2.wav", 100)
 
 			timer.Simple(3, function() if train:IsValid() then train:Remove() end end)
 		end
