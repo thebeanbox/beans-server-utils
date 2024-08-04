@@ -41,7 +41,9 @@ end
 
 -- setup teams on a client (nil to send data to all clients)
 function BSU.ClientSetupTeams(ply)
+	BSU.StartRPC("team.SetUp", 3)
 	for _, v in ipairs(BSU.GetAllTeams()) do
-		BSU.ClientRPC(ply, "team.SetUp", v.id, v.name, BSU.HexToColor(v.color))
+		BSU.AddArgsRPC(v.id, v.name, BSU.HexToColor(v.color))
 	end
+	BSU.FinishRPC(ply)
 end

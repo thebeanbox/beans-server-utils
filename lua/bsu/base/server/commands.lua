@@ -56,11 +56,13 @@ end
 hook.Add("BSU_ShowActionMessage", "BSU_OverrideActionMessage", overrideActionMessage)
 
 local function sendCommandData(ply)
+	BSU.StartRPC("BSU.RegisterServerCommand", 4)
 	for _, v in ipairs(BSU.GetCommandList()) do
 		if v:GetAccess() ~= BSU.CMD_CONSOLE then
-			BSU.ClientRPC(ply, "BSU.RegisterServerCommand", v:GetName(), v:GetDescription(), v:GetCategory(), v:GetArgs())
+			BSU.AddArgsRPC(v:GetName(), v:GetDescription(), v:GetCategory(), v:GetArgs())
 		end
 	end
+	BSU.FinishRPC(ply)
 end
 
 hook.Add("BSU_ClientReady", "BSU_SendCommandData", sendCommandData)
