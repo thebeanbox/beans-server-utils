@@ -896,23 +896,25 @@ if SERVER then
 		end
 	end
 
+	local function getAdminLevel(ply)
+		if not ply:IsValid() then return 3 end -- server console is considered higher than superadmin
+		if ply:IsSuperAdmin() then return 2 end
+		if ply:IsAdmin() then return 1 end
+		return 0
+	end
+
 	function objCmdHandler.CanSeeCommandAction(self, target)
 		local val = hook.Run("BSU_CanSeeCommandAction", target, self)
 		if val ~= nil then return val ~= false end
 
-		-- default behavior: can see if not silent, target is server console, target is caller, target is equal or higher admin than caller
-		-- (server console is considered higher than superadmin)
+		if not self.silent then return true end -- allow if not silent
 
-		if not self.silent or not target:IsValid() then return true end
+		local tadmin = getAdminLevel(target)
+		if tadmin < 1 then return false end -- disallow if not admin
 
-		local caller = self.caller
-		if caller == target then return true end
+		local cadmin = getAdminLevel(self.caller)
 
-		if not caller:IsValid() then return false end
-		if caller:IsSuperAdmin() and not target:IsSuperAdmin() then return false end
-		if caller:IsAdmin() and not target:IsAdmin() then return false end
-
-		return true
+		return tadmin >= cadmin -- allow if target is equal or higher admin than caller
 	end
 
 	-- broadcast a formatted message (intended for command actions)
@@ -922,18 +924,20 @@ if SERVER then
 		if silent then msg = "(SILENT) " .. msg end
 		args = args or {}
 
-		for _, v in ipairs(player.GetHumans()) do
-			if self:CanSeeCommandAction(v) then
+		local caller = self.caller
+
+		for _, target in ipairs(player.GetHumans()) do
+			if self:CanSeeCommandAction(target) then
 				local val = math.floor(v:GetInfoNum(silent and "bsu_show_silent_actions" or "bsu_show_actions", 2))
 				if val == 2 then
-					BSU.SendChatMsg(v, self:FormatMsg(self.caller, v, msg, args))
+					BSU.SendChatMsg(target, self:FormatMsg(caller, target, msg, args))
 				elseif val == 1 then
-					BSU.SendConsoleMsg(v, self:FormatMsg(self.caller, v, msg, args))
+					BSU.SendConsoleMsg(target, self:FormatMsg(caller, target, msg, args))
 				end
 			end
 		end
 
-		BSU.SendConsoleMsg(NULL, self:FormatMsg(self.caller, NULL, msg, args)) -- also send to server console (SendChatMsg also works for server console)
+		BSU.SendConsoleMsg(NULL, self:FormatMsg(caller, NULL, msg, args)) -- also send to server console (SendChatMsg also works for server console)
 	end
 end
 
