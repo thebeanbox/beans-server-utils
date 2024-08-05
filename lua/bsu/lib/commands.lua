@@ -928,7 +928,7 @@ if SERVER then
 
 		for _, target in ipairs(player.GetHumans()) do
 			if self:CanSeeCommandAction(target) then
-				local val = math.floor(v:GetInfoNum(silent and "bsu_show_silent_actions" or "bsu_show_actions", 2))
+				local val = math.floor(target:GetInfoNum(silent and "bsu_show_silent_actions" or "bsu_show_actions", 2))
 				if val == 2 then
 					BSU.SendChatMsg(target, self:FormatMsg(caller, target, msg, args))
 				elseif val == 1 then
