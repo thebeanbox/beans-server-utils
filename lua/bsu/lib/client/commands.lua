@@ -15,13 +15,15 @@ function BSU.RunCommand(name, argStr, silent)
 		return
 	end
 
-	if hook.Run("BSU_PreRunCommand", cmd, argStr, silent) == false then return end
+	local ply = LocalPlayer()
 
-	local handler = BSU.CommandHandler(LocalPlayer(), cmd, argStr, silent)
+	if hook.Run("BSU_PreRunCommand", ply, cmd, argStr, silent) == false then return end
+
+	local handler = BSU.CommandHandler(ply, cmd, argStr, silent)
 
 	xpcall(run, function(err) handler:PrintErrorMsg("Command errored with: " .. string.Split(err, ": ")[2]) end, cmd, handler)
 
-	hook.Run("BSU_PostRunCommand", cmd, argStr, silent)
+	hook.Run("BSU_PostRunCommand", ply, cmd, argStr, silent)
 end
 
 function BSU.SafeRunCommand(name, argStr, silent)
