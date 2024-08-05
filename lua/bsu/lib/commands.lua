@@ -909,10 +909,13 @@ if SERVER then
 
 		if not self.silent then return true end -- allow if not silent
 
+		local caller = self.caller
+		if target == caller then return true end -- allow if target is caller
+
 		local tadmin = getAdminLevel(target)
 		if tadmin < 1 then return false end -- disallow if not admin
 
-		local cadmin = getAdminLevel(self.caller)
+		local cadmin = getAdminLevel(caller)
 
 		return tadmin >= cadmin -- allow if target is equal or higher admin than caller
 	end
