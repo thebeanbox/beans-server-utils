@@ -165,47 +165,127 @@ end
 
 hook.Add("PopulateToolMenu", "BSU_AddPropProtectionMenu", addPropProtectionMenu)
 
-local hudColorBG = Color(0, 0, 0, 75)
-local hudColorFG = Color(255, 255, 255, 255)
-local hudX, hudY = GetConVar("bsu_propinfo_x"):GetInt(), GetConVar("bsu_propinfo_y"):GetInt()
+-- The prop info hud stuffffff
+concommand.Add("bsu_propinfo_edit", function()
+	if not BSU.PPHud then return end
+	BSU.PPHud:MakeEditable(true)
+end)
 
 local font = "BSU_PP_HUD"
 surface.CreateFont(font, {
 	font = "Verdana",
-	size = 16,
+	size = 18,
 	weight = 400,
 	antialias = true,
 	shadow = true
 })
 
-cvars.AddChangeCallback("bsu_propinfo_x", function(_, _, new)
-	hudX = tonumber(new)
-end)
+local PPHud = {}
 
-cvars.AddChangeCallback("bsu_propinfo_y", function(_, _, new)
-	hudY = tonumber(new)
-end)
+function PPHud:Init()
+	self.cvarX = GetConVar("bsu_propinfo_x")
+	self.cvarY = GetConVar("bsu_propinfo_y")
+	self.cvarW = GetConVar("bsu_propinfo_w")
+	self.cvarH = GetConVar("bsu_propinfo_h")
 
-local showPropInfo = GetConVar("bsu_show_propinfo")
+	self:SetSize(self.cvarW:GetInt(), self.cvarH:GetInt())
+	self:SetPos(self.cvarX:GetInt(), self.cvarY:GetInt())
+	self:SetDeleteOnClose(false)
 
-local function drawPropProtectionHUD()
-	local ply = LocalPlayer()
+	self.backgroundColor = Color(0, 0, 0, 150)
 
-	if not showPropInfo:GetBool() then return end
+	self.isEditing = false
 
-	local trace = util.GetPlayerTrace(ply)
-	trace.mask = MASK_SHOT
-	local ent = util.TraceLine(trace).Entity
-	if ent:IsValid() and not ent:IsPlayer() then
-		local text = string.format("Owner: %s\n%s\n%s", BSU.GetOwnerString(ent), ent:GetModel(), tostring(ent))
-		surface.SetFont(font)
-		local w, h = surface.GetTextSize(text)
-		draw.RoundedBox(4, hudX, hudY, w + 8, h + 8, hudColorBG)
-		draw.DrawText(text, font, hudX + 4, hudY + 4, hudColorFG, TEXT_ALIGN_LEFT)
+	local ownerLabel = vgui.Create("DLabel", self)
+	ownerLabel:SetText("[Owner Name]")
+	ownerLabel:SetFont(font)
+	ownerLabel:SetTextColor(color_white)
+	ownerLabel:Dock(TOP)
+	self.ownerLabel = ownerLabel
+
+	local modelLabel = vgui.Create("DLabel", self)
+	modelLabel:SetText("[Model Name]")
+	modelLabel:SetFont(font)
+	modelLabel:SetTextColor(color_white)
+	modelLabel:Dock(TOP)
+	self.modelLabel = modelLabel
+
+	local classLabel = vgui.Create("DLabel", self)
+	classLabel:SetText("[Class Name]")
+	classLabel:SetFont(font)
+	classLabel:SetTextColor(color_white)
+	classLabel:Dock(TOP)
+	self.classLabel = classLabel
+
+	self.editPaint = self.Paint
+	self.hudPaint = function(s, w, h)
+		local eyeTrace = LocalPlayer():GetEyeTrace()
+		local viewEntity = eyeTrace.Entity
+		local isValidEntity = IsValid(viewEntity) and not viewEntity:IsPlayer()
+
+		s:SetAlpha(Lerp(RealFrameTime() * 25, s:GetAlpha(), isValidEntity and 255 or 0))
+		s:SizeToChildren(true, true)
+
+		if isValidEntity then
+			s.modelLabel:SetText("Model: " .. viewEntity:GetModel())
+			s.classLabel:SetText("Class: [" .. viewEntity:EntIndex() .. "] " .. viewEntity:GetClass())
+			s.ownerLabel:SetText("Owner: " .. BSU.GetOwnerString(viewEntity))
+		end
+
+		draw.RoundedBox(4, 0, 20, w, h - 20, self.backgroundColor)
 	end
+
+	self:MakeEditable(false)
 end
 
-hook.Add("HUDPaint", "BSU_DrawPropProtectionHUD", drawPropProtectionHUD)
+function PPHud:MakeEditable(b)
+	self.isEditing = b
+
+	self:SetDraggable(b)
+	self:SetSizable(b)
+	self:ShowCloseButton(b)
+	self:SetTitle(b and "Edit Prop Info" or "")
+	if b then
+		self:SetAlpha(255)
+		self.modelLabel:SetText("Model: [Model Name] [Model Name] [Model Name]")
+		self.classLabel:SetText("Class: [Class Name] [Class Name] [Class Name]")
+		self.ownerLabel:SetText("Owner: [Owner Name] [Owner Name] [Owner Name]")
+
+		self:MakePopup()
+	else
+		self:SetMouseInputEnabled(false)
+		self:SetKeyboardInputEnabled(false)
+	end
+
+	self.Paint = self.isEditing and self.editPaint or self.hudPaint
+end
+
+function PPHud:OnClose()
+	self:Show()
+	self:MakeEditable(false)
+
+	self.cvarX:SetInt(self:GetX())
+	self.cvarY:SetInt(self:GetY())
+	self.cvarW:SetInt(self:GetWide())
+	self.cvarH:SetInt(self:GetTall())
+end
+
+vgui.Register("BSUPPHud", PPHud, "DFrame")
+
+cvars.AddChangeCallback("bsu_propinfo_enabled", function(_, _, new)
+	if tobool(new) then
+		if BSU.PPHud then BSU.PPHud:Remove() end
+		BSU.PPHud = vgui.Create("BSUPPHud")
+	else
+		if BSU.PPHud then BSU.PPHud:Remove() end
+	end
+end)
+
+hook.Add("InitPostEntity", "BSU_InitPPHud", function()
+	if BSU.PPHud then BSU.PPHud:Remove() end
+	BSU.PPHud = vgui.Create("BSUPPHud")
+end)
+-- End prop info hud stuffffff
 
 if not GetConVar("bsu_permission_persist"):GetBool() then
 	RunConsoleCommand("bsu_reset_permissions")
