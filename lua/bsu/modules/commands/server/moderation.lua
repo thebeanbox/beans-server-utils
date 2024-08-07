@@ -274,7 +274,7 @@ BSU.SetupCommand("bancheck", function(cmd)
 		local unbanDate = duration > 0 and os.date("%c", ban.time + duration * 60) or "Never"
 
 		self:PrintChatMsg(string.format(
-			"Admin: %s\nReason: %s\nBan date: %s\nDuration: %s\nUnban Date: %s",
+			"Admin: %s\nReason: %s\nBan Date: %s\nDuration: %s\nUnban Date: %s",
 			admin,
 			reason,
 			banDate,

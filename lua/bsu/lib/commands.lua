@@ -834,7 +834,7 @@ if SERVER then
 					totalPlys = totalPlys + 1
 				end
 			end
-			if totalPlys > 1 and totalPlys == #player.GetAll() then
+			if totalPlys > 1 and totalPlys == player.GetCount() then
 				table.Add(vars, { BSU.CLR_EVERYONE, "Everyone" })
 			else
 				for k, v in ipairs(arg) do -- expect table arg to be sequential
