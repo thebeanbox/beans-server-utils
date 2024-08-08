@@ -24,8 +24,8 @@ end
 
 function PANEL:OnScreenSizeChanged()
 	self:SetPos(
-		math.Round(propinfo_x:GetFloat() * ScrW()),
-		math.Round(propinfo_y:GetFloat() * ScrH())
+		math.Round(math.Clamp(propinfo_x:GetFloat(), 0, 1) * ScrW()),
+		math.Round(math.Clamp(propinfo_y:GetFloat(), 0, 1) * ScrH())
 	)
 end
 
