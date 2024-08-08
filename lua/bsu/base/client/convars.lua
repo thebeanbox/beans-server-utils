@@ -8,7 +8,7 @@ CreateClientConVar("bsu_show_silent_actions", 2, true, true, "Set how (SILENT) c
 
 CreateClientConVar("bsu_propinfo_enabled", 1, true, false, "Whether the Prop Info HUD should be displayed", 0, 1)
 CreateClientConVar("bsu_propinfo_x", 1, true, false, "", 0, 1)
-CreateClientConVar("bsu_propinfo_y", 0.437037, true, false, "", 0, 1)
+CreateClientConVar("bsu_propinfo_y", 0.5, true, false, "", 0, 1)
 
 CreateClientConVar("bsu_alias", "", true, false, "Set an alias for the bsu concommand")
 CreateClientConVar("bsu_alias_silent", "", true, false, "Set an alias for the sbsu concommand")

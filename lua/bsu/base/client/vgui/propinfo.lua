@@ -52,11 +52,13 @@ function PANEL:OnMouseReleased()
 	local y = self:GetY()
 
 	local w = self:GetWide()
+	local h = self:GetTall()
 
 	local sw = ScrW()
 	local sh = ScrH()
 
 	if self.x + w / 2 >= sw / 2 then x = x + w end
+	y = y + h / 2
 
 	propinfo_x:SetFloat(x / sw)
 	propinfo_y:SetFloat(y / sh)
@@ -102,6 +104,7 @@ function PANEL:Think()
 			h = h + 8
 
 			local dw = self:GetWide() - w
+			local dh = self:GetTall() - h
 
 			self:SetSize(w, h)
 
@@ -110,6 +113,8 @@ function PANEL:Think()
 				self:SetX(self.x + dw)
 				if self.Dragging then self.Dragging[1] = self.Dragging[1] - dw end
 			end
+
+			self:SetY(self.y + dh / 2)
 
 			self.LastEntity = ent
 		end
@@ -129,7 +134,9 @@ function PANEL:Think()
 
 	if input.IsKeyDown(KEY_LSHIFT) then
 		x = math.Round(x / (sw / 16)) * (sw / 16)
+		y = y + h / 2
 		y = math.Round(y / (sh / 16)) * (sh / 16)
+		y = y - h / 2
 	end
 
 	x = math.Clamp(x, 0, sw - w)
