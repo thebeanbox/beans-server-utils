@@ -44,6 +44,8 @@ LoadBaseCL("menu/commandmenu")
 LoadBaseCL("menu/votemenu")
 LoadBaseCL("menu/groupsmenu")
 LoadBaseCL("menu/bansmenu")
+-- vgui
+LoadBaseCL("vgui/propinfo")
 
 BSU.LoadModules()
 
