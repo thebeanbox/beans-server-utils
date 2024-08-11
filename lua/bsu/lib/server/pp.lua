@@ -82,7 +82,10 @@ end
 --  true  - player has permission (player is superadmin and must have permission)
 --  nil   - player has permission (nil so another addon can decide if the player should have permission)
 --  false - player doesn't have permission
-function BSU.PlayerHasPermission(ply, ent, perm)
+function BSU.PlayerHasPermission(ply, ent, perm, ...)
+	local check = hook.Run("BSU_PlayerHasPermission", ply, ent, perm, ...)
+	if check ~= nil then return check ~= false end
+
 	if ply:IsSuperAdmin() then return true end
 
 	local owner = BSU.GetOwner(ent)
