@@ -1,5 +1,18 @@
 --- base/client/pp.lua
 
+-- setup the player permissions table
+if not GetConVar("bsu_permission_persist"):GetBool() then
+	BSU.SQLQuery("DROP TABLE IF EXISTS %s", BSU.SQLEscIdent(BSU.SQL_PP))
+end
+BSU.SQLCreateTable(BSU.SQL_PP, string.format(
+	[[
+		steamid TEXT PRIMARY KEY,
+		permission INTEGER NOT NULL
+	]]
+))
+
+hook.Add("InitPostEntity", "BSU_SendPermissions", BSU.SendPermissions)
+
 concommand.Add("bsu_reset_permissions", function()
 	-- easiest way is to delete the table and recreate it
 	BSU.SQLQuery("DROP TABLE IF EXISTS %s", BSU.SQLEscIdent(BSU.SQL_PP))
@@ -164,9 +177,3 @@ local function addPropProtectionMenu()
 end
 
 hook.Add("PopulateToolMenu", "BSU_AddPropProtectionMenu", addPropProtectionMenu)
-
-if not GetConVar("bsu_permission_persist"):GetBool() then
-	RunConsoleCommand("bsu_reset_permissions")
-end
-
-hook.Add("InitPostEntity", "BSU_SendPermissions", BSU.SendPermissions)
