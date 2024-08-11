@@ -79,7 +79,7 @@ end
 
 -- utility function for hooks to know if a player has permission over an entity
 -- can return the following:
---  true  - player has permission (player is superadmin and must have permission)
+--  true  - player has permission
 --  nil   - player has permission (nil so another addon can decide if the player should have permission)
 --  false - player doesn't have permission
 function BSU.PlayerHasPermission(ply, ent, perm, ...)
