@@ -47,7 +47,7 @@ end
 hook.Add("PlayerSay", "BSU_ChatCommand", chatCommand)
 
 local function sendCommandData(ply)
-	BSU.StartRPC("BSU.RegisterServerCommand", 4)
+	BSU.StartRPC("BSU.RegisterServerCommand")
 	for _, v in ipairs(BSU.GetCommandList()) do
 		if v:GetAccess() ~= BSU.CMD_CONSOLE then
 			BSU.AddArgsRPC(v:GetName(), v:GetDescription(), v:GetCategory(), v:GetArgs())
