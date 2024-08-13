@@ -81,43 +81,41 @@ function PANEL:Think()
 
 	local ent = tr.Entity
 	if ent:IsValid() and not ent:IsPlayer() or ent:IsWorld() and self.InContextMenu then
-		-- update text and size if entity changes
-		if ent ~= self.LastEntity then
-			self.Text = {
-				tostring(ent),
-				ent:GetModel(),
-				BSU.GetOwnerString(ent)
-			}
+		self.Text = {
+			tostring(ent),
+			ent:GetModel(),
+			BSU.GetOwnerString(ent)
+		}
 
-			w = 0
-			h = 0
+		-- update size
 
-			surface.SetFont(font)
+		w = 0
+		h = 0
 
-			for _, v in ipairs(self.Text) do
-				local tw = surface.GetTextSize(v)
-				w = math.max(w, tw)
-				h = h + 20
-			end
+		surface.SetFont(font)
 
-			w = w + 8
-			h = h + 8
-
-			local dw = self:GetWide() - w
-			local dh = self:GetTall() - h
-
-			self:SetSize(w, h)
-
-			-- fix position if on right side of screen
-			if self.x + w / 2 >= sw / 2 then
-				self:SetX(self.x + dw)
-				if self.Dragging then self.Dragging[1] = self.Dragging[1] - dw end
-			end
-
-			self:SetY(self.y + dh / 2)
-
-			self.LastEntity = ent
+		for _, v in ipairs(self.Text) do
+			local tw = surface.GetTextSize(v)
+			w = math.max(w, tw)
+			h = h + 20
 		end
+
+		w = w + 8
+		h = h + 8
+
+		local dw = self:GetWide() - w
+		local dh = self:GetTall() - h
+
+		self:SetSize(w, h)
+
+		-- fix position if on right side of screen
+		if self.x + w / 2 >= sw / 2 then
+			self:SetX(self.x + dw)
+			if self.Dragging then self.Dragging[1] = self.Dragging[1] - dw end
+		end
+
+		self:SetY(self.y + dh / 2)
+
 		self.AlphaTarget = 1
 	end
 
