@@ -31,7 +31,7 @@ function BSU.FinishRPC(plys)
 	local str, calls = rpc.str, rpc.calls
 	rpc = nil
 
-	assert(#calls > 0, "No call args added to RPC")
+	if #calls <= 0 then return end
 
 	net.Start("bsu_rpc")
 	net.WriteString(str)
