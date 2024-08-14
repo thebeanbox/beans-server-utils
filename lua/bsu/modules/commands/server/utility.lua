@@ -405,7 +405,7 @@ BSU.SetupCommand("vote", function(cmd)
 			BSU.SendChatMsg(nil, BSU.CLR_TEXT, "'", BSU.CLR_PARAM, winner, BSU.CLR_TEXT, "' won the vote! (", BSU.CLR_PARAM, title, BSU.CLR_TEXT, ")")
 		end)
 
-		self:BroadcastActionMsg("%caller% started a vote! (%title%)", {title = title})
+		self:BroadcastActionMsg("%caller% started a vote! (%title%)", { title = title })
 	end)
 	cmd:AddStringArg("title")
 	cmd:AddStringArg("option1")
@@ -449,21 +449,19 @@ BSU.SetupCommand("votemap", function(cmd)
 	end)
 end)
 
-BSU.SetupCommand("map", function(cmd)
+BSU.SetupCommand("changemap", function(cmd)
 	cmd:SetDescription("Change the map")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetSilent(true)
-	cmd:SetFunction(function(_, _, mapname)
-		if not mapLookup[mapname] then
-			error(string.format("'%s' is not a valid map.", mapname))
+	cmd:SetFunction(function(_, _, map)
+		if not mapLookup[map] then
+			error(string.format("'%s' is not a valid map.", map))
 		end
 
-		RunConsoleCommand("changelevel", mapname)
+		RunConsoleCommand("changelevel", map)
 	end)
-	cmd:AddStringArg("mapname", {
-		autocomplete = mapOptions
-	})
+	cmd:AddStringArg("map", { autocomplete = mapOptions })
 end)
 
 BSU.SetupCommand("maplist", function(cmd)
