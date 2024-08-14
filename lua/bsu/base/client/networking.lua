@@ -9,7 +9,7 @@ local function handleRPC()
 	local lcalls = net.ReadUInt(12)
 	for _ = 1, lcalls do
 		local args = {}
-		local largs = net.ReadUInt(4)
+		local largs = net.ReadUInt(5)
 		for i = 1, largs do
 			args[i] = net.ReadType()
 		end

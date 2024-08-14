@@ -49,8 +49,8 @@ function BSU.FinishRPC(plys)
 			largs = math.max(largs, idx)
 		end
 
-		largs = math.min(largs, 2 ^ 4 - 1)
-		net.WriteUInt(largs, 4) -- 15 args max
+		largs = math.min(largs, 2 ^ 5 - 1)
+		net.WriteUInt(largs, 5) -- 31 args max
 
 		for ii = 1, largs do
 			net.WriteType(args[ii])
