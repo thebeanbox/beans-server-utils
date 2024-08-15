@@ -6,6 +6,8 @@ local propinfo_y = GetConVar("bsu_propinfo_y")
 local font = "TargetIDSmall"
 local color_bg = Color(0, 0, 0, 80)
 
+local isHoldingCamera = false
+
 PANEL.AlphaMultiplier = 0
 PANEL.AlphaTarget = 0
 PANEL.InContextMenu = false
@@ -144,6 +146,7 @@ function PANEL:Think()
 end
 
 function PANEL:Paint(w, h)
+	if isHoldingCamera then return end
 	local left = self.x + w / 2 < ScrW() / 2
 	local x = left and 4 or w - 4
 	local align = left and TEXT_ALIGN_LEFT or TEXT_ALIGN_RIGHT
@@ -159,6 +162,15 @@ function PANEL:Paint(w, h)
 
 	surface.SetAlphaMultiplier(1)
 end
+
+hook.Add("Think", "BSU_ShouldHideHUD", function()
+	local activeWeapon = LocalPlayer():GetActiveWeapon()
+	if not IsValid(activeWeapon) then
+		isHoldingCamera = false
+		return
+	end
+	isHoldingCamera = activeWeapon:GetClass() == "gmod_camera"
+end)
 
 hook.Add("OnGamemodeLoaded", "BSU_PropInfo", function()
 	if IsValid(BSU.PropInfo) then BSU.PropInfo:Remove() end
