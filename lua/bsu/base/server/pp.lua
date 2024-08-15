@@ -75,8 +75,9 @@ hook.Add("GravGunPunt", "BSU_GravgunPermission", checkGravgunPermission)
 hook.Add("GravGunPickupAllowed", "BSU_GravgunPermission", checkGravgunPermission)
 
 -- toolgun checking
-hook.Add("CanTool", "BSU_ToolgunPermission", function(ply, trace) if IsValid(trace.Entity) then return BSU.PlayerHasPermission(ply, trace.Entity, BSU.PP_TOOLGUN) end end)
-hook.Add("CanProperty", "BSU_ToolgunPermission", function(ply, _, ent) return BSU.PlayerHasPermission(ply, ent, BSU.PP_TOOLGUN) end)
+hook.Add("CanTool", "BSU_ToolgunPermission", function(ply, trace, toolmode) if IsValid(trace.Entity) then return BSU.PlayerHasPermission(ply, trace.Entity, BSU.PP_TOOLGUN, toolmode) end end)
+hook.Add("CanProperty", "BSU_ToolgunPermission", function(ply, property, ent) return BSU.PlayerHasPermission(ply, ent, BSU.PP_TOOLGUN, property) end)
+hook.Add("CanEditVariable", "BSU_ToolgunPermission", function(ent, ply, key, val, edit) return BSU.PlayerHasPermission(ply, ent, BSU.PP_TOOLGUN, key, val, edit) end)
 
 -- use checking
 local function checkUsePermission(ply, ent)
