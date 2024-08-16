@@ -2,6 +2,7 @@ local PANEL = {}
 
 local propinfo_x = GetConVar("bsu_propinfo_x")
 local propinfo_y = GetConVar("bsu_propinfo_y")
+local propinfo_enabled = GetConVar("bsu_propinfo_enabled")
 
 local font = "TargetIDSmall"
 local color_bg = Color(0, 0, 0, 80)
@@ -147,6 +148,7 @@ end
 
 function PANEL:Paint(w, h)
 	if isHoldingCamera then return end
+	if not propinfo_enabled:GetBool() then return end
 	local left = self.x + w / 2 < ScrW() / 2
 	local x = left and 4 or w - 4
 	local align = left and TEXT_ALIGN_LEFT or TEXT_ALIGN_RIGHT
