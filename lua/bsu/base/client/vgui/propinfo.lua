@@ -2,6 +2,7 @@ local PANEL = {}
 
 local propinfo_x = GetConVar("bsu_propinfo_x")
 local propinfo_y = GetConVar("bsu_propinfo_y")
+local propinfo_enabled = GetConVar("bsu_propinfo_enabled")
 
 local font = "TargetIDSmall"
 local color_bg = Color(0, 0, 0, 80)
@@ -163,6 +164,11 @@ function PANEL:Paint(w, h)
 	surface.SetAlphaMultiplier(1)
 end
 
+local function createPropInfoPanel(_, _, enabled)
+	if IsValid(BSU.PropInfo) then BSU.PropInfo:Remove() end
+	if tobool(enabled) then BSU.PropInfo = vgui.Create("BSU_PropInfo") end
+end
+
 hook.Add("Think", "BSU_ShouldHideHUD", function()
 	local activeWeapon = LocalPlayer():GetActiveWeapon()
 	if not IsValid(activeWeapon) then
@@ -173,8 +179,10 @@ hook.Add("Think", "BSU_ShouldHideHUD", function()
 end)
 
 hook.Add("OnGamemodeLoaded", "BSU_PropInfo", function()
-	if IsValid(BSU.PropInfo) then BSU.PropInfo:Remove() end
-	BSU.PropInfo = vgui.Create("BSU_PropInfo")
+	local isEnabled = propinfo_enabled:GetInt()
+	createPropInfoPanel(nil, nil, isEnabled)
 end)
+
+cvars.AddChangeCallback("bsu_propinfo_enabled", createPropInfoPanel)
 
 vgui.Register("BSU_PropInfo", PANEL, "DPanel")
