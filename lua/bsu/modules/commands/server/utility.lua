@@ -295,6 +295,39 @@ hook.Add("KeyPress", "BSU_StopSpectating", function(ply)
 	end
 end)
 
+BSU.SetupCommand("hide", function(cmd)
+	cmd:SetDescription("Hides yourself")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetSilent(true)
+	cmd:SetFunction(function(self, caller)
+		caller.bsu_hidden = true
+		caller:SetNoDraw(true)
+
+		hook.Run("BSU_Hidden", caller, true)
+
+		self:BroadcastActionMsg("%caller% hid themself")
+	end)
+end)
+BSU.AliasCommand("cloak", "hide")
+
+BSU.SetupCommand("unhide", function(cmd)
+	cmd:SetDescription("Unhides yourself")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetSilent(true)
+	cmd:SetFunction(function(self, caller)
+		if not caller.bsu_hidden then return end
+		caller.bsu_hidden = nil
+		caller:SetNoDraw(false)
+
+		hook.Run("BSU_Hidden", caller, false)
+
+		self:BroadcastActionMsg("%caller% unhid themself")
+	end)
+end)
+BSU.AliasCommand("uncloak", "unhide")
+
 BSU.SetupCommand("asay", function(cmd)
 	cmd:SetDescription("Send a message to admins")
 	cmd:SetCategory("utility")
