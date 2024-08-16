@@ -4,7 +4,7 @@ local function teleportPlayer(ply, pos)
 end
 
 BSU.SetupCommand("send", function(cmd)
-	cmd:SetDescription("Teleports players to a target player")
+	cmd:SetDescription("Teleport players to a target player")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self, _, targets, target)
@@ -39,7 +39,7 @@ end)
 BSU.AliasCommand("tp", "teleport")
 
 BSU.SetupCommand("goto", function(cmd)
-	cmd:SetDescription("Teleports yourself to a player")
+	cmd:SetDescription("Teleport yourself to a player")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self, caller, target)
@@ -53,7 +53,7 @@ BSU.SetupCommand("goto", function(cmd)
 end)
 
 BSU.SetupCommand("bring", function(cmd)
-	cmd:SetDescription("Teleports yourself to a player")
+	cmd:SetDescription("Teleport yourself to a player")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self, caller, targets)
@@ -189,7 +189,7 @@ BSU.SetupCommand("cleardecals", function(cmd)
 			ply:ConCommand("r_cleardecals")
 		end
 
-		self:BroadcastActionMsg("%caller% cleared decals")
+		self:BroadcastActionMsg("%caller% cleared clientside decals")
 	end)
 end)
 
