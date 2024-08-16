@@ -148,7 +148,6 @@ end
 
 function PANEL:Paint(w, h)
 	if isHoldingCamera then return end
-	if not propinfo_enabled:GetBool() then return end
 	local left = self.x + w / 2 < ScrW() / 2
 	local x = left and 4 or w - 4
 	local align = left and TEXT_ALIGN_LEFT or TEXT_ALIGN_RIGHT
@@ -165,6 +164,11 @@ function PANEL:Paint(w, h)
 	surface.SetAlphaMultiplier(1)
 end
 
+local function createPropInfoPanel(_, _, enabled)
+	if IsValid(BSU.PropInfo) then BSU.PropInfo:Remove() end
+	if tobool(enabled) then BSU.PropInfo = vgui.Create("BSU_PropInfo") end
+end
+
 hook.Add("Think", "BSU_ShouldHideHUD", function()
 	local activeWeapon = LocalPlayer():GetActiveWeapon()
 	if not IsValid(activeWeapon) then
@@ -175,8 +179,10 @@ hook.Add("Think", "BSU_ShouldHideHUD", function()
 end)
 
 hook.Add("OnGamemodeLoaded", "BSU_PropInfo", function()
-	if IsValid(BSU.PropInfo) then BSU.PropInfo:Remove() end
-	BSU.PropInfo = vgui.Create("BSU_PropInfo")
+	local isEnabled = propinfo_enabled:GetInt()
+	createPropInfoPanel(nil, nil, isEnabled)
 end)
+
+cvars.AddChangeCallback("bsu_propinfo_enabled", createPropInfoPanel)
 
 vgui.Register("BSU_PropInfo", PANEL, "DPanel")
