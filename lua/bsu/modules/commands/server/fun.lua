@@ -187,7 +187,7 @@ BSU.SetupCommand("ungod", function(cmd)
 end)
 
 local function ragdollPlayer(ply, owner)
-	if IsValid(ply.bsu_ragdoll) then return false end
+	if ply.bsu_ragdoll then return false end
 
 	local ragdoll = ents.Create("prop_ragdoll")
 	if not IsValid(ragdoll) then return false end
@@ -228,13 +228,14 @@ local function ragdollPlayer(ply, owner)
 
 	if ply:InVehicle() then ply:ExitVehicle() end
 
-	ply.bsu_spawninfo = BSU.GetSpawnInfo(ply)
-
 	ply.bsu_ragdoll = ragdoll
+	ply.bsu_old_wep = ply:GetActiveWeapon()
+
 	ply:SetParent(ragdoll)
-	ply:Spectate(OBS_MODE_CHASE)
+	ply:Spectate(OBS_MODE_NONE) -- setting the observer mode here seems to break stuff until the player respawns
+	ply:SetObserverMode(OBS_MODE_CHASE)
 	ply:SpectateEntity(ragdoll)
-	ply:StripWeapons()
+	ply:SetActiveWeapon()
 
 	return true
 end
@@ -242,20 +243,14 @@ end
 local function unragdollPlayer(ply)
 	if not IsValid(ply.bsu_ragdoll) then return false end
 
-	local oldPos = ply:GetPos()
-	local oldAngles = ply:EyeAngles()
-
 	ply:SetParent()
 	ply:UnSpectate()
+	ply:DrawViewModel(true)
 
-	BSU.SpawnWithInfo(ply, ply.bsu_spawninfo)
-	ply.bsu_spawninfo = nil
-
-	ply:SetPos(oldPos)
-	ply:SetEyeAngles(oldAngles)
+	ply:SetActiveWeapon(ply.bsu_old_wep)
+	ply.bsu_old_wep = nil
 
 	ply:SetVelocity(ply.bsu_ragdoll:GetVelocity())
-
 	ply.bsu_ragdoll:RemoveCallOnRemove("BSU_Ragdoll")
 	ply.bsu_ragdoll:Remove()
 	ply.bsu_ragdoll = nil
@@ -263,14 +258,18 @@ local function unragdollPlayer(ply)
 	return true
 end
 
--- if ragdolled player respawns, make them spectate their ragdoll again
+-- if ragdolled player somehow respawns, make them spectate their ragdoll again
 hook.Add("PlayerSpawn", "BSU_FixRagdollRespawn", function(ply)
 	if ply.bsu_ragdoll then
 		timer.Simple(0, function()
-			if not ply:IsValid() or not ply.bsu_ragdoll then return end
-			ply:Spectate(OBS_MODE_CHASE)
-			ply:SpectateEntity(ply.bsu_ragdoll)
-			ply:StripWeapons()
+			if not ply:IsValid() then return end
+			local ragdoll = ply.bsu_ragdoll
+			if not IsValid(ragdoll) then return end
+			ply:SetParent(ragdoll)
+			ply:Spectate(OBS_MODE_NONE)
+			ply:SetObserverMode(OBS_MODE_CHASE)
+			ply:SpectateEntity(ragdoll)
+			ply:SetActiveWeapon()
 		end)
 	end
 end)
