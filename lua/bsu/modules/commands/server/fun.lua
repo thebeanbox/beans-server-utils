@@ -1,4 +1,5 @@
--- block players in an exclusive state from spawning anything or dying
+-- block players from doing various things if they're in an exclusive state
+
 local function block(ply)
 	if ply.bsu_exclusive then return false end
 end
@@ -8,7 +9,25 @@ hook.Add("PlayerSpawnSENT", "BSU_BlockPlayer", block)
 hook.Add("PlayerSpawnVehicle", "BSU_BlockPlayer", block)
 hook.Add("PlayerSpawnNPC", "BSU_BlockPlayer", block)
 hook.Add("PlayerSpawnSWEP", "BSU_BlockPlayer", block)
+hook.Add("PhysgunPickup", "BSU_BlockPlayer", block)
+hook.Add("OnPhysgunReload", "BSU_BlockPlayer", function(_, ply) return block(ply) end)
+hook.Add("GravGunPunt", "BSU_BlockPlayer", block)
+hook.Add("GravGunPickupAllowed", "BSU_BlockPlayer", block)
+hook.Add("CanTool", "BSU_BlockPlayer", block)
+hook.Add("CanProperty", "BSU_BlockPlayer", block)
+hook.Add("CanEditVariable", "BSU_BlockPlayer", function(_, ply) return block(ply) end)
+hook.Add("PlayerUse", "BSU_BlockPlayer", block)
+hook.Add("OnPlayerPhysicsPickup", "BSU_BlockPlayer", block)
+hook.Add("PlayerCanPickupItem", "BSU_BlockPlayer", block)
+hook.Add("PlayerCanPickupWeapon", "BSU_BlockPlayer", block)
+hook.Add("EntityTakeDamage", "BSU_BlockPlayer", function(ent, dmg)
+	if ent:IsPlayer() and block(ent) == false then return true end
+	ent = dmg:GetAttacker()
+	if ent:IsPlayer() and block(ent) == false then return true end
+end)
 hook.Add("CanPlayerSuicide", "BSU_BlockPlayer", block)
+hook.Add("CanArmDupe", "BSU_BlockPlayer", block)
+hook.Add("PlayerSwitchWeapon", "BSU_BlockPlayer", function(ply) if block(ply) == false then return true end end)
 
 -- if player respawns, add back any flags they should have
 hook.Add("PlayerSpawn", "BSU_SpawnAddFlags", function(ply)
