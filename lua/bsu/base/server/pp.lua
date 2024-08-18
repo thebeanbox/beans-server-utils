@@ -86,6 +86,8 @@ end
 
 hook.Add("PlayerUse", "BSU_UsePermission", checkUsePermission)
 hook.Add("OnPlayerPhysicsPickup", "BSU_UsePermission", checkUsePermission)
+hook.Add("PlayerCanPickupItem", "BSU_UsePermission", checkUsePermission)
+hook.Add("PlayerCanPickupWeapon", "BSU_UsePermission", checkUsePermission)
 
 -- damage checking
 hook.Add("EntityTakeDamage", "BSU_DamagePermission", function(ent, dmg)
