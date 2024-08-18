@@ -86,7 +86,7 @@ function BSU.PlayerHasPermission(ply, ent, perm, ...)
 	local check = hook.Run("BSU_PlayerHasPermission", ply, ent, perm, ...)
 	if check ~= nil then return check ~= false end
 
-	if ply:IsSuperAdmin() then return true end
+	if ply:IsSuperAdmin() then return end
 
 	local owner = BSU.GetOwner(ent)
 	if owner then ent = owner end
