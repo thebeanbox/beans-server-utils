@@ -62,11 +62,11 @@ hook.Add("player_changename", "BSU_UpdateOwnerName", function(data)
 	BSU.SetOwnerInfo(Player(data.userid), "name", data.newname)
 end)
 
+-- physgun checking
 local function checkPhysgunPermission(ply, ent)
 	return BSU.PlayerHasPermission(ply, ent, BSU.PP_PHYSGUN)
 end
 
--- physgun checking
 hook.Add("PhysgunPickup", "BSU_PhysgunPermission", checkPhysgunPermission)
 hook.Add("CanPlayerUnfreeze", "BSU_PhysgunPermission", checkPhysgunPermission)
 
@@ -90,8 +90,11 @@ end
 
 hook.Add("PlayerUse", "BSU_UsePermission", checkUsePermission)
 hook.Add("OnPlayerPhysicsPickup", "BSU_UsePermission", checkUsePermission)
---hook.Add("PlayerCanPickupItem", "BSU_UsePermission", checkUsePermission)
---hook.Add("PlayerCanPickupWeapon", "BSU_UsePermission", checkUsePermission)
+hook.Add("PlayerCanPickupItem", "BSU_UsePermission", checkUsePermission)
+hook.Add("PlayerCanPickupWeapon", "BSU_UsePermission", function(ply, ent)
+	if not BSU.GetOwner(ent) then return end -- allow picking up ownerless weapons
+	return checkUsePermission(ply, ent)
+end)
 
 -- damage checking
 hook.Add("EntityTakeDamage", "BSU_DamagePermission", function(ent, dmg)
