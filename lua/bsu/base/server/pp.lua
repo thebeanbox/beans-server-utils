@@ -62,9 +62,13 @@ hook.Add("player_changename", "BSU_UpdateOwnerName", function(data)
 	BSU.SetOwnerInfo(Player(data.userid), "name", data.newname)
 end)
 
+local function checkPhysgunPermission(ply, ent)
+	return BSU.PlayerHasPermission(ply, ent, BSU.PP_PHYSGUN)
+end
+
 -- physgun checking
-hook.Add("PhysgunPickup", "BSU_PhysgunPermission", function(ply, ent) return BSU.PlayerHasPermission(ply, ent, BSU.PP_PHYSGUN) end)
-hook.Add("OnPhysgunReload", "BSU_PhysgunPermission", function(_, ply) return BSU.PlayerHasPermission(ply, ply:GetEyeTrace().Entity, BSU.PP_PHYSGUN) end)
+hook.Add("PhysgunPickup", "BSU_PhysgunPermission", checkPhysgunPermission)
+hook.Add("CanPlayerUnfreeze", "BSU_PhysgunPermission", checkPhysgunPermission)
 
 -- gravgun checking
 local function checkGravgunPermission(ply, ent)
