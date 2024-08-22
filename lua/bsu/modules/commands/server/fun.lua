@@ -176,8 +176,30 @@ BSU.SetupCommand("ungod", function(cmd)
 	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
+local function spectate(ply, ent)
+	ply:SetParent(ent)
+	ply:Spectate(OBS_MODE_NONE) ply:SetObserverMode(OBS_MODE_CHASE) -- HACK: fixes needing to respawn the player after unspectating
+	ply:SpectateEntity(ent)
+	ply:SetSolid(SOLID_NONE)
+	ply:PhysicsDestroy()
+	ply:SetNoDraw(true)
+	ply.bsu_old_wep = ply:GetActiveWeapon()
+	ply:SetActiveWeapon()
+end
+
+local function unspectate(ply)
+	ply:SetParent()
+	ply:UnSpectate()
+	ply:DrawViewModel(true)
+	ply:PhysicsInit(SOLID_BBOX)
+	ply:SetMoveType(MOVETYPE_WALK)
+	ply:SetNoDraw(false)
+	ply:SetActiveWeapon(ply.bsu_old_wep)
+	ply.bsu_old_wep = nil
+end
+
 local function ragdollPlayer(ply, owner)
-	if ply.bsu_ragdoll then return false end
+	if IsValid(ply.bsu_ragdoll) then return false end
 
 	local ragdoll = ents.Create("prop_ragdoll")
 	if not IsValid(ragdoll) then return false end
@@ -187,18 +209,16 @@ local function ragdollPlayer(ply, owner)
 	else
 		BSU.SetOwnerWorld(ragdoll)
 	end
-
-	duplicator.DoGeneric(ragdoll, duplicator.CopyEntTable(ply))
-	ragdoll:SetCollisionGroup(COLLISION_GROUP_NONE) -- fix wrong collision group when player is in vehicle
-
+	ragdoll:SetModel(ply:GetModel())
 	ragdoll:Spawn()
 	ragdoll:Activate()
+
 	ragdoll:CallOnRemove("BSU_Ragdoll", function()
+		if not ply:IsValid() then return end
+		unspectate(ply)
 		timer.Simple(0, function()
-			if ply:IsValid() and not IsValid(ply.bsu_ragdoll) then
-				ply.bsu_ragdoll = nil
-				ragdollPlayer(ply, owner)
-			end
+			if not ply:IsValid() then return end
+			ragdollPlayer(ply, owner)
 		end)
 	end)
 
@@ -207,10 +227,13 @@ local function ragdollPlayer(ply, owner)
 	for i = 0, ragdoll:GetPhysicsObjectCount() - 1 do
 		local phys = ragdoll:GetPhysicsObjectNum(i)
 		if not IsValid(phys) then continue end
+
 		local boneid = ragdoll:TranslatePhysBoneToBone(i)
 		if boneid < 0 then continue end
+
 		local matrix = ply:GetBoneMatrix(boneid)
 		if not matrix then continue end
+
 		phys:SetPos(matrix:GetTranslation())
 		phys:SetAngles(matrix:GetAngles())
 		phys:AddVelocity(vel)
@@ -219,13 +242,8 @@ local function ragdollPlayer(ply, owner)
 	if ply:InVehicle() then ply:ExitVehicle() end
 
 	ply.bsu_ragdoll = ragdoll
-	ply.bsu_old_wep = ply:GetActiveWeapon()
 
-	ply:SetParent(ragdoll)
-	ply:Spectate(OBS_MODE_NONE) -- setting the observer mode here seems to break stuff until the player respawns
-	ply:SetObserverMode(OBS_MODE_CHASE)
-	ply:SpectateEntity(ragdoll)
-	ply:SetActiveWeapon()
+	spectate(ply, ragdoll)
 
 	return true
 end
@@ -233,12 +251,7 @@ end
 local function unragdollPlayer(ply)
 	if not IsValid(ply.bsu_ragdoll) then return false end
 
-	ply:SetParent()
-	ply:UnSpectate()
-	ply:DrawViewModel(true)
-
-	ply:SetActiveWeapon(ply.bsu_old_wep)
-	ply.bsu_old_wep = nil
+	unspectate(ply)
 
 	ply:SetVelocity(ply.bsu_ragdoll:GetVelocity())
 	ply.bsu_ragdoll:RemoveCallOnRemove("BSU_Ragdoll")
@@ -250,26 +263,19 @@ end
 
 -- if ragdolled player somehow respawns, make them spectate their ragdoll again
 hook.Add("PlayerSpawn", "BSU_FixRagdollRespawn", function(ply)
-	if ply.bsu_ragdoll then
-		timer.Simple(0, function()
-			if not ply:IsValid() then return end
-			local ragdoll = ply.bsu_ragdoll
-			if not IsValid(ragdoll) then return end
-			ply:SetParent(ragdoll)
-			ply:Spectate(OBS_MODE_NONE)
-			ply:SetObserverMode(OBS_MODE_CHASE)
-			ply:SpectateEntity(ragdoll)
-			ply:SetActiveWeapon()
-		end)
-	end
+	if not ply.bsu_ragdoll then return end
+	timer.Simple(0, function()
+		if not ply:IsValid() then return end
+		if not ply.bsu_ragdoll then return end
+		spectate(ply, ply.bsu_ragdoll)
+	end)
 end)
 
 -- if ragdolled player disconnected, delete their ragdoll
 hook.Add("PlayerDisconnected", "BSU_RemoveRagdoll", function(ply)
-	if ply.bsu_ragdoll then
-		ply.bsu_ragdoll:RemoveCallOnRemove("BSU_Ragdoll")
-		ply.bsu_ragdoll:Remove()
-	end
+	if not ply.bsu_ragdoll then return end
+	ply.bsu_ragdoll:RemoveCallOnRemove("BSU_Ragdoll")
+	ply.bsu_ragdoll:Remove()
 end)
 
 BSU.SetupCommand("ragdoll", function(cmd)
