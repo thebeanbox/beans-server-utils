@@ -295,6 +295,24 @@ hook.Add("KeyPress", "BSU_StopSpectating", function(ply)
 	end
 end)
 
+BSU.SetupCommand("give", function(cmd)
+	cmd:SetDescription("Spawns entity at a target")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self, caller, targets, classname)
+		for _, v in ipairs(targets) do
+			v:Give(classname)
+		end
+
+		if next(targets) ~= nil then
+			  self:BroadcastActionMsg("%caller% gave %targets% %classname%", { classname = classname, targets = targets })
+		end
+	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
+	cmd:AddStringArg("classname")
+end)
+
+
 BSU.SetupCommand("hide", function(cmd)
 	cmd:SetDescription("Hides yourself")
 	cmd:SetCategory("utility")
