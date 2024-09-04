@@ -177,7 +177,6 @@ BSU.SetupCommand("ungod", function(cmd)
 end)
 
 local function spectate(ply, ent)
-	ply:SetParent(ent)
 	ply:Spectate(OBS_MODE_NONE) ply:SetObserverMode(OBS_MODE_CHASE) -- HACK: fixes needing to respawn the player after unspectating
 	ply:SpectateEntity(ent)
 	ply:SetSolid(SOLID_NONE)
@@ -188,7 +187,6 @@ local function spectate(ply, ent)
 end
 
 local function unspectate(ply)
-	ply:SetParent()
 	ply:UnSpectate()
 	ply:DrawViewModel(true)
 	ply:PhysicsInit(SOLID_BBOX)
