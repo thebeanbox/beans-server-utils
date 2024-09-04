@@ -139,13 +139,11 @@ end
 function BSU.BanPlayer(ply, reason, duration, admin)
 	if ply:IsBot() then return error("Unable to ban a bot, try kicking") end
 	BSU.BanSteamID(ply:SteamID64(), reason, duration, IsValid(admin) and admin:SteamID64() or nil)
-	hook.Run("BSU_PlayerBanned", ply, reason, duration, admin) -- redundant hook? see BSU_SteamIDBanned and BSU_IPBanned
 end
 
 function BSU.IPBanPlayer(ply, reason, duration, admin)
 	if ply:IsBot() then return error("Unable to ip ban a bot, try kicking") end
 	BSU.BanIP(ply:IPAddress(), reason, duration, IsValid(admin) and admin:SteamID64() or nil)
-	hook.Run("BSU_PlayerBanned", ply, reason, duration, admin) -- redundant hook? see BSU_SteamIDBanned and BSU_IPBanned
 end
 
 function BSU.KickPlayer(ply, reason, admin)
