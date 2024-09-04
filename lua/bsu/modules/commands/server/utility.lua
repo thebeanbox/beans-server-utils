@@ -299,7 +299,7 @@ BSU.SetupCommand("give", function(cmd)
 	cmd:SetDescription("Spawns entity at a target")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self, caller, targets, classname)
+	cmd:SetFunction(function(self, _, targets, classname)
 		for _, v in ipairs(targets) do
 			v:Give(classname)
 		end
