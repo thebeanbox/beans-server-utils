@@ -296,7 +296,7 @@ hook.Add("KeyPress", "BSU_StopSpectating", function(ply)
 end)
 
 BSU.SetupCommand("give", function(cmd)
-	cmd:SetDescription("Spawns entity at a target")
+	cmd:SetDescription("Give players a weapon/entity")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self, _, targets, classname)
@@ -305,46 +305,56 @@ BSU.SetupCommand("give", function(cmd)
 		end
 
 		if next(targets) ~= nil then
-			  self:BroadcastActionMsg("%caller% gave %targets% %classname%", { classname = classname, targets = targets })
+			self:BroadcastActionMsg("%caller% gave %targets% %classname%", { classname = classname, targets = targets })
 		end
 	end)
 	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 	cmd:AddStringArg("classname")
 end)
 
-
-BSU.SetupCommand("hide", function(cmd)
+BSU.SetupCommand("cloak", function(cmd)
 	cmd:SetDescription("Hides yourself")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetSilent(true)
-	cmd:SetFunction(function(self, caller)
-		caller.bsu_hidden = true
-		caller:SetNoDraw(true)
+	cmd:SetFunction(function(self, caller, targets)
+		local cloaked = {}
 
-		hook.Run("BSU_Hidden", caller, true)
+		for _, v in ipairs(targets) do
+			if not v.bsu_cloaked then
+				v.bsu_cloaked = true
+				caller:SetNoDraw(true)
+				table.insert(cloaked, v)
+			end
+		end
 
-		self:BroadcastActionMsg("%caller% hid themself")
+		self:BroadcastActionMsg("%caller% cloaked %cloaked%", { cloaked = cloaked })
 	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
-BSU.AliasCommand("cloak", "hide")
+BSU.AliasCommand("hide", "cloak")
 
-BSU.SetupCommand("unhide", function(cmd)
+BSU.SetupCommand("uncloak", function(cmd)
 	cmd:SetDescription("Unhides yourself")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetSilent(true)
-	cmd:SetFunction(function(self, caller)
-		if not caller.bsu_hidden then return end
-		caller.bsu_hidden = nil
-		caller:SetNoDraw(false)
+	cmd:SetFunction(function(self, caller, targets)
+		local uncloaked = {}
 
-		hook.Run("BSU_Hidden", caller, false)
+		for _, v in ipairs(targets) do
+			if v.bsu_cloaked then
+				v.bsu_cloaked = nil
+				caller:SetNoDraw(false)
+				table.insert(uncloaked, v)
+			end
+		end
 
-		self:BroadcastActionMsg("%caller% unhid themself")
+		self:BroadcastActionMsg("%caller% uncloaked %uncloaked%", { uncloaked = uncloaked })
 	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
-BSU.AliasCommand("uncloak", "unhide")
+BSU.AliasCommand("unhide", "uncloak")
 
 BSU.SetupCommand("asay", function(cmd)
 	cmd:SetDescription("Send a message to admins")
