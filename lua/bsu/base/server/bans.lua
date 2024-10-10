@@ -33,29 +33,18 @@ hook.Add("CheckPassword", "BSU_PasswordBanCheck", passwordBanCheck)
 
 local allowFamilySharing = GetConVar("bsu_allow_family_sharing")
 
--- permaban players using family share to ban evade (also kicks players who are banned but somehow joined the server)
-local function authedBanCheck(ply)
-	local plyID = ply:SteamID64()
+-- permaban players using family share to ban evade
+local function familyShareBanCheck(_, steamid, ownerid64)
+	local steamid64 = BSU.ID64(steamid)
 
-	local plyBan = BSU.GetBanStatus(plyID)
-	if plyBan then -- if player is banned
-		game.KickID(ply:UserID(), "(Banned) " .. (plyBan.reason or "No reason given")) -- silently kick (don't need this added to the db)
-	else
-		local plyIPBan = BSU.GetBanStatus(ply:IPAddress())
-		if plyIPBan then -- if player is ip banned
-			game.KickID(ply:UserID(), "(Banned) " .. (plyIPBan.reason or "No reason given")) -- silently kick (don't need this added to the db)
-		end
-
-		local ownerID = ply:OwnerSteamID64()
-		if plyID ~= ownerID then -- this player doesn't own the Garry's Mod license they're using
-			local ownerBan = BSU.GetBanStatus(ownerID)
-			if ownerBan then -- if the owner of the license is banned
-				BSU.BanPlayer(ply, string.format("%s (Steam Family Sharing with banned account: %s)", ownerBan.reason or "No reason given", util.SteamIDFrom64(ownerID)), 0, ownerBan.reason)
-			elseif not allowFamilySharing:GetBool() then
-				game.KickID(ply:UserID(), "Steam Family Sharing is prohibited on this server")
-			end
+	if steamid64 ~= ownerid64 then -- this player doesn't own the Garry's Mod license they're using
+		local ban = BSU.GetBanStatus(ownerid64)
+		if ban then -- if the owner of the license is banned
+			BSU.BanSteamID(steamid64, string.format("%s (Steam Family Sharing with banned account: %s)", ban.reason or "No reason given", util.SteamIDFrom64(ownerid64)))
+		elseif not allowFamilySharing:GetBool() then
+			game.KickID(steamid, "Steam Family Sharing is prohibited on this server")
 		end
 	end
 end
 
-hook.Add("PlayerAuthed", "BSU_AuthedBanCheck", authedBanCheck)
+hook.Add("NetworkIDValidated", "BSU_FamilyShareBanCheck", familyShareBanCheck)
