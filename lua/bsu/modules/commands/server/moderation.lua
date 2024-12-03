@@ -322,7 +322,7 @@ BSU.SetupCommand("votekick", function(cmd)
 
 			if winner == "Yes" then
 				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "Vote kick passed, ", target, " will now be kicked!")
-				BSU.SafeRunCommand(caller, "kick", string.format("\"%s\" \"%s\"", target:Nick(), reason))
+				BSU.KickPlayer(target, reason, caller)
 			else
 				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "Vote kick failed, ", target, " will NOT be kicked!")
 			end
