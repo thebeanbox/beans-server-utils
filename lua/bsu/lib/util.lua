@@ -173,6 +173,7 @@ end
 function BSU.RemoveClientProps(plys)
 	if SERVER then
 		BSU.ClientRPC(plys, "BSU.RemoveClientProps")
+		removeByClass("raggib") -- VALVE 20TH ANNIVERSARY BABY!!!!!!!!!!!!!!!!!
 		return
 	end
 	removeByClass("class C_PhysPropClientside")
