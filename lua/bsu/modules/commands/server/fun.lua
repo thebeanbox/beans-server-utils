@@ -182,6 +182,7 @@ local function spectate(ply, ent)
 	ply:SetSolid(SOLID_NONE)
 	ply:PhysicsDestroy()
 	ply:SetNoDraw(true)
+	ply:DropObject()
 	ply.bsu_old_wep = ply:GetActiveWeapon()
 	ply:SetActiveWeapon()
 end
