@@ -197,6 +197,7 @@ local function unspectate(ply)
 	ply.bsu_old_wep = nil
 end
 
+util.AddNetworkString("bsu_ragdoll_color")
 local function ragdollPlayer(ply, owner)
 	if IsValid(ply.bsu_ragdoll) then return false end
 
@@ -211,6 +212,11 @@ local function ragdollPlayer(ply, owner)
 	ragdoll:SetModel(ply:GetModel())
 	ragdoll:Spawn()
 	ragdoll:Activate()
+
+	net.Start("bsu_ragdoll_color")
+	net.WriteUInt(ragdoll:EntIndex(), 13) -- MAX_EDICT_BITS
+	net.WriteVector(ply:GetPlayerColor())
+	net.Broadcast()
 
 	ragdoll:CallOnRemove("BSU_Ragdoll", function()
 		if not ply:IsValid() then return end
