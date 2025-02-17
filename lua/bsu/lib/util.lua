@@ -173,9 +173,11 @@ end
 function BSU.RemoveClientProps(plys)
 	if SERVER then
 		BSU.ClientRPC(plys, "BSU.RemoveClientProps")
+		removeByClass("raggib") -- VALVE 20TH ANNIVERSARY BABY!!!!!!!!!!!!!!!!!
 		return
 	end
 	removeByClass("class C_PhysPropClientside")
+	removeByClass("20C_PhysPropClientside")
 end
 
 function BSU.RemoveClientRagdolls(plys)
@@ -184,6 +186,7 @@ function BSU.RemoveClientRagdolls(plys)
 		return
 	end
 	removeByClass("class C_ClientRagdoll")
+	removeByClass("15C_ClientRagdoll")
 end
 
 function BSU.RemoveClientEffects(plys)
@@ -192,4 +195,5 @@ function BSU.RemoveClientEffects(plys)
 		return
 	end
 	removeByClass("class CLuaEffect")
+	removeByClass("10CLuaEffect")
 end

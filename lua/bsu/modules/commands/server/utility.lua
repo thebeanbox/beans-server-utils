@@ -4,7 +4,7 @@ local function teleportPlayer(ply, pos)
 end
 
 BSU.SetupCommand("send", function(cmd)
-	cmd:SetDescription("Teleports players to a target player")
+	cmd:SetDescription("Teleport players to a target player")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self, _, targets, target)
@@ -39,7 +39,7 @@ end)
 BSU.AliasCommand("tp", "teleport")
 
 BSU.SetupCommand("goto", function(cmd)
-	cmd:SetDescription("Teleports yourself to a player")
+	cmd:SetDescription("Teleport yourself to a player")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self, caller, target)
@@ -53,7 +53,7 @@ BSU.SetupCommand("goto", function(cmd)
 end)
 
 BSU.SetupCommand("bring", function(cmd)
-	cmd:SetDescription("Teleports yourself to a player")
+	cmd:SetDescription("Teleport yourself to a player")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self, caller, targets)
@@ -149,9 +149,13 @@ BSU.SetupCommand("cleanupdebris", function(cmd)
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
 		for _, v in ipairs(ents.GetAll()) do
-			-- BSU.GetOwner returns nil if the entity is ownerless
-			if not BSU.GetOwner(v) and debrisGroups[v:GetCollisionGroup()] then
-				v:Remove()
+			-- remove all entities that are debris and ownerless or world-owned
+			if debrisGroups[v:GetCollisionGroup()] then
+				-- BSU.GetOwner returns nil if the entity is ownerless
+				local owner = BSU.GetOwner(v)
+				if not owner or owner:IsWorld() then
+					v:Remove()
+				end
 			end
 		end
 
@@ -185,7 +189,7 @@ BSU.SetupCommand("cleardecals", function(cmd)
 			ply:ConCommand("r_cleardecals")
 		end
 
-		self:BroadcastActionMsg("%caller% cleared decals")
+		self:BroadcastActionMsg("%caller% cleared clientside decals")
 	end)
 end)
 
@@ -290,6 +294,67 @@ hook.Add("KeyPress", "BSU_StopSpectating", function(ply)
 		BSU.SafeRunCommand(ply, "unspectate")
 	end
 end)
+
+BSU.SetupCommand("give", function(cmd)
+	cmd:SetDescription("Give players a weapon/entity")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self, _, targets, classname)
+		for _, v in ipairs(targets) do
+			v:Give(classname)
+		end
+
+		if next(targets) ~= nil then
+			self:BroadcastActionMsg("%caller% gave %targets% %classname%", { classname = classname, targets = targets })
+		end
+	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
+	cmd:AddStringArg("classname")
+end)
+
+BSU.SetupCommand("cloak", function(cmd)
+	cmd:SetDescription("Hides yourself")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetSilent(true)
+	cmd:SetFunction(function(self, caller, targets)
+		local cloaked = {}
+
+		for _, v in ipairs(targets) do
+			if not v.bsu_cloaked then
+				v.bsu_cloaked = true
+				caller:SetNoDraw(true)
+				table.insert(cloaked, v)
+			end
+		end
+
+		self:BroadcastActionMsg("%caller% cloaked %cloaked%", { cloaked = cloaked })
+	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
+end)
+BSU.AliasCommand("hide", "cloak")
+
+BSU.SetupCommand("uncloak", function(cmd)
+	cmd:SetDescription("Unhides yourself")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetSilent(true)
+	cmd:SetFunction(function(self, caller, targets)
+		local uncloaked = {}
+
+		for _, v in ipairs(targets) do
+			if v.bsu_cloaked then
+				v.bsu_cloaked = nil
+				caller:SetNoDraw(false)
+				table.insert(uncloaked, v)
+			end
+		end
+
+		self:BroadcastActionMsg("%caller% uncloaked %uncloaked%", { uncloaked = uncloaked })
+	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
+end)
+BSU.AliasCommand("unhide", "uncloak")
 
 BSU.SetupCommand("asay", function(cmd)
 	cmd:SetDescription("Send a message to admins")
@@ -401,7 +466,7 @@ BSU.SetupCommand("vote", function(cmd)
 			BSU.SendChatMsg(nil, BSU.CLR_TEXT, "'", BSU.CLR_PARAM, winner, BSU.CLR_TEXT, "' won the vote! (", BSU.CLR_PARAM, title, BSU.CLR_TEXT, ")")
 		end)
 
-		self:BroadcastActionMsg("%caller% started a vote! (%title%)", {title = title})
+		self:BroadcastActionMsg("%caller% started a vote! (%title%)", { title = title })
 	end)
 	cmd:AddStringArg("title")
 	cmd:AddStringArg("option1")
@@ -445,21 +510,19 @@ BSU.SetupCommand("votemap", function(cmd)
 	end)
 end)
 
-BSU.SetupCommand("map", function(cmd)
+BSU.SetupCommand("changemap", function(cmd)
 	cmd:SetDescription("Change the map")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetSilent(true)
-	cmd:SetFunction(function(_, _, mapname)
-		if not mapLookup[mapname] then
-			error(string.format("'%s' is not a valid map.", mapname))
+	cmd:SetFunction(function(_, _, map)
+		if not mapLookup[map] then
+			error(string.format("'%s' is not a valid map.", map))
 		end
 
-		RunConsoleCommand("changelevel", mapname)
+		RunConsoleCommand("changelevel", map)
 	end)
-	cmd:AddStringArg("mapname", {
-		autocomplete = mapOptions
-	})
+	cmd:AddStringArg("map", { autocomplete = mapOptions })
 end)
 
 BSU.SetupCommand("maplist", function(cmd)

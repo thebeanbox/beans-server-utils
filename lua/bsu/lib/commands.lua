@@ -896,7 +896,7 @@ if SERVER then
 					totalPlys = totalPlys + 1
 				end
 			end
-			if totalPlys > 1 and totalPlys == #player.GetAll() then
+			if totalPlys > 1 and totalPlys == player.GetCount() then
 				table.Add(vars, { BSU.CLR_EVERYONE, "Everyone" })
 			else
 				for k, v in ipairs(arg) do -- expect table arg to be sequential
@@ -958,6 +958,30 @@ if SERVER then
 		end
 	end
 
+	local function getAdminLevel(ply)
+		if not ply:IsValid() then return 3 end -- server console is considered higher than superadmin
+		if ply:IsSuperAdmin() then return 2 end
+		if ply:IsAdmin() then return 1 end
+		return 0
+	end
+
+	function objCmdHandler.CanSeeCommandAction(self, target)
+		local val = hook.Run("BSU_CanSeeCommandAction", target, self)
+		if val ~= nil then return val ~= false end
+
+		if not self.silent then return true end -- allow if not silent
+
+		local caller = self.caller
+		if target == caller then return true end -- allow if target is caller
+
+		local tadmin = getAdminLevel(target)
+		if tadmin < 1 then return false end -- disallow if not admin
+
+		local cadmin = getAdminLevel(caller)
+
+		return tadmin >= cadmin -- allow if target is equal or higher admin than caller
+	end
+
 	-- broadcast a formatted message (intended for command actions)
 	function objCmdHandler.BroadcastActionMsg(self, msg, args)
 		if not istable(plys) then plys = { plys } end
@@ -965,18 +989,20 @@ if SERVER then
 		if silent then msg = "(SILENT) " .. msg end
 		args = args or {}
 
-		for _, v in ipairs(player.GetHumans()) do
-			if v:IsValid() then
-				local val = hook.Run("BSU_ShowActionMessage", self.caller, v, silent) -- expects nil for default behavior, 2 for chat, 1 for console, 0 or anything else for hidden
-				if val == nil and (not self.silent or (v:IsSuperAdmin() or v == self.caller)) or val == 2 then
-					BSU.SendChatMsg(v, self:FormatMsg(self.caller, v, msg, args))
+		local caller = self.caller
+
+		for _, target in ipairs(player.GetHumans()) do
+			if self:CanSeeCommandAction(target) then
+				local val = math.floor(target:GetInfoNum(silent and "bsu_show_silent_actions" or "bsu_show_actions", 2))
+				if val == 2 then
+					BSU.SendChatMsg(target, self:FormatMsg(caller, target, msg, args))
 				elseif val == 1 then
-					BSU.SendConsoleMsg(v, self:FormatMsg(self.caller, v, msg, args))
-				end -- 0 or anything else for hidden
+					BSU.SendConsoleMsg(target, self:FormatMsg(caller, target, msg, args))
+				end
 			end
 		end
 
-		BSU.SendChatMsg(NULL, self:FormatMsg(self.caller, NULL, msg, args)) -- also send to server console (it doesn't matter if this is SendConsoleMsg instead)
+		BSU.SendConsoleMsg(NULL, self:FormatMsg(caller, NULL, msg, args)) -- also send to server console (SendChatMsg also works for server console)
 	end
 end
 

@@ -1,6 +1,14 @@
 -- base/server/players.lua
 -- handles player data stuff
 
+gameevent.Listen("OnRequestFullUpdate")
+hook.Add("OnRequestFullUpdate", "BSU_ClientReady", function(data)
+	local ply = Player(data.userid)
+	if ply.bsu_client_ready then return end
+	ply.bsu_client_ready = true
+	hook.Run("BSU_ClientReady", ply)
+end)
+
 -- initialize player data
 hook.Add("OnGamemodeLoaded", "BSU_InitializePlayer", function()
 	BSU._oldPlayerInitialSpawn = BSU._oldPlayerInitialSpawn or GAMEMODE.PlayerInitialSpawn

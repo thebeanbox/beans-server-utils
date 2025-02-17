@@ -232,9 +232,11 @@ BSU.SetupCommand("voteban", function(cmd)
 			error("You already have a vote active!")
 		end
 
-		local targetSteamID = target:SteamID()
 		local title = string.format("Vote To Ban %s %s (%s)", target:Nick(), duration ~= 0 and "for " .. BSU.StringTime(duration, 10000) or "permanently", reason and reason or "No reason given")
 		local options = {"Yes", "No"}
+
+		local callerID = caller:SteamID64()
+		local targetID = target:SteamID64()
 
 		BSU.StartVote(title, 30, caller, options, function(winner)
 			if not winner then
@@ -244,7 +246,7 @@ BSU.SetupCommand("voteban", function(cmd)
 
 			if winner == "Yes" then
 				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "Vote ban passed, ", target, " will now be banned!")
-				BSU.BanSteamID(targetSteamID, reason, duration, caller:SteamID64())
+				BSU.BanSteamID(targetID, reason, duration, callerID)
 			else
 				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "Vote ban failed, ", target, " will NOT be banned!")
 			end
@@ -278,7 +280,7 @@ BSU.SetupCommand("bancheck", function(cmd)
 		local unbanDate = duration > 0 and os.date("%c", ban.time + duration * 60) or "Never"
 
 		self:PrintChatMsg(string.format(
-			"Admin: %s\nReason: %s\nBan date: %s\nDuration: %s\nUnban Date: %s",
+			"Admin: %s\nReason: %s\nBan Date: %s\nDuration: %s\nUnban Date: %s",
 			admin,
 			reason,
 			banDate,
@@ -326,7 +328,7 @@ BSU.SetupCommand("votekick", function(cmd)
 
 			if winner == "Yes" then
 				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "Vote kick passed, ", target, " will now be kicked!")
-				BSU.SafeRunCommand(caller, "kick", string.format("\"%s\" \"%s\"", target:Nick(), reason))
+				if target:IsValid() then BSU.KickPlayer(target, reason, caller) end
 			else
 				BSU.SendChatMsg(nil, BSU.CLR_TEXT, "Vote kick failed, ", target, " will NOT be kicked!")
 			end

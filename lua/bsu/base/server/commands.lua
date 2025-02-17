@@ -46,21 +46,14 @@ end
 
 hook.Add("PlayerSay", "BSU_ChatCommand", chatCommand)
 
--- override silent action messages
-local function overrideActionMessage(caller, target, silent)
-	if not target:IsSuperAdmin() and target ~= caller then return end
-	local val = tonumber(target:GetInfo(not silent and "bsu_show_actions" or "bsu_show_silent_actions"))
-	if val then return math.floor(val) end
-end
-
-hook.Add("BSU_ShowActionMessage", "BSU_OverrideActionMessage", overrideActionMessage)
-
 local function sendCommandData(ply)
+	BSU.StartRPC("BSU.RegisterServerCommand")
 	for _, v in ipairs(BSU.GetCommandList()) do
 		if v:GetAccess() ~= BSU.CMD_CONSOLE then
-			BSU.ClientRPC(ply, "BSU.RegisterServerCommand", v:GetName(), v:GetDescription(), v:GetCategory(), v:GetArgs())
+			BSU.AddArgsRPC(v:GetName(), v:GetDescription(), v:GetCategory(), v:GetArgs())
 		end
 	end
+	BSU.FinishRPC(ply)
 end
 
 hook.Add("BSU_ClientReady", "BSU_SendCommandData", sendCommandData)

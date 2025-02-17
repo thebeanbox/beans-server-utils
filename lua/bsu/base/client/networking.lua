@@ -1,19 +1,20 @@
 -- base/client/networking.lua
 
 local function handleRPC()
-	local funcStr = net.ReadString()
+	local str = net.ReadString()
 
-	local len = net.ReadUInt(8)
-	local args = {}
-	for _ = 1, len do
-		local arg = net.ReadType()
-		table.insert(args, arg)
+	local func = BSU.FindVar(str)
+	if not func or type(func) ~= "function" then return error("Received bad RPC, invalid function (" .. str .. ")") end
+
+	local lcalls = net.ReadUInt(12)
+	for _ = 1, lcalls do
+		local args = {}
+		local largs = net.ReadUInt(5)
+		for i = 1, largs do
+			args[i] = net.ReadType()
+		end
+		xpcall(func, ErrorNoHaltWithStack, unpack(args, 1, largs))
 	end
-
-	local func = BSU.FindVar(funcStr)
-	if not func or type(func) ~= "function" then return error("Received bad RPC, invalid function (" .. funcStr .. ")") end
-
-	func(unpack(args))
 end
 
 net.Receive("bsu_rpc", handleRPC)

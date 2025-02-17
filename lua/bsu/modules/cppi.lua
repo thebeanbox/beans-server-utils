@@ -54,8 +54,8 @@ if SERVER then
 		return CPPI_NOTIMPLEMENTED
 	end
 
-	function entMeta:CPPICanTool(ply)
-		return BSU.PlayerHasPermission(ply, self, BSU.PP_TOOLGUN) ~= false
+	function entMeta:CPPICanTool(ply, ...)
+		return BSU.PlayerHasPermission(ply, self, BSU.PP_TOOLGUN, ...) ~= false
 	end
 
 	function entMeta:CPPICanPhysgun(ply)

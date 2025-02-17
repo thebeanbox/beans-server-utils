@@ -1,14 +1,23 @@
--- block players in an exclusive state from spawning anything or dying
+-- block players from doing various things if they're in an exclusive state
+
 local function block(ply)
 	if ply.bsu_exclusive then return false end
 end
 
+-- not allowed while in exclusive state
+hook.Add("CanPlayerSuicide", "BSU_BlockPlayer", block)
+hook.Add("PlayerNoClip", "BSU_BlockPlayer", block)
+hook.Add("PlayerSwitchWeapon", "BSU_BlockPlayer", function(ply) if block(ply) == false then return true end end)
+
+-- block spawning entities
 hook.Add("PlayerSpawnObject", "BSU_BlockPlayer", block)
 hook.Add("PlayerSpawnSENT", "BSU_BlockPlayer", block)
 hook.Add("PlayerSpawnVehicle", "BSU_BlockPlayer", block)
 hook.Add("PlayerSpawnNPC", "BSU_BlockPlayer", block)
 hook.Add("PlayerSpawnSWEP", "BSU_BlockPlayer", block)
-hook.Add("CanPlayerSuicide", "BSU_BlockPlayer", block)
+
+-- block permissions
+hook.Add("BSU_PlayerHasPermission", "BSU_BlockPlayer", block)
 
 -- if player respawns, add back any flags they should have
 hook.Add("PlayerSpawn", "BSU_SpawnAddFlags", function(ply)
@@ -167,6 +176,28 @@ BSU.SetupCommand("ungod", function(cmd)
 	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
+local function spectate(ply, ent)
+	ply:Spectate(OBS_MODE_NONE) ply:SetObserverMode(OBS_MODE_CHASE) -- HACK: fixes needing to respawn the player after unspectating
+	ply:SpectateEntity(ent)
+	ply:SetSolid(SOLID_NONE)
+	ply:PhysicsDestroy()
+	ply:SetNoDraw(true)
+	ply:DropObject()
+	ply.bsu_old_wep = ply:GetActiveWeapon()
+	ply:SetActiveWeapon()
+end
+
+local function unspectate(ply)
+	ply:UnSpectate()
+	ply:DrawViewModel(true)
+	ply:PhysicsInit(SOLID_BBOX)
+	ply:SetMoveType(MOVETYPE_WALK)
+	ply:SetNoDraw(false)
+	ply:SetActiveWeapon(ply.bsu_old_wep)
+	ply.bsu_old_wep = nil
+end
+
+util.AddNetworkString("bsu_ragdoll_color")
 local function ragdollPlayer(ply, owner)
 	if IsValid(ply.bsu_ragdoll) then return false end
 
@@ -178,18 +209,21 @@ local function ragdollPlayer(ply, owner)
 	else
 		BSU.SetOwnerWorld(ragdoll)
 	end
-
-	duplicator.DoGeneric(ragdoll, duplicator.CopyEntTable(ply))
-	ragdoll:SetCollisionGroup(COLLISION_GROUP_NONE) -- fix wrong collision group when player is in vehicle
-
+	ragdoll:SetModel(ply:GetModel())
 	ragdoll:Spawn()
 	ragdoll:Activate()
+
+	net.Start("bsu_ragdoll_color")
+	net.WriteUInt(ragdoll:EntIndex(), 13) -- MAX_EDICT_BITS
+	net.WriteVector(ply:GetPlayerColor())
+	net.Broadcast()
+
 	ragdoll:CallOnRemove("BSU_Ragdoll", function()
+		if not ply:IsValid() then return end
+		unspectate(ply)
 		timer.Simple(0, function()
-			if ply:IsValid() and not IsValid(ply.bsu_ragdoll) then
-				ply.bsu_ragdoll = nil
-				ragdollPlayer(ply, owner)
-			end
+			if not ply:IsValid() then return end
+			ragdollPlayer(ply, owner)
 		end)
 	end)
 
@@ -198,10 +232,13 @@ local function ragdollPlayer(ply, owner)
 	for i = 0, ragdoll:GetPhysicsObjectCount() - 1 do
 		local phys = ragdoll:GetPhysicsObjectNum(i)
 		if not IsValid(phys) then continue end
+
 		local boneid = ragdoll:TranslatePhysBoneToBone(i)
 		if boneid < 0 then continue end
+
 		local matrix = ply:GetBoneMatrix(boneid)
 		if not matrix then continue end
+
 		phys:SetPos(matrix:GetTranslation())
 		phys:SetAngles(matrix:GetAngles())
 		phys:AddVelocity(vel)
@@ -209,13 +246,9 @@ local function ragdollPlayer(ply, owner)
 
 	if ply:InVehicle() then ply:ExitVehicle() end
 
-	ply.bsu_spawninfo = BSU.GetSpawnInfo(ply)
-
 	ply.bsu_ragdoll = ragdoll
-	ply:SetParent(ragdoll)
-	ply:Spectate(OBS_MODE_CHASE)
-	ply:SpectateEntity(ragdoll)
-	ply:StripWeapons()
+
+	spectate(ply, ragdoll)
 
 	return true
 end
@@ -223,20 +256,9 @@ end
 local function unragdollPlayer(ply)
 	if not IsValid(ply.bsu_ragdoll) then return false end
 
-	local oldPos = ply:GetPos()
-	local oldAngles = ply:EyeAngles()
-
-	ply:SetParent()
-	ply:UnSpectate()
-
-	BSU.SpawnWithInfo(ply, ply.bsu_spawninfo)
-	ply.bsu_spawninfo = nil
-
-	ply:SetPos(oldPos)
-	ply:SetEyeAngles(oldAngles)
+	unspectate(ply)
 
 	ply:SetVelocity(ply.bsu_ragdoll:GetVelocity())
-
 	ply.bsu_ragdoll:RemoveCallOnRemove("BSU_Ragdoll")
 	ply.bsu_ragdoll:Remove()
 	ply.bsu_ragdoll = nil
@@ -244,24 +266,21 @@ local function unragdollPlayer(ply)
 	return true
 end
 
--- if ragdolled player respawns, make them spectate their ragdoll again
+-- if ragdolled player somehow respawns, make them spectate their ragdoll again
 hook.Add("PlayerSpawn", "BSU_FixRagdollRespawn", function(ply)
-	if ply.bsu_ragdoll then
-		timer.Simple(0, function()
-			if not ply:IsValid() or not ply.bsu_ragdoll then return end
-			ply:Spectate(OBS_MODE_CHASE)
-			ply:SpectateEntity(ply.bsu_ragdoll)
-			ply:StripWeapons()
-		end)
-	end
+	if not ply.bsu_ragdoll then return end
+	timer.Simple(0, function()
+		if not ply:IsValid() then return end
+		if not ply.bsu_ragdoll then return end
+		spectate(ply, ply.bsu_ragdoll)
+	end)
 end)
 
 -- if ragdolled player disconnected, delete their ragdoll
 hook.Add("PlayerDisconnected", "BSU_RemoveRagdoll", function(ply)
-	if ply.bsu_ragdoll then
-		ply.bsu_ragdoll:RemoveCallOnRemove("BSU_Ragdoll")
-		ply.bsu_ragdoll:Remove()
-	end
+	if not ply.bsu_ragdoll then return end
+	ply.bsu_ragdoll:RemoveCallOnRemove("BSU_Ragdoll")
+	ply.bsu_ragdoll:Remove()
 end)
 
 BSU.SetupCommand("ragdoll", function(cmd)
@@ -457,29 +476,28 @@ BSU.SetupCommand("slay", function(cmd)
 end)
 BSU.AliasCommand("kill", "slay")
 
-BSU.SetupCommand("disintegrate", function(cmd)
-	cmd:SetDescription("Disintegrate players")
+BSU.SetupCommand("dissolve", function(cmd)
+	cmd:SetDescription("Dissolve players")
 	cmd:SetCategory("fun")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self, _, targets)
-		local dmgInfo = DamageInfo()
-		dmgInfo:SetDamageType(DMG_DISSOLVE)
-
 		for _, v in ipairs(targets) do
-			dmgInfo:SetDamage(math.max(v:Health(), 1))
-			dmgInfo:SetAttacker(v)
-			v:RemoveFlags(FL_GODMODE)
-			v:SetArmor(0)
-			v:TakeDamageInfo(dmgInfo)
+			v:Kill()
+			v:CreateRagdoll()
+			local ent = v:GetRagdollEntity()
+			if ent:IsValid() then
+				ent:Dissolve(1)
+				ent:EmitSound(string.format("ambient/levels/labs/electric_explosion%d.wav", math.random(1, 3)), nil, nil, nil, CHAN_STATIC)
+			end
 		end
 
 		if next(targets) ~= nil then
-			self:BroadcastActionMsg("%caller% disintegrated %targets%", { targets = targets })
+			self:BroadcastActionMsg("%caller% dissolved %targets%", { targets = targets })
 		end
 	end)
 	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
-BSU.AliasCommand("smite", "disintegrate")
+BSU.AliasCommand("smite", "dissolve")
 
 BSU.SetupCommand("explode", function(cmd)
 	cmd:SetDescription("Explode players")
@@ -654,8 +672,11 @@ BSU.SetupCommand("limammo", function(cmd)
 	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
-local function collideOnlyPlayers(_, ent1, ent2)
-	if not ent1:IsPlayer() and not ent2:IsPlayer() then return false end
+local function setCollisionTarget(ent, target)
+	hook.Add("ShouldCollide", ent, function(_, ent1, ent2)
+		if ent1 ~= target and ent2 ~= target then return false end
+	end)
+	ent:SetCustomCollisionCheck(true)
 end
 
 BSU.SetupCommand("bathe", function(cmd)
@@ -673,9 +694,7 @@ BSU.SetupCommand("bathe", function(cmd)
 			bath:SetModel("models/props_interiors/BathTub01a.mdl")
 			bath:SetAngles(Angle(0, 180, 0))
 			bath:SetPos(v:GetPos() + Vector(750, 0, 50))
-
-			hook.Add("ShouldCollide", bath, collideOnlyPlayers)
-			bath:SetCustomCollisionCheck(true)
+			setCollisionTarget(bath, v)
 			bath:Spawn()
 
 			local phys = bath:GetPhysicsObject()
@@ -684,7 +703,7 @@ BSU.SetupCommand("bathe", function(cmd)
 				phys:SetMass(50000)
 				phys:SetVelocity(Vector(-100000, 0, 0))
 			end
-			bath:EmitSound("Physics.WaterSplash", 130, 100, 1, 0, 0)
+			bath:EmitSound("Physics.WaterSplash", 100)
 
 			timer.Simple(3, function() if bath:IsValid() then bath:Remove() end end)
 		end
@@ -709,9 +728,7 @@ BSU.SetupCommand("trainwreck", function(cmd)
 			train:SetModel("models/props_trainstation/train001.mdl")
 			train:SetAngles(Angle(0, 90, 0))
 			train:SetPos(v:GetPos() + Vector(750, 0, 150))
-
-			hook.Add("ShouldCollide", train, collideOnlyPlayers)
-			train:SetCustomCollisionCheck(true)
+			setCollisionTarget(train, v)
 			train:Spawn()
 
 			local phys = train:GetPhysicsObject()
@@ -720,7 +737,7 @@ BSU.SetupCommand("trainwreck", function(cmd)
 				phys:SetMass(50000)
 				phys:SetVelocity(Vector(-100000, 0, 0))
 			end
-			train:EmitSound("ambient/alarms/train_horn2.wav", 130, 100, 1, 0, 0)
+			train:EmitSound("ambient/alarms/train_horn2.wav", 100)
 
 			timer.Simple(3, function() if train:IsValid() then train:Remove() end end)
 		end

@@ -25,6 +25,7 @@ end)
 function BSU.StartVote(title, duration, author, options, callback)
 	local vote = {
 		title = title,
+		start = CurTime(),
 		duration = duration,
 		author = author,
 		options = options,
@@ -37,6 +38,7 @@ function BSU.StartVote(title, duration, author, options, callback)
 	net.WriteString(vote.id)
 	net.WriteBool(true)
 	net.WriteString(vote.title)
+	net.WriteUInt(vote.start, 32)
 	net.WriteUInt(vote.duration, 32)
 	net.WriteEntity(vote.author)
 
@@ -99,3 +101,22 @@ function BSU.HasActiveVote(author)
 	end
 	return false
 end
+
+hook.Add("BSU_ClientReady", "BSU_NetworkVotes", function(ply)
+	for _, vote in pairs(BSU.ActiveVotes) do
+		net.Start("bsu_vote")
+		net.WriteString(vote.id)
+		net.WriteBool(true)
+		net.WriteString(vote.title)
+		net.WriteUInt(vote.start, 32)
+		net.WriteUInt(vote.duration, 32)
+		net.WriteEntity(vote.author)
+
+		net.WriteUInt(#vote.options, 32)
+		for _, opt in ipairs(vote.options) do
+			net.WriteString(opt)
+		end
+		net.Send(ply)
+	end
+end)
+

@@ -1,5 +1,18 @@
 --- base/client/pp.lua
 
+-- setup the player permissions table
+if not GetConVar("bsu_permission_persist"):GetBool() then
+	BSU.SQLQuery("DROP TABLE IF EXISTS %s", BSU.SQLEscIdent(BSU.SQL_PP))
+end
+BSU.SQLCreateTable(BSU.SQL_PP, string.format(
+	[[
+		steamid TEXT PRIMARY KEY,
+		permission INTEGER NOT NULL
+	]]
+))
+
+hook.Add("InitPostEntity", "BSU_SendPermissions", BSU.SendPermissions)
+
 concommand.Add("bsu_reset_permissions", function()
 	-- easiest way is to delete the table and recreate it
 	BSU.SQLQuery("DROP TABLE IF EXISTS %s", BSU.SQLEscIdent(BSU.SQL_PP))
@@ -164,51 +177,3 @@ local function addPropProtectionMenu()
 end
 
 hook.Add("PopulateToolMenu", "BSU_AddPropProtectionMenu", addPropProtectionMenu)
-
-local hudColorBG = Color(0, 0, 0, 75)
-local hudColorFG = Color(255, 255, 255, 255)
-local hudX, hudY = GetConVar("bsu_propinfo_x"):GetInt(), GetConVar("bsu_propinfo_y"):GetInt()
-
-local font = "BSU_PP_HUD"
-surface.CreateFont(font, {
-	font = "Verdana",
-	size = 16,
-	weight = 400,
-	antialias = true,
-	shadow = true
-})
-
-cvars.AddChangeCallback("bsu_propinfo_x", function(_, _, new)
-	hudX = tonumber(new)
-end)
-
-cvars.AddChangeCallback("bsu_propinfo_y", function(_, _, new)
-	hudY = tonumber(new)
-end)
-
-local showPropInfo = GetConVar("bsu_show_propinfo")
-
-local function drawPropProtectionHUD()
-	local ply = LocalPlayer()
-
-	if not showPropInfo:GetBool() then return end
-
-	local trace = util.GetPlayerTrace(ply)
-	trace.mask = MASK_SHOT
-	local ent = util.TraceLine(trace).Entity
-	if ent:IsValid() and not ent:IsPlayer() then
-		local text = string.format("Owner: %s\n%s\n%s", BSU.GetOwnerString(ent), ent:GetModel(), tostring(ent))
-		surface.SetFont(font)
-		local w, h = surface.GetTextSize(text)
-		draw.RoundedBox(4, hudX, hudY, w + 8, h + 8, hudColorBG)
-		draw.DrawText(text, font, hudX + 4, hudY + 4, hudColorFG, TEXT_ALIGN_LEFT)
-	end
-end
-
-hook.Add("HUDPaint", "BSU_DrawPropProtectionHUD", drawPropProtectionHUD)
-
-if not GetConVar("bsu_permission_persist"):GetBool() then
-	RunConsoleCommand("bsu_reset_permissions")
-end
-
-hook.Add("InitPostEntity", "BSU_SendPermissions", BSU.SendPermissions)
