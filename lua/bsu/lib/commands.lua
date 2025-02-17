@@ -887,50 +887,66 @@ if SERVER then
 		return next(self:FilterTargets({ target }, fail)) ~= nil
 	end
 
-	local function formatArg(ply, target, arg)
-		local vars = {}
+	local function addColoredText(tbl, clr, str)
+		local num = #tbl
+		tbl[num + 1] = clr
+		tbl[num + 2] = str
+	end
+
+	local function addFormattedArg(tbl, ply, target, arg)
 		if istable(arg) then
-			local totalPlys = 0
+			local num = 0
 			for _, v in ipairs(arg) do
 				if isentity(v) and v:IsPlayer() then
-					totalPlys = totalPlys + 1
+					num = num + 1
 				end
 			end
-			if totalPlys > 1 and totalPlys == player.GetCount() then
-				table.Add(vars, { BSU.CLR_EVERYONE, "Everyone" })
+			if num > 1 and num == player.GetCount() then
+				addColoredText(tbl, BSU.CLR_EVERYONE, "Everyone")
 			else
 				for k, v in ipairs(arg) do -- expect table arg to be sequential
 					if istable(v) then continue end -- ignore tables in table arg (can cause weird formatting or infinite recursion)
 					if k > 1 then
-						table.Add(vars, { BSU.CLR_TEXT, k < #arg and ", " or (#arg > 2 and ", and " or " and ") })
+						addColoredText(tbl, BSU.CLR_TEXT, k < #arg and ", " or (#arg > 2 and ", and " or " and "))
 					end
-					table.Add(vars, formatArg(ply, target, v))
+					addFormattedArg(tbl, ply, target, v)
 				end
 			end
 		elseif isentity(arg) then
 			if arg:IsPlayer() then
-				table.Add(vars, arg == ply and (arg == target and { BSU.CLR_SELF, "Yourself" } or { BSU.CLR_SELF, "Themself" }) or { team.GetColor(arg:Team()), arg:Nick() })
+				if arg == ply then
+					addColoredText(tbl, BSU.CLR_SELF, arg == target and "Yourself" or "Themself")
+				else
+					addColoredText(tbl, team.GetColor(arg:Team()), arg:Nick())
+				end
 			else
-				table.Add(vars, { BSU.CLR_MISC, tostring(arg) })
+				addColoredText(tbl, BSU.CLR_MISC, tostring(arg))
 			end
 		else
-			table.Add(vars, { BSU.CLR_PARAM, tostring(arg) })
+			addColoredText(tbl, BSU.CLR_PARAM, tostring(arg))
 		end
-		return vars
 	end
 
 	function objCmdHandler.FormatMsg(self, ply, target, msg, args)
-		local vars = {}
+		local tbl = {}
 		local pos = 1
 
 		for pre, name in string.gmatch(msg, "(.-)%%([%w_]+)%%") do
-			table.Add(vars, { BSU.CLR_TEXT, pre })
+			addColoredText(tbl, BSU.CLR_TEXT, pre)
 
 			local arg = args[name]
 			if arg ~= nil then
-				table.Add(vars, formatArg(ply, target, arg))
+				addFormattedArg(tbl, ply, target, arg)
 			elseif name == "caller" then
-				table.Add(vars, ply:IsValid() and (ply == target and { BSU.CLR_SELF, "You" } or { team.GetColor(ply:Team()), ply:Nick() }) or { BSU.CLR_CONSOLE, "(Console)" })
+				if ply:IsValid() then
+					if ply == target then
+						addColoredText(tbl, BSU.CLR_SELF, "You")
+					else
+						addColoredText(tbl, team.GetColor(ply:Team()), ply:Nick())
+					end
+				else
+					addColoredText(tbl, BSU.CLR_CONSOLE, "(Console)")
+				end
 			end
 
 			pos = pos + #pre + #name + 2
@@ -938,10 +954,10 @@ if SERVER then
 
 		local last = string.sub(msg, pos)
 		if #last > 0 then -- add last part of the msg
-			table.Add(vars, { BSU.CLR_TEXT, last })
+			addColoredText(tbl, BSU.CLR_TEXT, last)
 		end
 
-		return unpack(vars)
+		return unpack(tbl)
 	end
 
 	-- send a formatted message to players (expects a player or NULL entity, or a table that can include both)
