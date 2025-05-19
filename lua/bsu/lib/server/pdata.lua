@@ -142,4 +142,3 @@ end
 function BSU.GetAllPData(ply, network)
 	return BSU.GetAllPDataBySteamID(ply:SteamID64(), network)
 end
-

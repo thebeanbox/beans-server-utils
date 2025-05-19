@@ -119,4 +119,3 @@ hook.Add("BSU_ClientReady", "BSU_NetworkVotes", function(ply)
 		net.Send(ply)
 	end
 end)
-

@@ -52,4 +52,3 @@ net.Receive("bsu_request_banlist", function(_, ply)
 	end
 	net.Send(ply)
 end)
-

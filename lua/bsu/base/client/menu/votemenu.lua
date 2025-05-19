@@ -138,4 +138,3 @@ hook.Add("BSU_PlayerVote", "BSU_VoteMenu", function(vote, ply, optionIndex)
 
 	BSU.VoteMenu:PlayerVote(vote, ply, optionIndex)
 end)
-

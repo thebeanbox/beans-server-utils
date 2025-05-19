@@ -38,4 +38,3 @@ end
 function BSU.GetPDataNumber(ply, key, default)
 	return tonumber(BSU.GetPData(ply, key, default)) or default
 end
-

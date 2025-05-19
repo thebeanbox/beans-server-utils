@@ -1071,4 +1071,3 @@ function BSU.CommandHandler(caller, cmd, argStr, silent)
 		silent = silent or false
 	}, objCmdHandler)
 end
-

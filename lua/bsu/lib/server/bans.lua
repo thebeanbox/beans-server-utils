@@ -165,4 +165,3 @@ function BSU.FormatBanMsg(reason, duration, time, timezoneOffset)
 		}
 	)
 end
-
