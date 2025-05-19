@@ -47,7 +47,7 @@ function BSU.PlayerHasCommandAccess(ply, name)
 	if not ply:IsValid() then return true end -- expect NULL entity means it was ran through the server console
 	if access == BSU.CMD_CONSOLE then return false end
 
-	local check = BSU.CheckPlayerPrivilege(ply:SteamID64(), BSU.PRIV_CMD, name)
+	local check = BSU.CheckPlayerPrivilege(ply:SteamID64(), BSU.PRIV_CMD, name, true)
 	if check ~= nil then return check end
 	if access == BSU.CMD_NONE then return false end
 
