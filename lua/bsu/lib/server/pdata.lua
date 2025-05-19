@@ -1,4 +1,5 @@
 -- lib/server/pdata.lua
+
 util.AddNetworkString("bsu_pdata")
 
 function BSU.RegisterPData(steamid, key, value, network)
@@ -141,4 +142,3 @@ end
 function BSU.GetAllPData(ply, network)
 	return BSU.GetAllPDataBySteamID(ply:SteamID64(), network)
 end
-

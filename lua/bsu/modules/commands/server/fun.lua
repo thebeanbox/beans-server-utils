@@ -513,7 +513,7 @@ BSU.SetupCommand("explode", function(cmd)
 			explosion:Spawn()
 
 			explosion:Fire("Explode")
-			explosion:EmitSound("BaseExplosionEffect.Sound", SNDLVL_GUNFIRE)
+			explosion:EmitSound("BaseExplosionEffect.Sound")
 
 			dmgInfo:SetDamage(math.max(v:Health(), 1))
 			dmgInfo:SetAttacker(v)

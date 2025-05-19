@@ -146,4 +146,3 @@ net.Receive("bsu_logtool", function()
 	if not toolPly:IsPlayer() then return end
 	LogTool(toolPly, toolName, toolHitClass)
 end)
-

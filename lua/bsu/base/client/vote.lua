@@ -57,4 +57,3 @@ function BSU.VoteFor(vote, optionIndex)
 
 	hook.Run("BSU_PlayerVote", vote, LocalPlayer(), optionIndex)
 end
-
