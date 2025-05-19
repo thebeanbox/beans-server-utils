@@ -172,7 +172,6 @@ function commandMenu:SelectCommand(cmd)
 	executeButton:SetText("Execute")
 	executeButton.DoClick = function()
 		local argstr = table.concat(argvalues, " ")
-		print(cmd.name .. " " .. argstr)
 		BSU.SafeRunCommand(cmd.name, argstr, false)
 	end
 

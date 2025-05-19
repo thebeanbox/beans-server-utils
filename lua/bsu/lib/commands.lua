@@ -766,7 +766,6 @@ if SERVER then
 			local data = BSU.GetPlayerDataBySteamID(targetid)
 			if not data then return false end
 			local val = string.lower(string.sub(str, 2))
-			print(targetid, data.groupid, val)
 			return data.groupid == val
 		end,
 		["%"] = function(str, _, _, targetid) -- if targetid in group (with inheritance)
