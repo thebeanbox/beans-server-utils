@@ -9,7 +9,7 @@ local groupChars = {
 local function parseArgs(input, inclusive)
 	local index, args = 1, {}
 
-	while true do
+	while 1 do
 		local str = string.sub(input, index)
 
 		-- look for group chars
@@ -103,23 +103,15 @@ local playerArgPrefixes = {
 	["%"] = function(str) -- all players in the group (with inheritance)
 		local val = string.lower(string.sub(str, 2))
 		local groups = { [val] = true }
+		while 1 do
+			local inherit = BSU.GetGroupInherit(val)
+			if not inherit then break end
+			groups[inherit] = true
+			val = inherit
+		end
 		local found = {}
 		for _, ply in player.Iterator() do
 			local groupid = BSU.GetPlayerData(ply).groupid
-			if groups[groupid] == nil then
-				while true do
-					local inherit = BSU.GetGroupInherit(groupid)
-					if not inherit then
-						groups[groupid] = false
-						break
-					end
-					if groups[inherit] then
-						groups[groupid] = true
-						break
-					end
-					groupid = inherit
-				end
-			end
 			if groups[groupid] then
 				found[#found + 1] = ply
 			end
@@ -774,11 +766,11 @@ if SERVER then
 			local val = string.lower(string.sub(str, 2))
 			local groupid = data.groupid
 			if groupid == val then return true end
-			while true do
-				local inherit = BSU.GetGroupInherit(groupid)
+			while 1 do
+				local inherit = BSU.GetGroupInherit(val)
 				if not inherit then return false end
-				if inherit == val then return true end
-				groupid = inherit
+				if groupid == inherit then return true end
+				val = inherit
 			end
 		end
 	}
