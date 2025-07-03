@@ -9,47 +9,44 @@ hook.Add("OnRequestFullUpdate", "BSU_ClientReady", function(data)
 	hook.Run("BSU_ClientReady", ply)
 end)
 
+local default_group = GetConVar("bsu_default_group")
+local bot_group = GetConVar("bsu_bot_group")
+
 -- initialize player data
-hook.Add("OnGamemodeLoaded", "BSU_InitializePlayer", function()
-	BSU._oldPlayerInitialSpawn = BSU._oldPlayerInitialSpawn or GAMEMODE.PlayerInitialSpawn
+gameevent.Listen("player_activate")
+hook.Add("player_activate", "BSU_InitializePlayer", function(data)
+	local ply = Player(data.userid)
 
-	local defaultGroup = GetConVar("bsu_default_group")
-	local botGroup = GetConVar("bsu_bot_group")
+	local steamid = ply:SteamID64()
+	local plyData = BSU.GetPlayerData(ply)
+	local isPlayer = not ply:IsBot()
 
-	function GAMEMODE.PlayerInitialSpawn(self, ply, transition)
-		BSU._oldPlayerInitialSpawn(self, ply, transition)
-
-		local id64 = ply:SteamID64()
-		local plyData = BSU.GetPlayerData(ply)
-		local isPlayer = not ply:IsBot()
-
-		if not plyData then -- this is the first time this player has joined
-			BSU.RegisterPlayer(id64, isPlayer and defaultGroup:GetString() or botGroup:GetString())
-			plyData = BSU.GetPlayerData(ply)
-			BSU.SetPData(ply, "first_visit", BSU.UTCTime(), true)
-		end
-
-		-- update some sql data
-		BSU.SetPlayerDataBySteamID(id64, {
-			name = ply:Nick(),
-			ip = isPlayer and BSU.Address(ply:IPAddress()) or nil
-		})
-
-		local lastvisit = BSU.GetPDataNumber(ply, "last_visit")
-
-		-- update some pdata
-		if not BSU.GetPDataNumber(ply, "total_time") then BSU.SetPData(ply, "total_time", 0, true) end
-		BSU.SetPData(ply, "last_visit", BSU.UTCTime(), true)
-		BSU.SetPData(ply, "connect_time", BSU.UTCTime(), true)
-
-		local groupData = BSU.GetGroupByID(plyData.groupid)
-		ply:SetTeam(plyData.team and plyData.team or groupData.team)
-		ply:SetUserGroup(groupData.usergroup or "user")
-
-		ply.bsu_ready = true
-
-		hook.Run("BSU_PlayerReady", ply, lastvisit)
+	if not plyData then -- this is the first time this player has joined
+		BSU.RegisterPlayer(steamid, isPlayer and default_group:GetString() or bot_group:GetString())
+		plyData = BSU.GetPlayerData(ply)
+		BSU.SetPData(ply, "first_visit", BSU.UTCTime(), true)
 	end
+
+	-- update some sql data
+	BSU.SetPlayerDataBySteamID(steamid, {
+		name = ply:Nick(),
+		ip = isPlayer and BSU.Address(ply:IPAddress()) or nil
+	})
+
+	local last_visit = BSU.GetPDataNumber(ply, "last_visit")
+
+	-- update some pdata
+	if not BSU.GetPDataNumber(ply, "total_time") then BSU.SetPData(ply, "total_time", 0, true) end
+	BSU.SetPData(ply, "last_visit", BSU.UTCTime(), true)
+	BSU.SetPData(ply, "connect_time", BSU.UTCTime(), true)
+
+	local groupData = BSU.GetGroupByID(plyData.groupid)
+	ply:SetTeam(plyData.team and plyData.team or groupData.team)
+	ply:SetUserGroup(groupData.usergroup or "user")
+
+	ply.bsu_ready = true
+
+	hook.Run("BSU_PlayerReady", ply, last_visit)
 end)
 
 -- update total_time and last_visit pdata values for all connected players
