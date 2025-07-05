@@ -437,6 +437,7 @@ function BSU.RemoveClientRopes(plys)
 		return
 	end
 	RemoveByClass("class C_RopeKeyframe")
+	RemoveByClass("14C_RopeKeyframe")
 end
 
 function BSU.RemoveClientEffects(plys)
