@@ -134,7 +134,7 @@ hook.Add("OnEntityCreated", "BSU_SetOwnerEntities", function(ent)
 	timer.Simple(0, function()
 		if not ent:IsValid() or IsValid(BSU.GetOwner(ent)) then return end
 
-		BSU.SetOwnerWorld(ent)
+		BSU.SetOwnerWorld(ent) -- default to world-owned
 
 		if ent:CreatedByMap() then return end
 
@@ -155,92 +155,77 @@ hook.Add("OnEntityCreated", "BSU_SetOwnerEntities", function(ent)
 	end)
 end)
 
--- override some functions to catch players spawning entities and properly set entity owner
+-- detour some functions to catch players spawning entities and properly set entity owner
 
-local plyMeta = FindMetaTable("Player")
+local PLAYER = FindMetaTable("Player")
 
-BSU._oldAddCount = BSU._oldAddCount or plyMeta.AddCount
-function plyMeta:AddCount(str, ent, ...)
+BSU.DetourBefore(PLAYER, "AddCount", "BSU_SetOwner", function(ply, _, ent)
 	if IsValid(ent) then
-		BSU.SetOwner(ent, self)
+		BSU.SetOwner(ent, ply)
 	end
-	return BSU._oldAddCount(self, str, ent, ...)
-end
+end)
 
-BSU._oldAddCleanup = BSU._oldAddCleanup or plyMeta.AddCleanup
-function plyMeta:AddCleanup(type, ent, ...)
+BSU.DetourBefore(PLAYER, "AddCleanup", "BSU_SetOwner", function(ply, _, ent)
 	if IsValid(ent) then
-		BSU.SetOwner(ent, self)
+		BSU.SetOwner(ent, ply)
 	end
-	return BSU._oldAddCleanup(self, type, ent, ...)
-end
+end)
 
-if cleanup then
-	BSU._oldCleanupAdd = BSU._oldCleanupAdd or cleanup.Add
-	function cleanup.Add(ply, type, ent, ...)
-		if IsValid(ply) and IsValid(ent) then
-			BSU.SetOwner(ent, ply)
-		end
-		return BSU._oldCleanupAdd(ply, type, ent, ...)
+BSU.DetourBefore("cleanup.Add", "BSU_SetOwner", function(ply, _, ent)
+	if IsValid(ply) and IsValid(ent) then
+		BSU.SetOwner(ent, ply)
 	end
+end)
 
-	BSU._oldCleanupReplaceEntity = BSU._oldCleanupReplaceEntity or cleanup.ReplaceEntity
-	function cleanup.ReplaceEntity(from, to, ...)
-		local ret = { BSU._oldCleanupReplaceEntity(from, to, ...) }
-		if ret[1] and IsValid(from) and IsValid(to) then
+BSU.DetourWrap("cleanup.ReplaceEntity", "BSU_ReplaceOwner", function(args, action)
+	if action then
+		local from, to = args[1], args[2]
+		if IsValid(from) and IsValid(to) then
 			BSU.ReplaceOwner(from, to)
 		end
-		return unpack(ret)
 	end
-end
+end)
 
-if undo then
-	BSU._oldUndoReplaceEntity = BSU._oldUndoReplaceEntity or undo.ReplaceEntity
-	function undo.ReplaceEntity(from, to, ...)
-		local ret = { BSU._oldUndoReplaceEntity(from, to, ...) }
-		if ret[1] and IsValid(from) and IsValid(to) then
+BSU.DetourWrap("undo.ReplaceEntity", "BSU_ReplaceOwner", function(args, action)
+	if action then
+		local from, to = args[1], args[2]
+		if IsValid(from) and IsValid(to) then
 			BSU.ReplaceOwner(from, to)
 		end
-		return unpack(ret)
 	end
+end)
 
-	local currentUndo
+local currentUndo
 
-	BSU._oldUndoCreate = BSU._oldUndoCreate or undo.Create
-	function undo.Create(...)
-		currentUndo = { ents = {} }
-		return BSU._oldUndoCreate(...)
+BSU.DetourBefore("undo.Create", "BSU_SetOwner", function()
+	currentUndo = { ents = {} }
+end)
+
+BSU.DetourBefore("undo.AddEntity", "BSU_SetOwner", function(ent)
+	if currentUndo and IsValid(ent) then
+		local ents = currentUndo.ents
+		ents[#ents + 1] = ent
 	end
+end)
 
-	BSU._oldUndoAddEntity = BSU._oldUndoAddEntity or undo.AddEntity
-	function undo.AddEntity(ent, ...)
-		if currentUndo and IsValid(ent) then
-			table.insert(currentUndo.ents, ent)
-		end
-		return BSU._oldUndoAddEntity(ent, ...)
+BSU.DetourBefore("undo.SetPlayer", "BSU_SetOwner", function(ply)
+	if currentUndo and IsValid(ply) then
+		currentUndo.owner = ply
 	end
+end)
 
-	BSU._oldUndoSetPlayer = BSU._oldUndoSetPlayer or undo.SetPlayer
-	function undo.SetPlayer(ply, ...)
-		if currentUndo and IsValid(ply) then
-			currentUndo.owner = ply
-		end
-		return BSU._oldUndoSetPlayer(ply, ...)
-	end
-
-	BSU._oldUndoFinish = BSU._oldUndoFinish or undo.Finish
-	function undo.Finish(...)
-		if currentUndo then
-			local ply = currentUndo.owner
-			if IsValid(ply) then
-				for _, ent in ipairs(currentUndo.ents) do
-					if IsValid(ent) then
-						BSU.SetOwner(ent, ply)
-					end
+BSU.DetourBefore("undo.Finish", "BSU_SetOwner", function()
+	if currentUndo then
+		local ply = currentUndo.owner
+		if IsValid(ply) then
+			local ents = currentUndo.ents
+			for i = 1, #ents do
+				local ent = ents[i]
+				if IsValid(ent) then
+					BSU.SetOwner(ent, ply)
 				end
 			end
 		end
-		currentUndo = nil
-		return BSU._oldUndoFinish(...)
 	end
-end
+	currentUndo = nil
+end)
