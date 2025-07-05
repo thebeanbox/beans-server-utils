@@ -9,7 +9,7 @@ local argTypeLookup = {
 	[3] = "players",
 }
 
-local function autoComplete(concommand, argStr)
+local function AutoComplete(concommand, argStr)
 	local name = string.match(argStr, "^ ([^%s]+)") or ""
 	local cmd = BSU.GetCommandByName(name)
 
@@ -99,20 +99,20 @@ concommand.Add("bsu", function(_, _, args, argStr)
 	if not args[1] then return end
 	local name = string.lower(args[1])
 	BSU.SafeRunCommand(name, string.sub(argStr, #name + 2))
-end, autoComplete)
+end, AutoComplete)
 
 -- concommand for using commands silently
 concommand.Add("sbsu", function(_, _, args, argStr)
 	if not args[1] then return end
 	local name = string.lower(args[1])
 	BSU.SafeRunCommand(name, string.sub(argStr, #name + 2), true)
-end, autoComplete)
+end, AutoComplete)
 
 -- concommand aliasing
 
 local callbacks, autocompletes = concommand.GetTable()
 
-local function updateAlias(cmd, new, old)
+local function UpdateAlias(cmd, new, old)
 	if old then
 		old = string.lower(old)
 		if old ~= cmd and callbacks[old] == callbacks[cmd] then
@@ -132,12 +132,12 @@ local function updateAlias(cmd, new, old)
 end
 
 cvars.AddChangeCallback("bsu_alias", function(_, old, new)
-	updateAlias("bsu", new, old)
+	UpdateAlias("bsu", new, old)
 end)
 
 cvars.AddChangeCallback("bsu_alias_silent", function(_, old, new)
-	updateAlias("sbsu", new, old)
+	UpdateAlias("sbsu", new, old)
 end)
 
-updateAlias("bsu", GetConVar("bsu_alias"):GetString())
-updateAlias("sbsu", GetConVar("bsu_alias_silent"):GetString())
+UpdateAlias("bsu", GetConVar("bsu_alias"):GetString())
+UpdateAlias("sbsu", GetConVar("bsu_alias_silent"):GetString())

@@ -56,7 +56,7 @@ function BSU.PlayerHasCommandAccess(ply, name)
 	return access == BSU.CMD_SUPERADMIN and ply:IsSuperAdmin()
 end
 
-local function run(cmd, handler)
+local function RunCommand(cmd, handler)
 	cmd:GetFunction()(handler, handler:GetCaller(cmd:GetValidCaller()), handler:GetArgs())
 end
 
@@ -76,7 +76,7 @@ function BSU.RunCommand(ply, name, argStr, silent)
 
 	local handler = BSU.CommandHandler(ply, cmd, argStr, silent)
 
-	xpcall(run, function(err) handler:PrintErrorMsg("Command errored with: " .. string.Split(err, ": ")[2]) end, cmd, handler)
+	xpcall(RunCommand, function(err) handler:PrintErrorMsg("Command errored with: " .. string.Split(err, ": ")[2]) end, cmd, handler)
 
 	hook.Run("BSU_PostRunCommand", ply, cmd, argStr, silent)
 end

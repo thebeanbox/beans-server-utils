@@ -97,7 +97,7 @@ function BSU.GetSpawnInfo(ply)
 	return data
 end
 
-local function setWeapons(ply, weps, active)
+local function SetWeapons(ply, weps, active)
 	ply:StripAmmo()
 	ply:StripWeapons()
 
@@ -123,7 +123,7 @@ function BSU.SpawnWithInfo(ply, spawninfo)
 	ply:SetArmor(spawninfo.armor)
 	timer.Simple(0, function()
 		if ply:IsValid() and ply:Alive() and ply:GetObserverMode() == OBS_MODE_NONE then
-			setWeapons(ply, spawninfo.weps, spawninfo.activewep)
+			SetWeapons(ply, spawninfo.weps, spawninfo.activewep)
 		end
 	end)
 end

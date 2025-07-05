@@ -1,23 +1,23 @@
 -- block players from doing various things if they're in an exclusive state
 
-local function block(ply)
+local function Block(ply)
 	if ply.bsu_exclusive then return false end
 end
 
 -- not allowed while in exclusive state
-hook.Add("CanPlayerSuicide", "BSU_BlockPlayer", block)
-hook.Add("PlayerNoClip", "BSU_BlockPlayer", block)
-hook.Add("PlayerSwitchWeapon", "BSU_BlockPlayer", function(ply) if block(ply) == false then return true end end)
+hook.Add("CanPlayerSuicide", "BSU_BlockPlayer", Block)
+hook.Add("PlayerNoClip", "BSU_BlockPlayer", Block)
+hook.Add("PlayerSwitchWeapon", "BSU_BlockPlayer", function(ply) if Block(ply) == false then return true end end)
 
--- block spawning entities
-hook.Add("PlayerSpawnObject", "BSU_BlockPlayer", block)
-hook.Add("PlayerSpawnSENT", "BSU_BlockPlayer", block)
-hook.Add("PlayerSpawnVehicle", "BSU_BlockPlayer", block)
-hook.Add("PlayerSpawnNPC", "BSU_BlockPlayer", block)
-hook.Add("PlayerSpawnSWEP", "BSU_BlockPlayer", block)
+-- Block spawning entities
+hook.Add("PlayerSpawnObject", "BSU_BlockPlayer", Block)
+hook.Add("PlayerSpawnSENT", "BSU_BlockPlayer", Block)
+hook.Add("PlayerSpawnVehicle", "BSU_BlockPlayer", Block)
+hook.Add("PlayerSpawnNPC", "BSU_BlockPlayer", Block)
+hook.Add("PlayerSpawnSWEP", "BSU_BlockPlayer", Block)
 
 -- block permissions
-hook.Add("BSU_PlayerHasPermission", "BSU_BlockPlayer", block)
+hook.Add("BSU_PlayerHasPermission", "BSU_BlockPlayer", Block)
 
 -- if player respawns, add back any flags they should have
 hook.Add("PlayerSpawn", "BSU_SpawnAddFlags", function(ply)
@@ -31,12 +31,12 @@ hook.Add("BSU_CanRemoveFlags", "BSU_FunCanRemoveFlags", function(ply, flags)
 	if bit.band(flags, FL_FROZEN) == FL_FROZEN and ply.bsu_frozen then return false end
 end)
 
-local function addFlags(ply, flags)
+local function AddFlags(ply, flags)
 	if hook.Run("BSU_CanAddFlags", ply, flags) == false then return end
 	ply:AddFlags(flags)
 end
 
-local function removeFlags(ply, flags)
+local function RemoveFlags(ply, flags)
 	if hook.Run("BSU_CanRemoveFlags", ply, flags) == false then return end
 	ply:RemoveFlags(flags)
 end
@@ -67,7 +67,7 @@ BSU.SetupCommand("build", function(cmd)
 		if caller.bsu_building then return end
 
 		caller.bsu_building = true
-		addFlags(caller, FL_GODMODE)
+		AddFlags(caller, FL_GODMODE)
 
 		self:BroadcastActionMsg("%caller% entered build mode")
 	end)
@@ -81,7 +81,7 @@ BSU.SetupCommand("pvp", function(cmd)
 		if not caller.bsu_building then return end
 
 		caller.bsu_building = nil
-		removeFlags(caller, FL_GODMODE)
+		RemoveFlags(caller, FL_GODMODE)
 
 		self:BroadcastActionMsg("%caller% entered pvp mode")
 	end)
@@ -142,7 +142,7 @@ BSU.SetupCommand("god", function(cmd)
 		for _, v in ipairs(targets) do
 			if not v.bsu_godded then
 				v.bsu_godded = true
-				addFlags(v, FL_GODMODE)
+				AddFlags(v, FL_GODMODE)
 				table.insert(godded, v)
 			end
 		end
@@ -164,7 +164,7 @@ BSU.SetupCommand("ungod", function(cmd)
 		for _, v in ipairs(targets) do
 			if v.bsu_godded then
 				v.bsu_godded = nil
-				removeFlags(v, FL_GODMODE)
+				RemoveFlags(v, FL_GODMODE)
 				table.insert(ungodded, v)
 			end
 		end
@@ -176,7 +176,7 @@ BSU.SetupCommand("ungod", function(cmd)
 	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
-local function spectate(ply, ent)
+local function Spectate(ply, ent)
 	ply:Spectate(OBS_MODE_NONE) ply:SetObserverMode(OBS_MODE_CHASE) -- HACK: fixes needing to respawn the player after unspectating
 	ply:SpectateEntity(ent)
 	ply:SetSolid(SOLID_NONE)
@@ -187,8 +187,8 @@ local function spectate(ply, ent)
 	ply:SetActiveWeapon()
 end
 
-local function unspectate(ply)
-	ply:UnSpectate()
+local function Unspectate(ply)
+	ply:Unspectate()
 	ply:DrawViewModel(true)
 	ply:PhysicsInit(SOLID_BBOX)
 	ply:SetMoveType(MOVETYPE_WALK)
@@ -198,7 +198,8 @@ local function unspectate(ply)
 end
 
 util.AddNetworkString("bsu_ragdoll_color")
-local function ragdollPlayer(ply, owner)
+
+local function RagdollPlayer(ply, owner)
 	if IsValid(ply.bsu_ragdoll) then return false end
 
 	local ragdoll = ents.Create("prop_ragdoll")
@@ -220,10 +221,10 @@ local function ragdollPlayer(ply, owner)
 
 	ragdoll:CallOnRemove("BSU_Ragdoll", function()
 		if not ply:IsValid() then return end
-		unspectate(ply)
+		Unspectate(ply)
 		timer.Simple(0, function()
 			if not ply:IsValid() then return end
-			ragdollPlayer(ply, owner)
+			RagdollPlayer(ply, owner)
 		end)
 	end)
 
@@ -248,15 +249,15 @@ local function ragdollPlayer(ply, owner)
 
 	ply.bsu_ragdoll = ragdoll
 
-	spectate(ply, ragdoll)
+	Spectate(ply, ragdoll)
 
 	return true
 end
 
-local function unragdollPlayer(ply)
+local function UnragdollPlayer(ply)
 	if not IsValid(ply.bsu_ragdoll) then return false end
 
-	unspectate(ply)
+	Unspectate(ply)
 
 	ply:SetVelocity(ply.bsu_ragdoll:GetVelocity())
 	ply.bsu_ragdoll:RemoveCallOnRemove("BSU_Ragdoll")
@@ -266,13 +267,13 @@ local function unragdollPlayer(ply)
 	return true
 end
 
--- if ragdolled player somehow respawns, make them spectate their ragdoll again
+-- if ragdolled player somehow respawns, make them Spectate their ragdoll again
 hook.Add("PlayerSpawn", "BSU_FixRagdollRespawn", function(ply)
 	if not ply.bsu_ragdoll then return end
 	timer.Simple(0, function()
 		if not ply:IsValid() then return end
 		if not ply.bsu_ragdoll then return end
-		spectate(ply, ply.bsu_ragdoll)
+		Spectate(ply, ply.bsu_ragdoll)
 	end)
 end)
 
@@ -291,7 +292,7 @@ BSU.SetupCommand("ragdoll", function(cmd)
 		local ragdolled = {}
 
 		for _, v in ipairs(targets) do
-			if self:CheckExclusive(v, true) and ragdollPlayer(v, caller) then -- successfully ragdolled
+			if self:CheckExclusive(v, true) and RagdollPlayer(v, caller) then -- successfully ragdolled
 				self:SetExclusive(v, "ragdolled")
 				table.insert(ragdolled, v)
 			end
@@ -312,7 +313,7 @@ BSU.SetupCommand("unragdoll", function(cmd)
 		local unragdolled = {}
 
 		for _, v in ipairs(targets) do
-			if unragdollPlayer(v) then -- successfully unragdolled
+			if UnragdollPlayer(v) then -- successfully unragdolled
 				self:ClearExclusive(v)
 				table.insert(unragdolled, v)
 			end
@@ -350,8 +351,8 @@ BSU.SetupCommand("freeze", function(cmd)
 			if self:CheckExclusive(v, true) and not v.bsu_frozen then
 				v.bsu_frozen = true
 				self:SetExclusive(v, "frozen")
-				addFlags(v, FL_FROZEN)
-				addFlags(v, FL_GODMODE)
+				AddFlags(v, FL_FROZEN)
+				AddFlags(v, FL_GODMODE)
 				v:SetMoveType(MOVETYPE_NONE)
 				v:SetVelocity(-v:GetVelocity())
 				table.insert(frozen, v)
@@ -376,8 +377,8 @@ BSU.SetupCommand("unfreeze", function(cmd)
 			if v.bsu_frozen then
 				v.bsu_frozen = nil
 				self:ClearExclusive(v)
-				removeFlags(v, FL_FROZEN)
-				removeFlags(v, FL_GODMODE)
+				RemoveFlags(v, FL_FROZEN)
+				RemoveFlags(v, FL_GODMODE)
 				v:SetMoveType(MOVETYPE_WALK)
 				table.insert(unfrozen, v)
 			end
@@ -672,7 +673,7 @@ BSU.SetupCommand("limammo", function(cmd)
 	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
-local function setCollisionTarget(ent, target)
+local function SetCollisionTarget(ent, target)
 	hook.Add("ShouldCollide", ent, function(_, ent1, ent2)
 		if ent1 ~= target and ent2 ~= target then return false end
 	end)
@@ -694,7 +695,7 @@ BSU.SetupCommand("bathe", function(cmd)
 			bath:SetModel("models/props_interiors/BathTub01a.mdl")
 			bath:SetAngles(Angle(0, 180, 0))
 			bath:SetPos(v:GetPos() + Vector(750, 0, 50))
-			setCollisionTarget(bath, v)
+			SetCollisionTarget(bath, v)
 			bath:Spawn()
 
 			local phys = bath:GetPhysicsObject()
@@ -728,7 +729,7 @@ BSU.SetupCommand("trainwreck", function(cmd)
 			train:SetModel("models/props_trainstation/train001.mdl")
 			train:SetAngles(Angle(0, 90, 0))
 			train:SetPos(v:GetPos() + Vector(750, 0, 150))
-			setCollisionTarget(train, v)
+			SetCollisionTarget(train, v)
 			train:Spawn()
 
 			local phys = train:GetPhysicsObject()

@@ -47,7 +47,6 @@ end
 
 -- checks if a string is a valid STEAM_0 or 64 bit steam id (also returns if it was 64 bit or not)
 function BSU.IsValidSteamID(steamid)
-	if not isstring(steamid) then return false end
 	if string.match(steamid, "^STEAM_0:[01]:%d+$") then
 		return true, false
 	elseif string.match(steamid, "^%d+$") then
@@ -86,22 +85,23 @@ function BSU.ValidateIdentity(identity)
 	return BSU.IsValidSteamID(identity) and BSU.ID64(identity) or BSU.IsValidIP(identity) and BSU.Address(identity) or nil
 end
 
+local timesInMins = {
+	{ "year", 525600 },
+	{ "week", 10080 },
+	{ "day", 1440 },
+	{ "hour", 60 },
+	{ "minute", 1 }
+}
+
 -- convert minutes into a nice time format
 -- set ratio to the multiplier needed for the amt to stop being counted
 -- (ratio used for cases when the input is really big to the point where smaller times like hours or minutes don't really matter)
 function BSU.StringTime(mins, ratio)
 	local strs = {}
-	local timesInMins = {
-		{ "year", 525600 },
-		{ "week", 10080 },
-		{ "day", 1440 },
-		{ "hour", 60 },
-		{ "minute", 1 }
-	}
 
 	local max
-	for i = 1, #timesInMins do
-		local time, len = unpack(timesInMins[i])
+	for _, data in ipairs(timesInMins) do
+		local len = data[2]
 		if mins >= len then
 			local timeConvert = math.floor(mins / len)
 			if timeConvert == math.huge then
@@ -111,7 +111,7 @@ function BSU.StringTime(mins, ratio)
 			if ratio and max and max / mins >= ratio then break end
 			if not max then max = mins end
 			mins = mins % len
-			table.insert(strs, string.format("%i %s%s", timeConvert, time, timeConvert > 1 and "s" or ""))
+			table.insert(strs, string.format("%i %s%s", timeConvert, data[1], timeConvert > 1 and "s" or ""))
 		end
 	end
 
@@ -385,7 +385,7 @@ local color_default = Color(150, 210, 255)
 function BSU.FixMsgCArgs(...)
 	local args, lastColor = {}, color_default
 
-	for _, v in ipairs({...}) do
+	for _, v in ipairs({ ... }) do
 		if isentity(v) then
 			if not v:IsValid() then
 				table.insert(args, "(null)")

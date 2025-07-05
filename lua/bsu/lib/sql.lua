@@ -1,7 +1,7 @@
 -- lib/sql.lua (SHARED)
 -- handles some sql stuff and holds useful functions
 
-local function sqlEscape(str, quotes)
+local function SQLEscape(str, quotes)
 	str = tostring(str)
 
 	str = string.gsub(str, quotes, quotes .. quotes)
@@ -16,7 +16,7 @@ end
 
 -- escapes an identifier to be put in a query
 function BSU.SQLEscIdent(i)
-	return sqlEscape(i, "\"")
+	return SQLEscape(i, "\"")
 end
 
 -- escapes a value to be put in a query
@@ -34,13 +34,13 @@ function BSU.SQLEscValue(v)
 	elseif t == "boolean" then
 		return v and "1" or "0"
 	elseif t == "string" then
-		return sqlEscape(v, "'")
+		return SQLEscape(v, "'")
 	end
 	return "NULL"
 end
 
 -- checks if query errored or not
-local function safeQuery(query)
+local function SafeQuery(query)
 	if query == false then
 		return error(sql.LastError())
 	else
@@ -49,11 +49,11 @@ local function safeQuery(query)
 end
 
 function BSU.SQLQuery(syntax, ...)
-	return safeQuery(sql.Query(string.format(syntax, ...)))
+	return SafeQuery(sql.Query(string.format(syntax, ...)))
 end
 
 function BSU.SQLQueryValue(syntax, ...)
-	return safeQuery(sql.QueryValue(string.format(syntax, ...)))
+	return SafeQuery(sql.QueryValue(string.format(syntax, ...)))
 end
 
 function BSU.SQLGetColumnData(tbl)

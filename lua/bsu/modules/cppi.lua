@@ -4,8 +4,8 @@
 	https://ulyssesmod.net/archive/CPPI_v1-3.pdf
 ]]
 
-local plyMeta = FindMetaTable("Player")
-local entMeta = FindMetaTable("Entity")
+local PLAYER = FindMetaTable("Player")
+local ENTITY = FindMetaTable("Entity")
 
 CPPI = {}
 CPPI_NOTIMPLEMENTED = 0
@@ -23,7 +23,7 @@ function CPPI:GetInterfaceVersion()
 	return 1.3
 end
 
-function entMeta:CPPIGetOwner()
+function ENTITY:CPPIGetOwner()
 	local owner = BSU.GetOwner(self)
 	if owner then
 		if owner:IsValid() then
@@ -35,11 +35,11 @@ function entMeta:CPPIGetOwner()
 end
 
 if SERVER then
-	function plyMeta:CPPIGetFriends()
+	function PLAYER:CPPIGetFriends()
 		return BSU.GetPlayerFriends(self)
 	end
 
-	function entMeta:CPPISetOwner(ply)
+	function ENTITY:CPPISetOwner(ply)
 		if ply == nil then
 			BSU.SetOwnerless(self)
 		elseif isentity(ply) and ply:IsValid() and ply:IsPlayer() then
@@ -50,39 +50,39 @@ if SERVER then
 		return true
 	end
 
-	function entMeta:CPPISetOwnerUID()
+	function ENTITY:CPPISetOwnerUID()
 		return CPPI_NOTIMPLEMENTED
 	end
 
-	function entMeta:CPPICanTool(ply, ...)
+	function ENTITY:CPPICanTool(ply, ...)
 		return BSU.PlayerHasPermission(ply, self, BSU.PP_TOOLGUN, ...) ~= false
 	end
 
-	function entMeta:CPPICanPhysgun(ply)
+	function ENTITY:CPPICanPhysgun(ply)
 		return BSU.PlayerHasPermission(ply, self, BSU.PP_PHYSGUN) ~= false
 	end
 
-	function entMeta:CPPICanPickup(ply)
+	function ENTITY:CPPICanPickup(ply)
 		return BSU.PlayerHasPermission(ply, self, BSU.PP_GRAVGUN) ~= false
 	end
 
-	entMeta.CPPICanPunt = entMeta.CPPICanPickup
+	ENTITY.CPPICanPunt = ENTITY.CPPICanPickup
 
-	function entMeta:CPPICanUse(ply)
+	function ENTITY:CPPICanUse(ply)
 		return BSU.PlayerHasPermission(ply, self, BSU.PP_USE) ~= false
 	end
 
-	function entMeta:CPPICanDamage(ply)
+	function ENTITY:CPPICanDamage(ply)
 		return BSU.PlayerHasPermission(ply, self, BSU.PP_DAMAGE) ~= false
 	end
 
-	entMeta.CPPIDrive = entMeta.CPPICanTool
+	ENTITY.CPPIDrive = ENTITY.CPPICanTool
 
-	entMeta.CPPICanProperty = entMeta.CPPICanTool
+	ENTITY.CPPICanProperty = ENTITY.CPPICanTool
 
-	entMeta.CPPICanEditVariable = entMeta.CPPICanTool
+	ENTITY.CPPICanEditVariable = ENTITY.CPPICanTool
 else
-	function plyMeta:CPPIGetFriends()
+	function PLAYER:CPPIGetFriends()
 		if self ~= LocalPlayer() then return CPPI_NOTIMPLEMENTED end
 		return BSU.GetPlayerFriends()
 	end

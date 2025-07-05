@@ -1,4 +1,4 @@
-local function teleportPlayer(ply, pos)
+local function TeleportPlayer(ply, pos)
 	ply.bsu_oldPos = ply:GetPos() -- used for return cmd
 	ply:SetPos(pos)
 end
@@ -12,7 +12,7 @@ BSU.SetupCommand("send", function(cmd)
 
 		local pos = target:GetPos()
 		for _, v in ipairs(targets) do
-			teleportPlayer(v, pos)
+			TeleportPlayer(v, pos)
 			table.insert(teleported, v)
 		end
 
@@ -31,7 +31,7 @@ BSU.SetupCommand("teleport", function(cmd)
 	cmd:SetFunction(function(self, caller)
 		if self:CheckExclusive(caller, true) then
 			local aimPos = caller:GetEyeTrace().HitPos
-			teleportPlayer(caller, aimPos)
+			TeleportPlayer(caller, aimPos)
 		end
 	end)
 	cmd:SetValidCaller(true)
@@ -44,7 +44,7 @@ BSU.SetupCommand("goto", function(cmd)
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self, caller, target)
 		if self:CheckExclusive(caller, true) then
-			teleportPlayer(caller, target:GetPos())
+			TeleportPlayer(caller, target:GetPos())
 			self:BroadcastActionMsg("%caller% teleported to %target%", { target = target })
 		end
 	end)
@@ -62,7 +62,7 @@ BSU.SetupCommand("bring", function(cmd)
 		local pos = caller:GetPos()
 		for _, v in ipairs(targets) do
 			if  v ~= self:GetCaller() and self:CheckExclusive(v, true) then
-				teleportPlayer(v, pos)
+				TeleportPlayer(v, pos)
 				table.insert(teleported, v)
 			end
 		end

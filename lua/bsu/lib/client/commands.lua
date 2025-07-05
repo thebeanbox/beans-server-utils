@@ -1,6 +1,6 @@
 -- lib/client/commands.lua
 
-local function run(cmd, handler)
+local function RunCommand(cmd, handler)
 	cmd:GetFunction()(handler, handler:GetCaller(), handler:GetArgs())
 end
 
@@ -21,7 +21,7 @@ function BSU.RunCommand(name, argStr, silent)
 
 	local handler = BSU.CommandHandler(ply, cmd, argStr, silent)
 
-	xpcall(run, function(err) handler:PrintErrorMsg("Command errored with: " .. string.Split(err, ": ")[2]) end, cmd, handler)
+	xpcall(RunCommand, function(err) handler:PrintErrorMsg("Command errored with: " .. string.Split(err, ": ")[2]) end, cmd, handler)
 
 	hook.Run("BSU_PostRunCommand", ply, cmd, argStr, silent)
 end
@@ -46,7 +46,7 @@ net.Receive("bsu_command_run", function()
 	BSU.SafeRunCommand(name, argStr, silent)
 end)
 
-local function func()
+local function ErrorFunc()
 	error("Cannot run this command on the client")
 end
 
@@ -57,7 +57,7 @@ function BSU.RegisterServerCommand(name, desc, category, args)
 
 	cmd = BSU.Command(name, desc, category)
 	cmd.args = args
-	cmd.func = func
+	cmd.func = ErrorFunc
 	cmd._serverside = true
 
 	BSU.RegisterCommand(cmd)

@@ -20,7 +20,7 @@ if SERVER then
 	util.AddNetworkString("bsu_clear_owner")
 end
 
-local function sendOwnerUpdates()
+local function SendOwnerUpdates()
 	if next(infoUpdates) ~= nil then
 		for id, info in pairs(infoUpdates) do
 			for k, v in pairs(info) do
@@ -70,17 +70,13 @@ local function sendOwnerUpdates()
 	end
 end
 
-local function signalOwnerUpdates()
+local function SignalOwnerUpdates()
 	-- use a 0 second timer to send updates next tick
 	-- if ownership changes multiple times in the same tick, only the last update will matter (this makes sure only the last is sent)
-	timer.Create("BSU_SendOwnerUpdates", 0, 1, sendOwnerUpdates)
+	timer.Create("BSU_SendOwnerUpdates", 0, 1, SendOwnerUpdates)
 end
 
--- periodically send owner updates
--- if ownership updates keep happening every tick, the above timer will keep resetting and never finish (this makes sure updates get sent atleast every so often)
-if SERVER then timer.Create("BSU_ForceSendOwnerUpdates", 1, 0, sendOwnerUpdates) end
-
-local function updateOwnerInfo(id, key, value)
+local function UpdateOwnerInfo(id, key, value)
 	if not isstring(key) or value == nil then return end
 
 	key = string.lower(key)
@@ -95,11 +91,11 @@ local function updateOwnerInfo(id, key, value)
 	if SERVER then
 		if not infoUpdates[id] then infoUpdates[id] = {} end
 		infoUpdates[id][key] = value
-		signalOwnerUpdates()
+		SignalOwnerUpdates()
 	end
 end
 
-local function clearEntityOwner(entindex)
+local function ClearEntityOwner(entindex)
 	local id = BSU._entowners[entindex]
 	if not id then return end -- already ownerless
 
@@ -114,13 +110,13 @@ local function clearEntityOwner(entindex)
 
 	if SERVER then
 		entsUpdates[entindex] = false
-		signalOwnerUpdates()
+		SignalOwnerUpdates()
 	end
 end
 
-local function setEntityOwner(entindex, id)
+local function SetEntityOwner(entindex, id)
 	if BSU._entowners[entindex] == id then return end -- already owned by this id
-	clearEntityOwner(entindex)
+	ClearEntityOwner(entindex)
 
 	BSU._entowners[entindex] = id
 	BSU._ownerents[id] = BSU._ownerents[id] or {}
@@ -128,19 +124,19 @@ local function setEntityOwner(entindex, id)
 
 	if SERVER then
 		entsUpdates[entindex] = id
-		signalOwnerUpdates()
+		SignalOwnerUpdates()
 	end
 end
 
 function BSU.SetOwnerInfo(owner, key, value)
 	if not IsValid(owner) or (not owner:IsPlayer() and not owner:IsWorld()) then return end
 	local id = owner:IsPlayer() and owner:SteamID64() or WORLD_ID
-	updateOwnerInfo(id, key, value)
+	UpdateOwnerInfo(id, key, value)
 end
 
 function BSU.SetOwnerless(ent)
 	if not IsValid(ent) or ent:IsPlayer() then return end
-	clearEntityOwner(ent:EntIndex())
+	ClearEntityOwner(ent:EntIndex())
 	ent:RemoveCallOnRemove("BSU_SetOwnerless")
 end
 
@@ -148,17 +144,17 @@ function BSU.SetOwner(ent, owner)
 	if not IsValid(ent) or ent:IsPlayer() then return end
 	if not IsValid(owner) or not owner:IsPlayer() then return end
 	local id = owner:SteamID64()
-	updateOwnerInfo(id, "name", owner:Nick()) -- used for HUD display
-	updateOwnerInfo(id, "userid", owner:UserID()) -- used for getting the owner entity
-	setEntityOwner(ent:EntIndex(), id)
+	UpdateOwnerInfo(id, "name", owner:Nick()) -- used for HUD display
+	UpdateOwnerInfo(id, "userid", owner:UserID()) -- used for getting the owner entity
+	SetEntityOwner(ent:EntIndex(), id)
 	ent:CallOnRemove("BSU_SetOwnerless", BSU.SetOwnerless)
 end
 
 function BSU.SetOwnerWorld(ent)
 	if not IsValid(ent) or ent:IsPlayer() then return end
-	updateOwnerInfo(WORLD_ID, "name", "World") -- used for HUD display
-	updateOwnerInfo(WORLD_ID, "userid", -1) -- used for getting the owner entity
-	setEntityOwner(ent:EntIndex(), WORLD_ID)
+	UpdateOwnerInfo(WORLD_ID, "name", "World") -- used for HUD display
+	UpdateOwnerInfo(WORLD_ID, "userid", -1) -- used for getting the owner entity
+	SetEntityOwner(ent:EntIndex(), WORLD_ID)
 end
 
 function BSU.CopyOwner(from, to)
@@ -168,7 +164,7 @@ function BSU.CopyOwner(from, to)
 	local id = BSU._entowners[from:EntIndex()]
 	if not id then return end -- is ownerless
 
-	setEntityOwner(to:EntIndex(), id)
+	SetEntityOwner(to:EntIndex(), id)
 	to:CallOnRemove("BSU_SetOwnerless", BSU.SetOwnerless)
 end
 
@@ -179,10 +175,10 @@ function BSU.ReplaceOwner(from, to)
 	local id = BSU._entowners[from:EntIndex()]
 	if not id then return end -- is ownerless
 
-	clearEntityOwner(from:EntIndex())
+	ClearEntityOwner(from:EntIndex())
 	from:RemoveCallOnRemove("BSU_SetOwnerless")
 
-	setEntityOwner(to:EntIndex(), id)
+	SetEntityOwner(to:EntIndex(), id)
 	to:CallOnRemove("BSU_SetOwnerless", BSU.SetOwnerless)
 end
 
@@ -281,28 +277,28 @@ net.Receive("bsu_init_owners", function()
 		local info = net.ReadUInt(infoBits)
 		for _ = 1, info do
 			local key, value = net.ReadString(), net.ReadType()
-			updateOwnerInfo(id, key, value)
+			UpdateOwnerInfo(id, key, value)
 		end
 
 		local ents = net.ReadUInt(entsBits)
 		for _ = 1, ents do
 			local entindex = net.ReadUInt(13)
-			setEntityOwner(entindex, id)
+			SetEntityOwner(entindex, id)
 		end
 	end
 end)
 
 net.Receive("bsu_owner_info", function()
 	local id, key, value = net.ReadUInt64(), net.ReadString(), net.ReadType()
-	updateOwnerInfo(id, key, value)
+	UpdateOwnerInfo(id, key, value)
 end)
 
 net.Receive("bsu_set_owner", function()
 	local id, entindex = net.ReadUInt64(), net.ReadUInt(13)
-	setEntityOwner(entindex, id)
+	SetEntityOwner(entindex, id)
 end)
 
 net.Receive("bsu_clear_owner", function()
 	local entindex = net.ReadUInt(13)
-	clearEntityOwner(entindex)
+	ClearEntityOwner(entindex)
 end)

@@ -1,4 +1,4 @@
-local function setRagdollColor(ent, clr)
+local function SetRagdollColor(ent, clr)
 	function ent:GetPlayerColor()
 		return clr
 	end
@@ -11,7 +11,7 @@ hook.Add("OnEntityCreated", "BSU_RagdollCommandColor", function(ent)
 	local clr = ragdollColorQueue[ind]
 	if not clr then return end
 
-	setRagdollColor(ent, clr)
+	SetRagdollColor(ent, clr)
 	ragdollColorQueue[ind] = nil
 end)
 
@@ -23,7 +23,7 @@ net.Receive("bsu_ragdoll_color", function()
 	-- might not be needed
 	local ragdoll = Entity(ind)
 	if ragdoll:IsValid() then
-		setRagdollColor(ragdoll, clr)
+		SetRagdollColor(ragdoll, clr)
 		return
 	end
 

@@ -878,13 +878,13 @@ if SERVER then
 		return next(self:FilterTargets({ target }, fail)) ~= nil
 	end
 
-	local function addColoredText(tbl, clr, str)
+	local function AddColoredText(tbl, clr, str)
 		local num = #tbl
 		tbl[num + 1] = clr
 		tbl[num + 2] = str
 	end
 
-	local function addFormattedArg(tbl, ply, target, arg)
+	local function AddFormattedArg(tbl, ply, target, arg)
 		if istable(arg) then
 			local num = 0
 			for _, v in ipairs(arg) do
@@ -893,28 +893,28 @@ if SERVER then
 				end
 			end
 			if num > 1 and num == player.GetCount() then
-				addColoredText(tbl, BSU.CLR_EVERYONE, "Everyone")
+				AddColoredText(tbl, BSU.CLR_EVERYONE, "Everyone")
 			else
 				for k, v in ipairs(arg) do -- expect table arg to be sequential
 					if istable(v) then continue end -- ignore tables in table arg (can cause weird formatting or infinite recursion)
 					if k > 1 then
-						addColoredText(tbl, BSU.CLR_TEXT, k < #arg and ", " or (#arg > 2 and ", and " or " and "))
+						AddColoredText(tbl, BSU.CLR_TEXT, k < #arg and ", " or (#arg > 2 and ", and " or " and "))
 					end
-					addFormattedArg(tbl, ply, target, v)
+					AddFormattedArg(tbl, ply, target, v)
 				end
 			end
 		elseif isentity(arg) then
 			if arg:IsPlayer() then
 				if arg == ply then
-					addColoredText(tbl, BSU.CLR_SELF, arg == target and "Yourself" or "Themself")
+					AddColoredText(tbl, BSU.CLR_SELF, arg == target and "Yourself" or "Themself")
 				else
-					addColoredText(tbl, team.GetColor(arg:Team()), arg:Nick())
+					AddColoredText(tbl, team.GetColor(arg:Team()), arg:Nick())
 				end
 			else
-				addColoredText(tbl, BSU.CLR_MISC, tostring(arg))
+				AddColoredText(tbl, BSU.CLR_MISC, tostring(arg))
 			end
 		else
-			addColoredText(tbl, BSU.CLR_PARAM, tostring(arg))
+			AddColoredText(tbl, BSU.CLR_PARAM, tostring(arg))
 		end
 	end
 
@@ -923,20 +923,20 @@ if SERVER then
 		local pos = 1
 
 		for pre, name in string.gmatch(msg, "(.-)%%([%w_]+)%%") do
-			addColoredText(tbl, BSU.CLR_TEXT, pre)
+			AddColoredText(tbl, BSU.CLR_TEXT, pre)
 
 			local arg = args[name]
 			if arg ~= nil then
-				addFormattedArg(tbl, ply, target, arg)
+				AddFormattedArg(tbl, ply, target, arg)
 			elseif name == "caller" then
 				if ply:IsValid() then
 					if ply == target then
-						addColoredText(tbl, BSU.CLR_SELF, "You")
+						AddColoredText(tbl, BSU.CLR_SELF, "You")
 					else
-						addColoredText(tbl, team.GetColor(ply:Team()), ply:Nick())
+						AddColoredText(tbl, team.GetColor(ply:Team()), ply:Nick())
 					end
 				else
-					addColoredText(tbl, BSU.CLR_CONSOLE, "(Console)")
+					AddColoredText(tbl, BSU.CLR_CONSOLE, "(Console)")
 				end
 			end
 
@@ -945,7 +945,7 @@ if SERVER then
 
 		local last = string.sub(msg, pos)
 		if #last > 0 then -- add last part of the msg
-			addColoredText(tbl, BSU.CLR_TEXT, last)
+			AddColoredText(tbl, BSU.CLR_TEXT, last)
 		end
 
 		return unpack(tbl)
@@ -965,7 +965,7 @@ if SERVER then
 		end
 	end
 
-	local function getAdminLevel(ply)
+	local function GetAdminLevel(ply)
 		if not ply:IsValid() then return 3 end -- server console is considered higher than superadmin
 		if ply:IsSuperAdmin() then return 2 end
 		if ply:IsAdmin() then return 1 end
@@ -981,10 +981,10 @@ if SERVER then
 		local caller = self.caller
 		if target == caller then return true end -- allow if target is caller
 
-		local tadmin = getAdminLevel(target)
+		local tadmin = GetAdminLevel(target)
 		if tadmin < 1 then return false end -- disallow if not admin
 
-		local cadmin = getAdminLevel(caller)
+		local cadmin = GetAdminLevel(caller)
 
 		return tadmin >= cadmin -- allow if target is equal or higher admin than caller
 	end

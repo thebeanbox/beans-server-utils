@@ -16,8 +16,8 @@ util.AddNetworkString("bsu_clear_owner")
 
 local rpc
 
-function BSU.StartRPC(str)
-	rpc = { str = str, calls = {} }
+function BSU.StartRPC(path)
+	rpc = { path = path, calls = {} }
 end
 
 function BSU.AddArgsRPC(...)
@@ -28,13 +28,13 @@ end
 
 function BSU.FinishRPC(plys)
 	assert(rpc, "RPC not started")
-	local str, calls = rpc.str, rpc.calls
+	local path, calls = rpc.path, rpc.calls
 	rpc = nil
 
 	if #calls <= 0 then return end
 
 	net.Start("bsu_rpc")
-	net.WriteString(str)
+	net.WriteString(path)
 
 	local lcalls = #calls
 	lcalls = math.min(lcalls, 2 ^ 12 - 1)
@@ -64,8 +64,8 @@ function BSU.FinishRPC(plys)
 	end
 end
 
-function BSU.ClientRPC(plys, str, ...)
-	BSU.StartRPC(str)
+function BSU.ClientRPC(plys, path, ...)
+	BSU.StartRPC(path)
 	BSU.AddArgsRPC(...)
 	BSU.FinishRPC(plys)
 end

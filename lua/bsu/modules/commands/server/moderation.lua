@@ -415,7 +415,7 @@ local privs = {
 	cmd     = BSU.PRIV_CMD
 }
 
-local function getPrivFromName(name)
+local function GetPrivFromName(name)
 	return privs[string.lower(name)]
 end
 
@@ -429,7 +429,7 @@ local names = {
 	[BSU.PRIV_CMD]    = "command"
 }
 
-local function getNameFromPriv(priv)
+local function GetNameFromPriv(priv)
 	return names[priv]
 end
 
@@ -448,7 +448,7 @@ local groupprivAutocomplete = {
 	"misc",
 }
 
-local function checkGroupisValid(groupid)
+local function CheckGroupIsValid(groupid)
 	local group = BSU.GetGroupByID(groupid)
 	if not group then error("Group does not exist") end
 	if group.usergroup == "superadmin" then error("This command cannot be used on groups with the 'superadmin' usergroup") end
@@ -460,9 +460,9 @@ BSU.SetupCommand("grantgrouppriv", function(cmd)
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_SUPERADMIN)
 	cmd:SetFunction(function(self, _, groupid, name, value)
-		checkGroupisValid(groupid)
+		CheckGroupIsValid(groupid)
 
-		local type = getPrivFromName(name)
+		local type = GetPrivFromName(name)
 		if not type then error("Unknown privilege type") end
 
 		-- command names should be lowercase
@@ -478,7 +478,7 @@ BSU.SetupCommand("grantgrouppriv", function(cmd)
 		self:BroadcastActionMsg("%caller% granted the group %groupid% access to %value% (%name%)", {
 			groupid = groupid,
 			value = value,
-			name = getNameFromPriv(type)
+			name = GetNameFromPriv(type)
 		})
 	end)
 	cmd:AddStringArg("group", { autocomplete = groupAutocomplete })
@@ -491,9 +491,9 @@ BSU.SetupCommand("revokegrouppriv", function(cmd)
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_SUPERADMIN)
 	cmd:SetFunction(function(self, _, groupid, name, value)
-		checkGroupisValid(groupid)
+		CheckGroupIsValid(groupid)
 
-		local type = getPrivFromName(name)
+		local type = GetPrivFromName(name)
 		if not type then error("Unknown privilege type") end
 
 		-- command names should be lowercase
@@ -509,7 +509,7 @@ BSU.SetupCommand("revokegrouppriv", function(cmd)
 		self:BroadcastActionMsg("%caller% revoked the group %groupid% access from %value% (%name%)", {
 			groupid = groupid,
 			value = value,
-			name = getNameFromPriv(type)
+			name = GetNameFromPriv(type)
 		})
 	end)
 	cmd:AddStringArg("group", { autocomplete = groupAutocomplete })
@@ -522,9 +522,9 @@ BSU.SetupCommand("cleargrouppriv", function(cmd)
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_SUPERADMIN)
 	cmd:SetFunction(function(self, _, groupid, name, value)
-		checkGroupisValid(groupid)
+		CheckGroupIsValid(groupid)
 
-		local type = getPrivFromName(name)
+		local type = GetPrivFromName(name)
 		if not type then error("Unknown privilege type") end
 
 		-- command names should be lowercase
@@ -541,7 +541,7 @@ BSU.SetupCommand("cleargrouppriv", function(cmd)
 			kind = priv.granted and "granted" or "revoked",
 			groupid = groupid,
 			value = value,
-			name = getNameFromPriv(type),
+			name = GetNameFromPriv(type)
 		})
 	end)
 	cmd:AddStringArg("group", { autocomplete = groupAutocomplete })
@@ -554,7 +554,7 @@ BSU.SetupCommand("setgrouplimit", function(cmd)
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_SUPERADMIN)
 	cmd:SetFunction(function(self, _, groupid, name, amount)
-		checkGroupisValid(groupid)
+		CheckGroupIsValid(groupid)
 
 		local limit = BSU.SQLSelectByValues(BSU.SQL_GROUP_LIMITS, { groupid = groupid, name = name }, 1)[1]
 		if limit == amount then error("Limit is already set to this amount on this group") end
@@ -577,7 +577,7 @@ BSU.SetupCommand("cleargrouplimit", function(cmd)
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_SUPERADMIN)
 	cmd:SetFunction(function(self, _, groupid, name)
-		checkGroupisValid(groupid)
+		CheckGroupIsValid(groupid)
 
 		local limit = BSU.SQLSelectByValues(BSU.SQL_GROUP_LIMITS, { groupid = groupid, name = name }, 1)[1]
 		if not limit then error("Limit is not set on this group") end
@@ -598,7 +598,7 @@ BSU.SetupCommand("setgroupcmdtarget", function(cmd)
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_SUPERADMIN)
 	cmd:SetFunction(function(self, _, groupid, command, filter)
-		checkGroupisValid(groupid)
+		CheckGroupIsValid(groupid)
 
 		BSU.RegisterCommandTarget(groupid, command, filter)
 
@@ -618,7 +618,7 @@ BSU.SetupCommand("cleargroupcmdtarget", function(cmd)
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_SUPERADMIN)
 	cmd:SetFunction(function(self, _, groupid, command)
-		checkGroupisValid(groupid)
+		CheckGroupIsValid(groupid)
 
 		if not BSU.GetCommandTarget(groupid, command) then error("Command target filter is not set on this group") end
 
@@ -638,7 +638,7 @@ BSU.SetupCommand("setgroupcmdlimit", function(cmd)
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_SUPERADMIN)
 	cmd:SetFunction(function(self, _, groupid, command, arg, min, max)
-		checkGroupisValid(groupid)
+		CheckGroupIsValid(groupid)
 
 		if max < min then error("The min cannot be less than max") end
 
@@ -664,7 +664,7 @@ BSU.SetupCommand("cleargroupcmdlimit", function(cmd)
 	cmd:SetCategory("moderation")
 	cmd:SetAccess(BSU.CMD_SUPERADMIN)
 	cmd:SetFunction(function(self, _, groupid, command, arg)
-		checkGroupisValid(groupid)
+		CheckGroupIsValid(groupid)
 
 		if not BSU.GetCommandLimit(groupid, command, arg) then error("Command limit is not set on this group") end
 
