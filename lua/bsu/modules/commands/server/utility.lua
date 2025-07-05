@@ -421,7 +421,7 @@ hook.Add("PlayerSay", "BSU_CommandShorthand", function(ply, text)
 		BSU.SafeRunCommand(ply, "asay", string.sub(text, 2))
 		return ""
 	end
-end)
+end, PRE_HOOK_RETURN)
 
 util.AddNetworkString("bsu_menu_open")
 util.AddNetworkString("bsu_menu_regen")

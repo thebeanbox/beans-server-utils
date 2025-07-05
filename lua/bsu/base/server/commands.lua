@@ -44,7 +44,7 @@ local function chatCommand(ply, text)
 	if silent then return "" end
 end
 
-hook.Add("PlayerSay", "BSU_ChatCommand", chatCommand)
+hook.Add("PlayerSay", "BSU_ChatCommand", chatCommand, PRE_HOOK_RETURN)
 
 local function sendCommandData(ply)
 	BSU.StartRPC("BSU.RegisterServerCommand")
