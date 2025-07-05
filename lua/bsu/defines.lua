@@ -60,8 +60,8 @@ if SERVER then
 	-- command access values
 	BSU.CMD_CONSOLE    = 0 -- access only via the server console (command is also not networked to client)
 	BSU.CMD_NONE       = 1 -- access only via the server console and privileges
-	BSU.CMD_ADMIN      = 2 -- access only for admins, superadmins and via the server console
-	BSU.CMD_SUPERADMIN = 3 -- access only for superadmins and via the server console
+	BSU.CMD_SUPERADMIN = 2 -- access only for superadmins and via the server console
+	BSU.CMD_ADMIN      = 3 -- access only for admins, superadmins and via the server console
 	BSU.CMD_ANYONE     = 4 -- access to all
 
 	BSU.BAN_MSG = [[============ You've Been Banned! ===========
