@@ -215,6 +215,17 @@ BSU.SetupCommand("clearragdolls", function(cmd)
 	end)
 end)
 
+BSU.SetupCommand("clearropes", function(cmd)
+	cmd:SetDescription("Clear all clientside ropes")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		BSU.RemoveClientRopes()
+
+		self:BroadcastActionMsg("%caller% cleared clientside ropes")
+	end)
+end)
+
 BSU.SetupCommand("cleareffects", function(cmd)
 	cmd:SetDescription("Clear all clientside effects")
 	cmd:SetCategory("utility")
