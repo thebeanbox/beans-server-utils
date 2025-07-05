@@ -406,20 +406,20 @@ function BSU.FixMsgCArgs(...)
 	return unpack(args)
 end
 
-local function removeByClass(class)
-	for _, v in ipairs(ents.FindByClass(class)) do
-		v:Remove()
+local function RemoveByClass(class)
+	for _, ent in ipairs(ents.FindByClass(class)) do
+		ent:Remove()
 	end
 end
 
 function BSU.RemoveClientProps(plys)
 	if SERVER then
 		BSU.ClientRPC(plys, "BSU.RemoveClientProps")
-		removeByClass("raggib") -- VALVE 20TH ANNIVERSARY BABY!!!!!!!!!!!!!!!!!
+		RemoveByClass("raggib") -- VALVE 20TH ANNIVERSARY BABY!!!!!!!!!!!!!!!!!
 		return
 	end
-	removeByClass("class C_PhysPropClientside")
-	removeByClass("20C_PhysPropClientside")
+	RemoveByClass("class C_PhysPropClientside")
+	RemoveByClass("20C_PhysPropClientside")
 end
 
 function BSU.RemoveClientRagdolls(plys)
@@ -427,8 +427,16 @@ function BSU.RemoveClientRagdolls(plys)
 		BSU.ClientRPC(plys, "BSU.RemoveClientRagdolls")
 		return
 	end
-	removeByClass("class C_ClientRagdoll")
-	removeByClass("15C_ClientRagdoll")
+	RemoveByClass("class C_ClientRagdoll")
+	RemoveByClass("15C_ClientRagdoll")
+end
+
+function BSU.RemoveClientRopes(plys)
+	if SERVER then
+		BSU.ClientRPC(plys, "BSU.RemoveClientRopes")
+		return
+	end
+	RemoveByClass("class C_RopeKeyframe")
 end
 
 function BSU.RemoveClientEffects(plys)
@@ -436,6 +444,6 @@ function BSU.RemoveClientEffects(plys)
 		BSU.ClientRPC(plys, "BSU.RemoveClientEffects")
 		return
 	end
-	removeByClass("class CLuaEffect")
-	removeByClass("10CLuaEffect")
+	RemoveByClass("class CLuaEffect")
+	RemoveByClass("10CLuaEffect")
 end
