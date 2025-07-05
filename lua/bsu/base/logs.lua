@@ -1,148 +1,178 @@
 if SERVER then
-	util.AddNetworkString("bsu_logspawn")
-	util.AddNetworkString("bsu_logdupe")
-	util.AddNetworkString("bsu_logtool")
+	util.AddNetworkString("bsu_logs")
 
-	local function LogDupe(dupePly, dupeName, dupeEntityAmount, dupeConstraintAmount)
-		net.Start("bsu_logdupe")
-		net.WriteEntity(dupePly)
-		net.WriteString(dupeName)
-		net.WriteUInt(dupeEntityAmount, 16)
-		net.WriteUInt(dupeConstraintAmount, 16)
-		net.Broadcast()
-	end
-
-	local function LogSpawn(spawnType, spawnPly, spawnModel)
-		net.Start("bsu_logspawn")
-		net.WriteUInt(spawnType, 8)
-		net.WriteEntity(spawnPly)
-		net.WriteString(spawnModel)
-		net.Broadcast()
-	end
-
-	local function LogTool(toolPly, toolName, toolHitClass)
-		net.Start("bsu_logtool")
-		net.WriteEntity(toolPly)
-		net.WriteString(toolName)
-		net.WriteString(toolHitClass)
-		net.Broadcast()
-	end
-
-	local function setupAdvDupe2Logs()
-		if not AdvDupe2 then return false end
-
-		BSU._oldAdvDupe2Paste = BSU._oldAdvDupe2Paste or AdvDupe2.InitPastingQueue
-		AdvDupe2.InitPastingQueue = function(Player, PositionOffset, AngleOffset, OrigPos, Constrs, Parenting, DisableParents, DisableProtection)
-			BSU._oldAdvDupe2Paste(Player, PositionOffset, AngleOffset, OrigPos, Constrs, Parenting, DisableParents, DisableProtection)
-			local Queue = AdvDupe2.JobManager.Queue[#AdvDupe2.JobManager.Queue]
-			LogDupe(Player, Player.AdvDupe2.Name and Player.AdvDupe2.Name or "[Unnamed]", #Queue.SortedEntities, #Player.AdvDupe2.Constraints)
+	local function WritePlayer(ply)
+		net.WriteColor(team.GetColor(ply:Team()))
+		net.WriteString(ply:Nick())
+		if not ply:IsBot() then
+			net.WriteBool(true)
+			net.WriteUInt64(ply:SteamID64())
+		else
+			net.WriteBool(false)
 		end
-		return true
-	end
-	if not setupAdvDupe2Logs() then
-		timer.Simple(0, setupAdvDupe2Logs)
 	end
 
-	hook.Add("PlayerSpawnedEffect", "bsu_logPlayerSpawnedEffect", function(spawnPly, spawnModel, _)
-		LogSpawn(BSU.LOG_SPAWN_EFFECT, spawnPly, spawnModel)
+	local function LogDupe(ply, name, entCount, constrCount)
+		net.Start("bsu_logs")
+			WritePlayer(ply)
+			net.WriteUInt(0, 2)
+		if name then
+			net.WriteBool(true)
+			net.WriteString(name)
+		else
+			net.WriteBool(false)
+			end
+			net.WriteUInt(entCount, 13)
+			net.WriteUInt(constrCount, 13)
+		net.Broadcast()
+	end
+
+	local function LogSpawn(ply, type, model)
+		net.Start("bsu_logs")
+			WritePlayer(ply)
+			net.WriteUInt(1, 2)
+			net.WriteUInt(type, 8)
+			net.WriteString(model)
+		net.Broadcast()
+	end
+
+	local function LogTool(ply, name, class)
+		net.Start("bsu_logs")
+			WritePlayer(ply)
+			net.WriteUInt(2, 2)
+			net.WriteString(name)
+			net.WriteString(class)
+		net.Broadcast()
+	end
+
+	hook.Add("OnGamemodeLoaded", "BSU_LogPlayerPastedDupe", function()
+		BSU.DetourWrap("AdvDupe2.InitPastingQueue", "BSU_LogPlayerPastedDupe", function(args)
+			local ply = args[1]
+			local Queue = AdvDupe2.JobManager.Queue
+			Queue = Queue[#Queue]
+			LogDupe(ply, ply.AdvDupe2.Name, #Queue.SortedEntities, #Queue.ConstraintList)
+		end)
+
+		BSU.DetourBefore("AdvDupe.Paste", "BSU_LogPlayerPastedDupe", function(ply, entityList, constraintList)
+			LogDupe(ply, nil, table.Count(entityList), table.Count(constraintList))
+		end)
+
+		BSU.DetourBefore("duplicator.Paste", "BSU_LogPlayerPastedDupe", function(ply, entityList, constraintList)
+			LogDupe(ply, nil, table.Count(entityList), table.Count(constraintList))
+		end)
 	end)
 
-	hook.Add("PlayerSpawnedNPC", "bsu_logPlayerSpawnedNPC", function(spawnPly, spawnEntity)
-		LogSpawn(BSU.LOG_SPAWN_NPC, spawnPly, spawnEntity:GetClass())
+	hook.Add("PlayerSpawnedEffect", "BSU_LogPlayerSpawnedEffect", function(ply, model)
+		LogSpawn(ply, BSU.LOG_SPAWN_EFFECT, model)
 	end)
 
-	hook.Add("PlayerSpawnedProp", "bsu_logPlayerSpawnedProp", function(spawnPly, spawnModel, _)
-		LogSpawn(BSU.LOG_SPAWN_PROP, spawnPly, spawnModel)
+	hook.Add("PlayerSpawnedNPC", "BSU_LogPlayerSpawnedNPC", function(ply, ent)
+		LogSpawn(ply, BSU.LOG_SPAWN_NPC, ent:GetClass())
 	end)
 
-	hook.Add("PlayerSpawnedRagdoll", "bsu_logPlayerSpawnedRagdoll", function(spawnPly, spawnModel, _)
-		LogSpawn(BSU.LOG_SPAWN_RAGDOLL, spawnPly, spawnModel)
+	hook.Add("PlayerSpawnedProp", "BSU_LogPlayerSpawnedProp", function(ply, model)
+		LogSpawn(ply, BSU.LOG_SPAWN_PROP, model)
 	end)
 
-	hook.Add("PlayerSpawnedSENT", "bsu_logPlayerSpawnedSENT", function(spawnPly, spawnEntity)
-		LogSpawn(BSU.LOG_SPAWN_SENT, spawnPly, spawnEntity:GetClass())
+	hook.Add("PlayerSpawnedRagdoll", "BSU_LogPlayerSpawnedRagdoll", function(ply, model)
+		LogSpawn(ply, BSU.LOG_SPAWN_RAGDOLL, model)
 	end)
 
-	hook.Add("PlayerSpawnedSWEP", "bsu_logPlayerSpawnedSWEP", function(spawnPly, spawnEntity)
-		LogSpawn(BSU.LOG_SPAWN_SWEP, spawnPly, spawnEntity:GetClass())
+	hook.Add("PlayerSpawnedSENT", "BSU_LogPlayerSpawnedSENT", function(ply, ent)
+		LogSpawn(ply, BSU.LOG_SPAWN_SENT, ent:GetClass())
 	end)
 
-	hook.Add("PlayerSpawnedVehicle", "bsu_logPlayerSpawnedVehicle", function(spawnPly, spawnEntity)
-		LogSpawn(BSU.LOG_SPAWN_VEHICLE, spawnPly, spawnEntity:GetClass())
+	hook.Add("PlayerSpawnedSWEP", "BSU_LogPlayerSpawnedSWEP", function(ply, ent)
+		LogSpawn(ply, BSU.LOG_SPAWN_SWEP, ent:GetClass())
 	end)
 
-	hook.Add("CanTool", "bsu_logPlayerTool", function(toolPly, toolTrace, toolName)
-		LogTool(toolPly, toolName, toolTrace.Entity:GetClass())
+	hook.Add("PlayerSpawnedVehicle", "BSU_LogPlayerSpawnedVehicle", function(ply, ent)
+		LogSpawn(ply, BSU.LOG_SPAWN_VEHICLE, ent:GetClass())
 	end)
+
+	hook.Add("CanTool", "BSU_LogPlayerUsedTool", function(ply, tr, name)
+		LogTool(ply, name, tr.Entity:GetClass())
+	end)
+
 	return
 end
 
-local function LogDupe(dupePly, dupeName, dupeEntityAmount, dupeConstraintAmount)
-	MsgC(
-		BSU.LOG_CLR_ADVDUPE2, "[ADVDUPE2] ",
-		team.GetColor(dupePly:Team()), dupePly:Nick(),
-		BSU.LOG_CLR_PARAM, "<" .. dupePly:SteamID() .. ">",
-		BSU.LOG_CLR_TEXT, " spawned a dupe \"",
-		BSU.LOG_CLR_PARAM, dupeName,
-		BSU.LOG_CLR_TEXT, "\" [",
-		BSU.LOG_CLR_PARAM, tostring(dupeEntityAmount),
-		BSU.LOG_CLR_TEXT, " entities, ",
-		BSU.LOG_CLR_PARAM, tostring(dupeConstraintAmount),
-		BSU.LOG_CLR_TEXT, " constraints]\n"
-	)
+local function LogDupe(plyColor, plyName, plySteamID, name, entCount, constrCount)
+	if name then
+		MsgC(
+			BSU.LOG_CLR_DUPE, "[DUPE] ",
+			plyColor, plyName,
+			BSU.LOG_CLR_PARAM, "<", plySteamID, ">",
+			BSU.LOG_CLR_TEXT, " pasted a dupe '",
+			BSU.LOG_CLR_PARAM, name,
+			BSU.LOG_CLR_TEXT, "' with",
+			BSU.LOG_CLR_PARAM, entCount,
+			BSU.LOG_CLR_TEXT, " entit", entCount == 1 and "y" or "ies", " and ",
+			BSU.LOG_CLR_PARAM, constrCount,
+			BSU.LOG_CLR_TEXT, " constraint", constrCount == 1 and "" or "s", "\n"
+		)
+	else
+		MsgC(
+			BSU.LOG_CLR_DUPE, "[DUPE] ",
+			plyColor, plyName,
+			BSU.LOG_CLR_PARAM, "<", plySteamID, ">",
+			BSU.LOG_CLR_TEXT, " pasted a dupe with ",
+			BSU.LOG_CLR_PARAM, entCount,
+			BSU.LOG_CLR_TEXT, " entit", entCount == 1 and "y" or "ies", " and ",
+			BSU.LOG_CLR_PARAM, constrCount,
+			BSU.LOG_CLR_TEXT, " constraint", constrCount == 1 and "" or "s", "\n"
+		)
+	end
 end
 
 local logSpawnName = {
 	"effect", "NPC", "prop", "ragdoll", "SENT", "SWEP", "vehicle"
 }
 
-local function LogSpawn(spawnType, spawnPly, spawnModel)
+local function LogSpawn(plyColor, plyName, plySteamID, type, model)
 	MsgC(
 		BSU.LOG_CLR_SPAWN, "[SPAWN] ",
-		team.GetColor(spawnPly:Team()), spawnPly:Nick(),
-		BSU.LOG_CLR_PARAM, "<" .. spawnPly:SteamID() .. ">",
-		BSU.LOG_CLR_TEXT, " spawned ",
-		BSU.LOG_CLR_PARAM, logSpawnName[spawnType],
-		BSU.LOG_CLR_TEXT, " \"",
-		BSU.LOG_CLR_PARAM, spawnModel,
-		BSU.LOG_CLR_TEXT, "\"\n"
+		plyColor, plyName,
+		BSU.LOG_CLR_PARAM, "<", plySteamID, ">",
+		BSU.LOG_CLR_TEXT, " spawned ", logSpawnName[type], " ",
+		BSU.LOG_CLR_PARAM, model, "\n"
 	)
 end
 
-local function LogTool(toolPly, toolName, toolHitClass)
+local function LogTool(plyColor, plyName, plySteamID, name, class)
 	MsgC(
-		BSU.LOG_CLR_SPAWN, "[TOOL] ",
-		team.GetColor(toolPly:Team()), toolPly:Nick(),
-		BSU.LOG_CLR_PARAM, "<" .. toolPly:SteamID() .. ">",
+		BSU.LOG_CLR_TOOL, "[TOOL] ",
+		plyColor, plyName,
+		BSU.LOG_CLR_PARAM, "<", plySteamID, ">",
 		BSU.LOG_CLR_TEXT, " used tool ",
-		BSU.LOG_CLR_PARAM, toolName,
-		BSU.LOG_CLR_TEXT, " on \"",
-		BSU.LOG_CLR_PARAM, toolHitClass,
-		BSU.LOG_CLR_TEXT, "\"\n"
+		BSU.LOG_CLR_PARAM, name,
+		BSU.LOG_CLR_TEXT, " on ",
+		BSU.LOG_CLR_PARAM, class, "\n"
 	)
 end
 
-net.Receive("bsu_logspawn", function()
-	local spawnType = net.ReadUInt(8)
-	local spawnPly = net.ReadEntity()
-	local spawnModel = net.ReadString()
-	if not spawnPly:IsPlayer() then return end
-	LogSpawn(spawnType, spawnPly, spawnModel)
-end)
+local function ReadPlayer()
+	local color = net.ReadColor()
+	local name = net.ReadString()
+	local steamid = net.ReadBool() and util.SteamIDFrom64(net.ReadUInt64()) or "BOT"
+	return color, name, steamid
+end
 
-net.Receive("bsu_logdupe", function()
-	local dupePly = net.ReadEntity()
-	local dupeName = net.ReadString()
-	local dupeEntityAmount = net.ReadUInt(16)
-	local dupeConstraintAmount = net.ReadUInt(16)
-	if not dupePly:IsPlayer() then return end
-	LogDupe(dupePly, dupeName, dupeEntityAmount, dupeConstraintAmount)
-end)
-
-net.Receive("bsu_logtool", function()
-	local toolPly = net.ReadEntity()
-	local toolName = net.ReadString()
-	local toolHitClass = net.ReadString()
-	if not toolPly:IsPlayer() then return end
-	LogTool(toolPly, toolName, toolHitClass)
+net.Receive("bsu_logs", function()
+	local plyColor, plyName, plySteamID = ReadPlayer()
+	local log = net.ReadUInt(2)
+	if log == 0 then
+		local name = net.ReadBool() and net.ReadString() or nil
+		local entCount = net.ReadUInt(13)
+		local constrCount = net.ReadUInt(13)
+		LogDupe(plyColor, plyName, plySteamID, name, entCount, constrCount)
+	elseif log == 1 then
+		local type = net.ReadUInt(8)
+		local model = net.ReadString()
+		LogSpawn(plyColor, plyName, plySteamID, type, model)
+	elseif log == 2 then
+		local name = net.ReadString()
+		local class = net.ReadString()
+		LogTool(plyColor, plyName, plySteamID, name, class)
+	end
 end)
