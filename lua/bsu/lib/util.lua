@@ -119,22 +119,264 @@ function BSU.StringTime(mins, ratio)
 end
 
 -- given a string, finds a var from the global namespace (thanks ULib)
-function BSU.FindVar(location, root)
+function BSU.FindVar(path, root)
 	root = root or _G
 
-	local tableCrumbs = string.Explode("[%.%[]", location, true)
-	for i = 1, #tableCrumbs do
+	local tableCrumbs = string.Explode("[%.%[]", path, true)
+	local len = #tableCrumbs
+	for i = 1, len do
 		local new, replaced = string.gsub(tableCrumbs[i], "]$", "")
-		if replaced > 0 then tableCrumbs[i] = (tonumber(new) or new) end
+		if replaced > 0 then tableCrumbs[i] = tonumber(new) or new end
 	end
 
 	-- navigating
-	for i = 1, #tableCrumbs - 1 do
+	for i = 1, len - 1 do
 		root = root[tableCrumbs[i]]
 		if not root or type(root) ~= "table" then return end
 	end
 
-	return root[tableCrumbs[#tableCrumbs]]
+	return root[tableCrumbs[len]], root, tableCrumbs[len]
+end
+
+-- holds detour data
+BSU._detours = BSU._detours or {}
+BSU._detour_nodes = BSU._detour_nodes or {}
+
+local function GetDetourData(root, path)
+	local func, tbl, key = BSU.FindVar(path, root)
+	if not isfunction(func) then return end -- function not found
+	local data = BSU._detours[func]
+	if not data then -- setup function for detour
+		data = { exec = func, nodes = { { exec = func, nodes = {} } }, orig = func, tbl = tbl, key = key }
+		func = function(...) return data.exec(...) end
+		tbl[key] = func
+		BSU._detours[func] = data
+	end
+	return data, func
+end
+
+local function BuildDetourChain(nodes)
+	local chain
+	for i = 1, #nodes do
+		local node = nodes[i]
+		local exec = node.exec
+		local inner_nodes = node.nodes
+		if #inner_nodes > 0 then
+			local inner_chain = BuildDetourChain(inner_nodes)
+			chain = function(...) return exec({ ... }, inner_chain(...)) end
+		elseif chain then
+			local prev = chain
+			chain = function(...) return exec(prev(...)) end
+		else
+			chain = exec
+		end
+	end
+	return chain
+end
+
+local function RemoveDetourNode(nodes, target)
+	for i = 1, #nodes do
+		local node = nodes[i]
+		local inner_nodes = node.nodes
+		local num = #inner_nodes
+		if node == target then
+			table.remove(nodes, i)
+			-- "unwrap" the inner nodes
+			if num > 0 then
+				-- shift "after" nodes
+				for j = i, #nodes do
+					nodes[j + num] = nodes[j]
+				end
+				-- add inner nodes where the target was
+				for j = 1, num do
+					nodes[j + i - 1] = inner_nodes[j]
+				end
+			end
+			return
+		elseif num > 0 then
+			RemoveDetourNode(inner_nodes, target)
+		end
+	end
+end
+
+local function FindDetourNode(data, name)
+	return BSU._detour_nodes[data] and BSU._detour_nodes[data][name]
+end
+
+local function AddDetourLookup(data, name, node)
+	if not BSU._detour_nodes[data] then BSU._detour_nodes[data] = {} end
+	BSU._detour_nodes[data][name] = node
+end
+
+local function RemoveDetourLookup(data, name)
+	if BSU._detour_nodes[data] then
+		BSU._detour_nodes[data][name] = nil
+		if next(BSU._detour_nodes[data]) == nil then
+			BSU._detour_nodes[data] = nil
+		end
+	end
+end
+
+local function AddDetourNode(root, path, name, func, method)
+	local data, dfunc = GetDetourData(root, path)
+	if not data then return end
+
+	local nodes = data.nodes
+
+	-- remove detour if it already exists
+	local old_node = FindDetourNode(data, name)
+	if old_node then RemoveDetourNode(nodes, old_node) end
+
+	local node
+
+	if method == "before" then
+		for i = #nodes, 1, -1 do
+			nodes[i + 1] = nodes[i]
+		end
+		node = { exec = func, nodes = {} }
+		nodes[1] = node
+	elseif method == "after" then
+		node = { exec = func, nodes = {} }
+		nodes[#nodes + 1] = node
+	elseif method == "wrap" then
+		node = { exec = func, nodes = nodes }
+		nodes = { node }
+		data.nodes = nodes
+	else
+		error("Unknown detour method: " .. method)
+	end
+
+	data.exec = BuildDetourChain(nodes)
+
+	AddDetourLookup(data, name, node)
+
+	return dfunc
+end
+
+-- insert a detour before the function and any added detours
+-- returns the detoured function, which can be used to remove the detour
+-- NOTE: arguments will be what the function/previous detour returned
+-- NOTE: return value can be nil to not alter the previous function's return values or a table of values to return instead
+function BSU.DetourBefore(...)
+	local root, path, name, func
+	if istable(...) then
+		root, path, name, func = ...
+	else
+		root, path, name, func = _G, ...
+	end
+
+	local call = func
+	func = function(...)
+		local ret = call(...)
+		if ret then return unpack(ret) end
+		return ...
+	end
+
+	return AddDetourNode(root, path, name, func, "before")
+end
+
+-- insert a detour after the function and any added detours
+-- returns the detoured function, which can be used to remove the detour
+-- NOTE: arguments will be what the function/previous detour returned
+-- NOTE: return value can be nil to not alter the previous function's return values or a table of values to return instead
+function BSU.DetourAfter(...)
+	local root, path, name, func
+	if istable(...) then
+		root, path, name, func = ...
+	else
+		root, path, name, func = _G, ...
+	end
+
+	local call = func
+	func = function(...)
+		local ret = call(...)
+		if ret then return unpack(ret) end
+		return ...
+	end
+
+	return AddDetourNode(root, path, name, func, "after")
+end
+
+-- insert a detour that wraps around the function and any added detours
+-- returns the detoured function, which can be used to remove the detour
+-- NOTE: first argument will be a table of the arguments passed to the function, remaining arguments will be what the function returned
+-- NOTE: return value can be nil to not alter the previous function's return values or a table of values to return instead
+function BSU.DetourWrap(...)
+	local root, path, name, func
+	if istable(...) then
+		root, path, name, func = ...
+	else
+		root, path, name, func = _G, ...
+	end
+
+	local call = func
+	func = function(...)
+		local ret = call(...)
+		if ret then return unpack(ret) end
+		return ...
+	end
+
+	return AddDetourNode(root, path, name, func, "wrap")
+end
+
+-- remove a detour using the detoured function (returned by the BSU.Detour<Method> functions)
+function BSU._RemoveDetour(dfunc, name)
+	local data = BSU._detours[dfunc]
+	if not data then return end
+
+	local node = FindDetourNode(data, name)
+	if not node then return end
+
+	local nodes = data.nodes
+
+	RemoveDetourNode(nodes, node)
+	RemoveDetourLookup(data, name)
+
+	data.exec = BuildDetourChain(nodes)
+end
+
+-- remove a detour on a given root and path by name
+-- NOTE: if another addon detoured the function afterwards, this will not work
+function BSU.RemoveDetour(...)
+	local root, path, name
+	if istable(...) then
+		root, path, name = ...
+	else
+		root, path, name = _G, ...
+	end
+
+	BSU._RemoveDetour(BSU.FindVar(path, root), name)
+end
+
+-- remove all detours using the detoured function, and optionally restore the original function
+-- NOTE: if another addon detoured the function afterwards, restoring the original function will also remove its detour
+function BSU._ClearDetours(dfunc, restore)
+	local data = BSU._detours[dfunc]
+	if not data then return end
+
+	BSU._detour_nodes[data] = nil
+
+	local orig = data.orig
+	if restore then -- remove all detours and restore the original function
+		data.tbl[data.key] = orig
+		BSU._detours[dfunc] = nil
+	else -- remove all detours but keep the modified function
+		data.exec = orig
+		data.nodes = { { exec = orig, nodes = {} } }
+	end
+end
+
+-- remove all detours on a given root and path, and optionally restore the original function
+-- NOTE: if another addon detoured the function at the path afterwards, this will not work
+function BSU.ClearDetours(...)
+	local root, path, restore
+	if istable(...) then
+		root, path, restore = ...
+	else
+		root, path, restore = _G, ...
+	end
+
+	BSU._ClearDetours(BSU.FindVar(path, root), restore)
 end
 
 local color_default = Color(150, 210, 255)
