@@ -1,24 +1,24 @@
 -- base/server/pp.lua
 
-local function cleanupProps(id)
+local function CleanupProps(id)
 	for _, ent in ipairs(BSU.GetOwnerEntities(id)) do
 		ent:Remove()
 	end
 end
 
 hook.Add("BSU_SteamIDBanned", "BSU_CleanupBannedPlayerProps", function(id)
-	cleanupProps(id)
+	CleanupProps(id)
 end)
 
 hook.Add("BSU_IPBanned", "BSU_CleanupBannedPlayerProps", function(ip)
 	local data = BSU.GetPlayerDataByIPAddress(ip) -- find any players associated with this ip
 	for i = 1, #data do
-		cleanupProps(data[i].steamid)
+		CleanupProps(data[i].steamid)
 	end
 end)
 
 hook.Add("BSU_PlayerKicked", "BSU_CleanupKickedPlayerProps", function(ply)
-	cleanupProps(ply:SteamID64())
+	CleanupProps(ply:SteamID64())
 end)
 
 local cleanupTime = GetConVar("bsu_cleanup_time")
@@ -38,7 +38,7 @@ hook.Add("PlayerDisconnected", "BSU_HandleDisconnectedPlayerProps", function(ply
 
 	-- cleanup after some time
 	timer.Create("BSU_CleanupDisconnected_" .. id, cleanupTime:GetFloat(), 1, function()
-		cleanupProps(id)
+		CleanupProps(id)
 	end)
 
 	-- clear permissions granted to disconnected players
@@ -63,20 +63,20 @@ hook.Add("player_changename", "BSU_UpdateOwnerName", function(data)
 end)
 
 -- physgun checking
-local function checkPhysgunPermission(ply, ent)
+local function CheckPhysgunPermission(ply, ent)
 	return BSU.PlayerHasPermission(ply, ent, BSU.PP_PHYSGUN)
 end
 
-hook.Add("PhysgunPickup", "BSU_PhysgunPermission", checkPhysgunPermission)
-hook.Add("CanPlayerUnfreeze", "BSU_PhysgunPermission", checkPhysgunPermission)
+hook.Add("PhysgunPickup", "BSU_PhysgunPermission", CheckPhysgunPermission)
+hook.Add("CanPlayerUnfreeze", "BSU_PhysgunPermission", CheckPhysgunPermission)
 
 -- gravgun checking
-local function checkGravgunPermission(ply, ent)
+local function CheckGravgunPermission(ply, ent)
 	return BSU.PlayerHasPermission(ply, ent, BSU.PP_GRAVGUN)
 end
 
-hook.Add("GravGunPunt", "BSU_GravgunPermission", checkGravgunPermission)
-hook.Add("GravGunPickupAllowed", "BSU_GravgunPermission", checkGravgunPermission)
+hook.Add("GravGunPunt", "BSU_GravgunPermission", CheckGravgunPermission)
+hook.Add("GravGunPickupAllowed", "BSU_GravgunPermission", CheckGravgunPermission)
 
 -- toolgun checking
 hook.Add("CanTool", "BSU_ToolgunPermission", function(ply, trace, toolmode) if IsValid(trace.Entity) then return BSU.PlayerHasPermission(ply, trace.Entity, BSU.PP_TOOLGUN, toolmode) end end)
@@ -84,16 +84,16 @@ hook.Add("CanProperty", "BSU_ToolgunPermission", function(ply, property, ent) re
 hook.Add("CanEditVariable", "BSU_ToolgunPermission", function(ent, ply, key, val, edit) return BSU.PlayerHasPermission(ply, ent, BSU.PP_TOOLGUN, key, val, edit) end)
 
 -- use checking
-local function checkUsePermission(ply, ent)
+local function CheckUsePermission(ply, ent)
 	return BSU.PlayerHasPermission(ply, ent, BSU.PP_USE)
 end
 
-hook.Add("PlayerUse", "BSU_UsePermission", checkUsePermission)
-hook.Add("OnPlayerPhysicsPickup", "BSU_UsePermission", checkUsePermission)
-hook.Add("PlayerCanPickupItem", "BSU_UsePermission", checkUsePermission)
+hook.Add("PlayerUse", "BSU_UsePermission", CheckUsePermission)
+hook.Add("OnPlayerPhysicsPickup", "BSU_UsePermission", CheckUsePermission)
+hook.Add("PlayerCanPickupItem", "BSU_UsePermission", CheckUsePermission)
 hook.Add("PlayerCanPickupWeapon", "BSU_UsePermission", function(ply, ent)
 	if not BSU.GetOwner(ent) then return end -- allow picking up ownerless weapons
-	return checkUsePermission(ply, ent)
+	return CheckUsePermission(ply, ent)
 end)
 
 -- damage checking

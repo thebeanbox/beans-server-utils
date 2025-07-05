@@ -2,7 +2,7 @@
 -- handles player bans
 
 -- check if player is banned and prevent them from joining when attempting to connect
-local function passwordBanCheck(steamid, ip)
+local function PasswordBanCheck(steamid, ip)
 	local success, callback, reason = xpcall(
 		function()
 			local ban = BSU.GetBanStatus(steamid) -- check for any bans on the steam id
@@ -29,12 +29,12 @@ local function passwordBanCheck(steamid, ip)
 	end
 end
 
-hook.Add("CheckPassword", "BSU_PasswordBanCheck", passwordBanCheck)
+hook.Add("CheckPassword", "BSU_PasswordBanCheck", PasswordBanCheck)
 
 local allowFamilySharing = GetConVar("bsu_allow_family_sharing")
 
 -- permaban players using family share to ban evade
-local function familyShareBanCheck(_, steamid, ownerid64)
+local function FamilyShareBanCheck(_, steamid, ownerid64)
 	local steamid64 = BSU.ID64(steamid)
 
 	if steamid64 ~= ownerid64 then -- this player doesn't own the Garry's Mod license they're using
@@ -47,4 +47,4 @@ local function familyShareBanCheck(_, steamid, ownerid64)
 	end
 end
 
-hook.Add("NetworkIDValidated", "BSU_FamilyShareBanCheck", familyShareBanCheck)
+hook.Add("NetworkIDValidated", "BSU_FamilyShareBanCheck", FamilyShareBanCheck)

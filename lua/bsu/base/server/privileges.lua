@@ -1,66 +1,66 @@
 -- base/server/privileges.lua
 
-local function isAllowed(ply, type, priv)
+local function IsAllowed(ply, type, priv)
 	if ply:IsSuperAdmin() then return true end
 	local check = BSU.CheckPlayerPrivilege(ply:SteamID64(), type, priv, true) -- also check wildcards
 	return check == nil or check == true
 end
 
-local function notifyRestricted(ply, name)
+local function NotifyRestricted(ply, name)
 	BSU.ClientRPC(ply, "chat.AddText", BSU.CLR_ERROR, "'" .. name .. "' is restricted")
 end
 
-local function checkModelPrivilege(ply, model)
-	local allowed = isAllowed(ply, BSU.PRIV_MODEL, model)
+local function CheckModelPrivilege(ply, model)
+	local allowed = IsAllowed(ply, BSU.PRIV_MODEL, model)
 	if not allowed then
-		notifyRestricted(ply, string.match(model, "^models/.+%.mdl"))
+		NotifyRestricted(ply, string.match(model, "^models/.+%.mdl"))
 		return false
 	end
 end
 
-local function checkNPCPrivilege(ply, npc)
-	local allowed = isAllowed(ply, BSU.PRIV_NPC, npc)
+local function CheckNPCPrivilege(ply, npc)
+	local allowed = IsAllowed(ply, BSU.PRIV_NPC, npc)
 	if not allowed then
-		notifyRestricted(ply, npc)
+		NotifyRestricted(ply, npc)
 		return false
 	end
 end
 
-local function checkSENTPrivilege(ply, ent)
-	local allowed = isAllowed(ply, BSU.PRIV_SENT, ent)
+local function CheckSENTPrivilege(ply, ent)
+	local allowed = IsAllowed(ply, BSU.PRIV_SENT, ent)
 	if not allowed then
-		notifyRestricted(ply, ent)
+		NotifyRestricted(ply, ent)
 		return false
 	end
 end
 
-local function checkSWEPPrivilege(ply, wep)
-	local allowed = isAllowed(ply, BSU.PRIV_SWEP, wep)
+local function CheckSWEPPrivilege(ply, wep)
+	local allowed = IsAllowed(ply, BSU.PRIV_SWEP, wep)
 	if not allowed then
-		notifyRestricted(ply, wep)
+		NotifyRestricted(ply, wep)
 		return false
 	end
 end
 
 -- note: if the server cvar 'toolmode_allow_<tool>' is set to 0 then this doesn't get called
-local function checkToolPrivilege(ply, _, tool)
-	local allowed = isAllowed(ply, BSU.PRIV_TOOL, tool)
+local function CheckToolPrivilege(ply, _, tool)
+	local allowed = IsAllowed(ply, BSU.PRIV_TOOL, tool)
 	if not allowed then
-		notifyRestricted(ply, tool)
+		NotifyRestricted(ply, tool)
 		return false
 	end
 end
 
-hook.Add("PlayerSpawnObject", "BSU_CheckModelPrivilege", checkModelPrivilege)
+hook.Add("PlayerSpawnObject", "BSU_CheckModelPrivilege", CheckModelPrivilege)
 
-hook.Add("PlayerSpawnVehicle", "BSU_CheckModelPrivilege", checkModelPrivilege)
+hook.Add("PlayerSpawnVehicle", "BSU_CheckModelPrivilege", CheckModelPrivilege)
 
-hook.Add("PlayerSpawnNPC", "BSU_CheckNPCPrivilege", checkNPCPrivilege)
+hook.Add("PlayerSpawnNPC", "BSU_CheckNPCPrivilege", CheckNPCPrivilege)
 
-hook.Add("PlayerSpawnSENT", "BSU_CheckSENTPrivilege", checkSENTPrivilege)
+hook.Add("PlayerSpawnSENT", "BSU_CheckSENTPrivilege", CheckSENTPrivilege)
 
-hook.Add("PlayerSpawnSWEP", "BSU_CheckSWEPPrivilege", checkSWEPPrivilege)
+hook.Add("PlayerSpawnSWEP", "BSU_CheckSWEPPrivilege", CheckSWEPPrivilege)
 
-hook.Add("PlayerGiveSWEP", "BSU_CheckSWEPPrivilege", checkSWEPPrivilege)
+hook.Add("PlayerGiveSWEP", "BSU_CheckSWEPPrivilege", CheckSWEPPrivilege)
 
-hook.Add("CanTool", "BSU_CheckToolPrivilege", checkToolPrivilege)
+hook.Add("CanTool", "BSU_CheckToolPrivilege", CheckToolPrivilege)

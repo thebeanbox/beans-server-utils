@@ -50,7 +50,7 @@ hook.Add("player_activate", "BSU_InitializePlayer", function(data)
 end)
 
 -- update total_time and last_visit pdata values for all connected players
-local function updatePlayerTime()
+local function UpdatePlayerTime()
 	for _, v in ipairs(player.GetAll()) do
 		if not v.bsu_ready then continue end
 
@@ -61,7 +61,7 @@ local function updatePlayerTime()
 	end
 end
 
-timer.Create("BSU_UpdatePlayerTime", 1, 0, updatePlayerTime) -- update player time every second
+timer.Create("BSU_UpdatePlayerTime", 1, 0, UpdatePlayerTime) -- update player time every second
 
 -- updates the name value of sql player data whenever a player's steam name is changed
 gameevent.Listen("player_changename")
@@ -72,7 +72,7 @@ end)
 util.AddNetworkString("bsu_client_info")
 
 -- update pdata with client data
-local function updateClientInfo(_, ply)
+local function UpdateClientInfo(_, ply)
 	local os = net.ReadUInt(2)
 	local country = net.ReadString()
 	local timezone = net.ReadFloat()
@@ -82,7 +82,7 @@ local function updateClientInfo(_, ply)
 	BSU.SetPData(ply, "timezone", math.Clamp(timezone, -12, 14), true) -- incase if spoofed, clamp the value
 end
 
-net.Receive("bsu_client_info", updateClientInfo)
+net.Receive("bsu_client_info", UpdateClientInfo)
 
 -- send request for some client data
 hook.Add("BSU_ClientReady", "BSU_RequestClientInfo", function(ply)

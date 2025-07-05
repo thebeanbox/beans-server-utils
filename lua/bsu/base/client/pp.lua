@@ -26,7 +26,7 @@ concommand.Add("bsu_reset_permissions", function()
 	hook.Run("BSU_ResetPermissions")
 end)
 
-local function addPropProtectionMenu()
+local function AddPropProtectionMenu()
 	spawnmenu.AddToolMenuOption("Utilities", "BSU", "Prop Protection", "Prop Protection", "", "", function(pnl)
 		pnl:ClearControls()
 
@@ -61,7 +61,7 @@ local function addPropProtectionMenu()
 		local plyElems = {}
 		local globalElem
 
-		local function playerBoxOnChange(self, checked)
+		local function PlayerBoxOnChange(self, checked)
 			if self.ply:IsValid() then
 				if checked then
 					BSU.GrantPermission(self.ply, self.perm)
@@ -71,13 +71,13 @@ local function addPropProtectionMenu()
 			end
 		end
 
-		local function playerBoxPaint(self, w, h)
+		local function PlayerBoxPaint(self, w, h)
 			draw.RoundedBox(4, 0, 0, w, h, color_outline)
 			local globalBox = globalElem.boxes[self.idx]
 			draw.RoundedBox(4, 1, 1, w - 2, h - 2, self:GetChecked() and (globalBox:GetChecked() and color_revoked or color_granted) or color_white)
 		end
 
-		local function updatePlayerElems()
+		local function UpdatePlayerElems()
 			local oldElems = plyElems
 			plyElems = {}
 			for _, v in ipairs(player.GetHumans()) do
@@ -108,8 +108,8 @@ local function addPropProtectionMenu()
 						box.ply = v
 						box.perm = bit.lshift(1, i - 1)
 						box:SetValue(BSU.CheckPermission(v:SteamID64(), box.perm))
-						box.OnChange = playerBoxOnChange
-						box.Paint = playerBoxPaint
+						box.OnChange = PlayerBoxOnChange
+						box.Paint = PlayerBoxPaint
 					end
 				end
 			end
@@ -120,7 +120,7 @@ local function addPropProtectionMenu()
 			end
 		end
 
-		local function globalBoxOnChange(self, checked)
+		local function GlobalBoxOnChange(self, checked)
 			if checked then
 				BSU.GrantGlobalPermission(self.perm)
 			else
@@ -128,12 +128,12 @@ local function addPropProtectionMenu()
 			end
 		end
 
-		local function globalBoxPaint(self, w, h)
+		local function GlobalBoxPaint(self, w, h)
 			draw.RoundedBox(4, 0, 0, w, h, color_outline)
 			draw.RoundedBox(4, 1, 1, w - 2, h - 2, self:GetChecked() and color_global or color_white)
 		end
 
-		local function updateGlobalElem()
+		local function UpdateGlobalElem()
 			if globalElem and globalElem:IsValid() then return end
 
 			local elem = list:Add("DIconLayout")
@@ -153,27 +153,27 @@ local function addPropProtectionMenu()
 				elem.boxes[i] = box
 				box.perm = bit.lshift(1, i - 1)
 				box:SetValue(BSU.CheckGlobalPermission(box.perm))
-				box.OnChange = globalBoxOnChange
-				box.Paint = globalBoxPaint
+				box.OnChange = GlobalBoxOnChange
+				box.Paint = GlobalBoxPaint
 			end
 		end
 
-		timer.Create("BSU_UpdatePropProtectionMenu", 1, 0, updatePlayerElems)
+		timer.Create("BSU_UpdatePropProtectionMenu", 1, 0, UpdatePlayerElems)
 
 		hook.Add("BSU_ResetPermissions", "BSU_UpdatePropProtectionMenu", function()
 			if globalElem then globalElem:Remove() end
 			for _, elem in pairs(plyElems) do elem:Remove() end
-			updateGlobalElem()
-			updatePlayerElems()
+			UpdateGlobalElem()
+			UpdatePlayerElems()
 		end)
 
 		-- initialize elems
-		updateGlobalElem()
-		updatePlayerElems()
+		UpdateGlobalElem()
+		UpdatePlayerElems()
 
 		pnl:CheckBox("Persist permissions across sessions", "bsu_permission_persist")
 		pnl:CheckBox("Allow props to take fire damage", "bsu_allow_fire_damage")
 	end)
 end
 
-hook.Add("PopulateToolMenu", "BSU_AddPropProtectionMenu", addPropProtectionMenu)
+hook.Add("PopulateToolMenu", "BSU_AddPropProtectionMenu", AddPropProtectionMenu)

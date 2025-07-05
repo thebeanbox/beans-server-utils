@@ -15,7 +15,7 @@ concommand.Add("sbsu", function(ply, _, args, argStr)
 end)
 
 -- allow command usage in chat
-local function chatCommand(ply, text)
+local function ChatCommand(ply, text)
 	local silent
 
 	local prefix, prefixSilent = BSU.CMD_PREFIX, BSU.CMD_PREFIX_SILENT
@@ -44,9 +44,9 @@ local function chatCommand(ply, text)
 	if silent then return "" end
 end
 
-hook.Add("PlayerSay", "BSU_ChatCommand", chatCommand, PRE_HOOK_RETURN)
+hook.Add("PlayerSay", "BSU_ChatCommand", ChatCommand, PRE_HOOK_RETURN)
 
-local function sendCommandData(ply)
+local function SendCommandData(ply)
 	BSU.StartRPC("BSU.RegisterServerCommand")
 	for _, v in ipairs(BSU.GetCommandList()) do
 		if v:GetAccess() ~= BSU.CMD_CONSOLE then
@@ -56,4 +56,4 @@ local function sendCommandData(ply)
 	BSU.FinishRPC(ply)
 end
 
-hook.Add("BSU_ClientReady", "BSU_SendCommandData", sendCommandData)
+hook.Add("BSU_ClientReady", "BSU_SendCommandData", SendCommandData)

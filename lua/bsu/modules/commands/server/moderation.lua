@@ -412,7 +412,7 @@ local privs = {
 	swep    = BSU.PRIV_SWEP,
 	tool    = BSU.PRIV_TOOL,
 	command = BSU.PRIV_CMD,
-	cmd     = BSU.PRIV_CMD
+	cmd     = BSU.PRIV_CMD,
 }
 
 local function GetPrivFromName(name)
@@ -426,7 +426,7 @@ local names = {
 	[BSU.PRIV_SENT]   = "sent",
 	[BSU.PRIV_SWEP]   = "swep",
 	[BSU.PRIV_TOOL]   = "tool",
-	[BSU.PRIV_CMD]    = "command"
+	[BSU.PRIV_CMD]    = "command",
 }
 
 local function GetNameFromPriv(priv)

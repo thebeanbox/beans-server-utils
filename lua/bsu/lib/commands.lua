@@ -6,7 +6,7 @@ local groupChars = {
 }
 
 -- parse a string to command arguments (set inclusive to true to leave the group chars in the result)
-local function parseArgs(input, inclusive)
+local function ParseArgs(input, inclusive)
 	local index, args = 1, {}
 
 	while 1 do
@@ -120,13 +120,13 @@ local playerArgPrefixes = {
 	end
 }
 
-local function parsePlayerArgPrefix(caller, str)
+local function ParsePlayerArgPrefix(caller, str)
 	local pre = string.sub(str, 1, 1)
 
 	-- parse argument but take opposite of result
 	if pre == "!" then
 		local val = string.sub(str, 2)
-		local result = parsePlayerArgPrefix(caller, val)
+		local result = ParsePlayerArgPrefix(caller, val)
 
 		-- create lookup table from result
 		local tbl = {}
@@ -149,8 +149,8 @@ local function parsePlayerArgPrefix(caller, str)
 end
 
 -- returns table of players found using a prefixed command argument
-local function parsePlayerArg(caller, str)
-	str = parseArgs(str)[1]
+local function ParsePlayerArg(caller, str)
+	str = ParseArgs(str)[1]
 	if not str then return {} end
 	str = string.Trim(str)
 	if str == "" then return {} end
@@ -161,7 +161,7 @@ local function parsePlayerArg(caller, str)
 		if #strs > 1 then
 			local tbl = {} -- lookup table of players so we don't get duplicates
 			for _, s in ipairs(strs) do
-				local result = parsePlayerArg(caller, s)
+				local result = ParsePlayerArg(caller, s)
 				for _, ply in ipairs(result) do
 					tbl[ply] = true
 				end
@@ -197,7 +197,7 @@ local function parsePlayerArg(caller, str)
 	end
 
 	-- check if the argument has a special prefix
-	return parsePlayerArgPrefix(caller, str)
+	return ParsePlayerArgPrefix(caller, str)
 end
 
 -- holds command objects
@@ -279,7 +279,7 @@ function objCommand.AddStringArg(self, name, data)
 		optional = data.optional or false,
 		default = data.default,
 		multi = data.multi or false,
-		autocomplete = data.autocomplete
+		autocomplete = data.autocomplete,
 	})
 end
 
@@ -293,7 +293,7 @@ function objCommand.AddNumberArg(self, name, data)
 		min = data.min,
 		max = data.max,
 		allowtime = data.allowtime or false,
-		autocomplete = data.autocomplete
+		autocomplete = data.autocomplete,
 	})
 end
 
@@ -304,7 +304,7 @@ function objCommand.AddPlayerArg(self, name, data)
 		name = string.lower(name),
 		optional = data.optional or false,
 		default = data.default,
-		check = data.check or false
+		check = data.check or false,
 	})
 end
 
@@ -315,7 +315,7 @@ function objCommand.AddPlayersArg(self, name, data)
 		name = string.lower(name),
 		optional = data.optional or false,
 		default = data.default,
-		filter = data.filter or false
+		filter = data.filter or false,
 	})
 end
 
@@ -329,7 +329,7 @@ function BSU.Command(name, desc, category, access, silent, validcaller, func)
 		silent = silent or false,
 		validcaller = validcaller or false,
 		func = func or function() end,
-		args = {}
+		args = {},
 	}, objCommand)
 	cmd.__index = cmd
 	cmd.__tostring = objCommand.__tostring
@@ -439,7 +439,7 @@ function objCmdHandler.GetCaller(self, fail)
 	return self.caller
 end
 
-local function errorBadArgument(num, reason)
+local function ErrorBadArgument(num, reason)
 	error("Bad argument #" .. num .. " (" .. reason .. ")")
 end
 
@@ -449,7 +449,7 @@ function objCmdHandler.GetRawStringArg(self, n, fail)
 	if arg then
 		return arg
 	elseif fail then
-		errorBadArgument(n, "expected string, found nothing")
+		ErrorBadArgument(n, "expected string, found nothing")
 	end
 end
 
@@ -457,9 +457,9 @@ end
 function objCmdHandler.GetStringArg(self, n, fail)
 	local str = self:GetRawStringArg(n, fail)
 	if str then
-		return parseArgs(str)[1]
+		return ParseArgs(str)[1]
 	elseif fail then
-		errorBadArgument(n, "expected string, found nothing")
+		ErrorBadArgument(n, "expected string, found nothing")
 	end
 end
 
@@ -493,14 +493,14 @@ function objCmdHandler.GetRawMultiStringArg(self, n1, n2, fail)
 		if str then
 			return str
 		elseif fail then
-			errorBadArgument(n1, "expected string, found nothing")
+			ErrorBadArgument(n1, "expected string, found nothing")
 		end
 	end
 	local arg = self.args[n1]
 	if arg then
 		return arg
 	elseif fail then
-		errorBadArgument(n1, "expected string, found nothing")
+		ErrorBadArgument(n1, "expected string, found nothing")
 	end
 end
 
@@ -508,9 +508,9 @@ end
 function objCmdHandler.GetMultiStringArg(self, n1, n2, fail)
 	local str = self:GetRawMultiStringArg(n1, n2, fail)
 	if str then
-		return table.concat(parseArgs(str), " ") -- parse and concat back to string
+		return table.concat(ParseArgs(str), " ") -- parse and concat back to string
 	elseif fail then
-		errorBadArgument(n1, "expected string, found nothing")
+		ErrorBadArgument(n1, "expected string, found nothing")
 	end
 end
 
@@ -522,10 +522,10 @@ function objCmdHandler.GetNumberArg(self, n, fail)
 		if val then
 			return val
 		elseif fail then
-			errorBadArgument(n, "failed to interpret '" .. arg .. "' as a number")
+			ErrorBadArgument(n, "failed to interpret '" .. arg .. "' as a number")
 		end
 	elseif fail then
-		errorBadArgument(n, "expected number, got nothing")
+		ErrorBadArgument(n, "expected number, got nothing")
 	end
 end
 
@@ -533,23 +533,23 @@ end
 function objCmdHandler.GetPlayerArg(self, n, fail)
 	local arg = self.args[n]
 	if arg then
-		local plys = parsePlayerArg(self.caller, arg)
+		local plys = ParsePlayerArg(self.caller, arg)
 		if #plys == 1 then
 			local ply = plys[1]
 			if ply:IsValid() then
 				return ply
 			elseif fail then
-				errorBadArgument(n, "target was invalid")
+				ErrorBadArgument(n, "target was invalid")
 			end
 		elseif fail then
 			if next(plys) == nil then
-				errorBadArgument(n, "failed to find a target")
+				ErrorBadArgument(n, "failed to find a target")
 			else
-				errorBadArgument(n, "received too many targets")
+				ErrorBadArgument(n, "received too many targets")
 			end
 		end
 	elseif fail then
-		errorBadArgument(n, "expected target, found nothing")
+		ErrorBadArgument(n, "expected target, found nothing")
 	end
 end
 
@@ -557,18 +557,18 @@ end
 function objCmdHandler.GetPlayersArg(self, n, fail)
 	local arg = self.args[n]
 	if arg then
-		local plys = parsePlayerArg(self.caller, arg)
+		local plys = ParsePlayerArg(self.caller, arg)
 		if next(plys) ~= nil then
 			return plys
 		elseif fail then
-			errorBadArgument(n, "failed to find any targets")
+			ErrorBadArgument(n, "failed to find any targets")
 		end
 	elseif fail then
-		errorBadArgument(n, "expected targets, found nothing")
+		ErrorBadArgument(n, "expected targets, found nothing")
 	end
 end
 
-local function stringTimeToMins(str)
+local function StringTimeToMins(str)
 	if str == nil then return end
 	str = string.gsub(str, "%s", "")
 	if str == "" then return end
@@ -607,7 +607,7 @@ local function stringTimeToMins(str)
 	return mins
 end
 
-local function getStringArg(args, n, multi)
+local function GetStringArg(args, n, multi)
 	if multi then
 		local str
 		for i = n, #args do
@@ -623,23 +623,23 @@ local function getStringArg(args, n, multi)
 			end
 		end
 		if str then
-			return table.concat(parseArgs(str), " ")
+			return table.concat(ParseArgs(str), " ")
 		else
 			return nil, "expected string, found nothing"
 		end
 	else
 		local arg = args[n]
 		if arg then
-			return parseArgs(arg)[1]
+			return ParseArgs(arg)[1]
 		else
 			return nil, "expected string, found nothing"
 		end
 	end
 end
 
-local function getNumberArg(arg, allowtime)
+local function GetNumberArg(arg, allowtime)
 	if arg then
-		local num = allowtime and stringTimeToMins(arg) or tonumber(arg)
+		local num = allowtime and StringTimeToMins(arg) or tonumber(arg)
 		if num then
 			return num
 		else
@@ -650,9 +650,9 @@ local function getNumberArg(arg, allowtime)
 	end
 end
 
-local function getPlayerArg(arg, caller)
+local function GetPlayerArg(arg, caller)
 	if arg then
-		local plys = parsePlayerArg(caller, arg)
+		local plys = ParsePlayerArg(caller, arg)
 		if #plys == 1 then
 			local ply = plys[1]
 			if ply:IsValid() then
@@ -672,9 +672,9 @@ local function getPlayerArg(arg, caller)
 	end
 end
 
-local function getPlayersArg(arg, caller)
+local function GetPlayersArg(arg, caller)
 	if arg then
-		local plys = parsePlayerArg(caller, arg)
+		local plys = ParsePlayerArg(caller, arg)
 		if next(plys) ~= nil then
 			return plys
 		else
@@ -693,16 +693,16 @@ function objCmdHandler.GetArgs(self)
 	local n = 1
 	for k, v in ipairs(self.cmd.args) do
 		if v.kind == 0 then -- string
-			local arg, err = getStringArg(self.args[n] and self.args or { [n] = v.default }, n, v.multi)
+			local arg, err = GetStringArg(self.args[n] and self.args or { [n] = v.default }, n, v.multi)
 			if err then
-				if not v.optional then errorBadArgument(n, err) end
+				if not v.optional then ErrorBadArgument(n, err) end
 				n = n - 1
 			end
 			args[k] = arg
 		elseif v.kind == 1 then -- number
-			local arg, err = getNumberArg(self.args[n] or v.default, v.allowtime)
+			local arg, err = GetNumberArg(self.args[n] or v.default, v.allowtime)
 			if err then
-				if not v.optional then errorBadArgument(n, err) end
+				if not v.optional then ErrorBadArgument(n, err) end
 				n = n - 1
 			end
 			if arg then
@@ -716,17 +716,17 @@ function objCmdHandler.GetArgs(self)
 			end
 			args[k] = arg
 		elseif v.kind == 2 then -- player
-			local arg, err = getPlayerArg(self.args[n] or v.default, self.caller)
+			local arg, err = GetPlayerArg(self.args[n] or v.default, self.caller)
 			if err then
-				if not v.optional then errorBadArgument(n, err) end
+				if not v.optional then ErrorBadArgument(n, err) end
 				n = n - 1
 			end
 			if SERVER and arg and v.check then arg = self:CheckCanTarget(arg, not v.optional) and arg or nil end
 			args[k] = arg
 		elseif v.kind == 3 then -- players
-			local arg, err = getPlayersArg(self.args[n] or v.default, self.caller)
+			local arg, err = GetPlayersArg(self.args[n] or v.default, self.caller)
 			if err then
-				if not v.optional then errorBadArgument(n, err) end
+				if not v.optional then ErrorBadArgument(n, err) end
 				n = n - 1
 			end
 			if SERVER and arg and v.filter then arg = self:FilterTargets(arg, not v.optional) end
@@ -775,13 +775,13 @@ if SERVER then
 		end
 	}
 
-	local function parseTargetPrefix(steamid, targetid, str)
+	local function ParseTargetPrefix(steamid, targetid, str)
 		local pre = string.sub(str, 1, 1)
 
 		-- parse argument but take opposite of result
 		if pre == "!" then
 			local val = string.sub(str, 2)
-			return not parseTargetPrefix(steamid, targetid, val)
+			return not ParseTargetPrefix(steamid, targetid, val)
 		end
 
 		local func = targetPrefixes[pre]
@@ -809,7 +809,7 @@ if SERVER then
 		-- parse prefix strings until one of them allows targeting targetid
 		local strs = string.Split(cantarget, ",")
 		for _, s in ipairs(strs) do
-			local result = parseTargetPrefix(steamid, targetid, s)
+			local result = ParseTargetPrefix(steamid, targetid, s)
 			if result then return true end
 		end
 
@@ -856,7 +856,7 @@ if SERVER then
 		-- parse prefix strings until the remaining are found
 		local strs = string.Split(cantarget, ",")
 		for _, s in ipairs(strs) do
-			local result = parsePlayerArgPrefix(caller, s)
+			local result = ParsePlayerArgPrefix(caller, s)
 			for _, ply in ipairs(result) do
 				if remaining[ply] then
 					remaining[ply] = nil
@@ -1058,7 +1058,7 @@ function BSU.CommandHandler(caller, cmd, argStr, silent)
 	return setmetatable({
 		caller = caller,
 		cmd = cmd,
-		args = argStr and parseArgs(argStr, true) or "",
+		args = argStr and ParseArgs(argStr, true) or "",
 		silent = silent or false
 	}, objCmdHandler)
 end

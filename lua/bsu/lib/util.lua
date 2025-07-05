@@ -90,7 +90,7 @@ local timesInMins = {
 	{ "week", 10080 },
 	{ "day", 1440 },
 	{ "hour", 60 },
-	{ "minute", 1 }
+	{ "minute", 1 },
 }
 
 -- convert minutes into a nice time format
