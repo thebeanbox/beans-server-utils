@@ -188,7 +188,7 @@ local function Spectate(ply, ent)
 end
 
 local function Unspectate(ply)
-	ply:Unspectate()
+	ply:UnSpectate()
 	ply:DrawViewModel(true)
 	ply:PhysicsInit(SOLID_BBOX)
 	ply:SetMoveType(MOVETYPE_WALK)
