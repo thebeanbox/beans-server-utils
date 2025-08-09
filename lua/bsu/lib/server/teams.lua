@@ -45,5 +45,5 @@ function BSU.ClientSetupTeams(ply)
 	for _, v in ipairs(BSU.GetAllTeams()) do
 		BSU.AddArgsRPC(v.id, v.name, BSU.HexToColor(v.color))
 	end
-	BSU.FinishRPC(ply)
+	BSU.SendRPC(ply)
 end

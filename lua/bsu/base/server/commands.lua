@@ -53,7 +53,7 @@ local function SendCommandData(ply)
 			BSU.AddArgsRPC(v:GetName(), v:GetDescription(), v:GetCategory(), v:GetArgs())
 		end
 	end
-	BSU.FinishRPC(ply)
+	BSU.SendRPC(ply)
 end
 
 hook.Add("BSU_ClientReady", "BSU_SendCommandData", SendCommandData)

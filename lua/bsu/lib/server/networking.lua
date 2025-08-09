@@ -26,7 +26,7 @@ function BSU.AddArgsRPC(...)
 	calls[#calls + 1] = { ... }
 end
 
-function BSU.FinishRPC(plys)
+function BSU.SendRPC(plys)
 	assert(rpc, "RPC not started")
 	local path, calls = rpc.path, rpc.calls
 	rpc = nil
@@ -67,5 +67,5 @@ end
 function BSU.ClientRPC(plys, path, ...)
 	BSU.StartRPC(path)
 	BSU.AddArgsRPC(...)
-	BSU.FinishRPC(plys)
+	BSU.SendRPC(plys)
 end
