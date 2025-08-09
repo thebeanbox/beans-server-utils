@@ -164,7 +164,7 @@ function PANEL:Paint(w, h)
 	surface.SetAlphaMultiplier(1)
 end
 
-local function createPropInfoPanel(_, _, enabled)
+local function CreatePropInfoPanel(_, _, enabled)
 	if IsValid(BSU.PropInfo) then BSU.PropInfo:Remove() end
 	if tobool(enabled) then BSU.PropInfo = vgui.Create("BSU_PropInfo") end
 end
@@ -180,9 +180,9 @@ end)
 
 hook.Add("OnGamemodeLoaded", "BSU_PropInfo", function()
 	local isEnabled = propinfo_enabled:GetInt()
-	createPropInfoPanel(nil, nil, isEnabled)
+	CreatePropInfoPanel(nil, nil, isEnabled)
 end)
 
-cvars.AddChangeCallback("bsu_propinfo_enabled", createPropInfoPanel)
+cvars.AddChangeCallback("bsu_propinfo_enabled", CreatePropInfoPanel)
 
 vgui.Register("BSU_PropInfo", PANEL, "DPanel")
