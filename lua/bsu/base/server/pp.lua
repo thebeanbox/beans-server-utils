@@ -157,6 +157,14 @@ end)
 
 -- detour some functions to catch players spawning entities and properly set entity owner
 
+local ENTITY = FindMetaTable("Entity")
+
+BSU.DetourBefore(ENTITY, "SetOwner", "BSU_SetOwner", function(ent, owner)
+	if IsValid(ent) and not ent:IsPlayer() and IsValid(owner) then
+		BSU.CopyOwner(owner, ent)
+	end
+end)
+
 local PLAYER = FindMetaTable("Player")
 
 BSU.DetourBefore(PLAYER, "AddCount", "BSU_SetOwner", function(ply, _, ent)
