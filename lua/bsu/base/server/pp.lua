@@ -185,20 +185,20 @@ BSU.DetourBefore("cleanup.Add", "BSU_SetOwner", function(ply, _, ent)
 	end
 end)
 
-BSU.DetourWrap("cleanup.ReplaceEntity", "BSU_ReplaceOwner", function(args, action)
+BSU.DetourWrap("cleanup.ReplaceEntity", "BSU_SetOwner", function(args, action)
 	if action then
 		local from, to = args[1], args[2]
 		if IsValid(from) and IsValid(to) then
-			BSU.ReplaceOwner(from, to)
+			BSU.CopyOwner(from, to)
 		end
 	end
 end)
 
-BSU.DetourWrap("undo.ReplaceEntity", "BSU_ReplaceOwner", function(args, action)
+BSU.DetourWrap("undo.ReplaceEntity", "BSU_SetOwner", function(args, action)
 	if action then
 		local from, to = args[1], args[2]
 		if IsValid(from) and IsValid(to) then
-			BSU.ReplaceOwner(from, to)
+			BSU.CopyOwner(from, to)
 		end
 	end
 end)
