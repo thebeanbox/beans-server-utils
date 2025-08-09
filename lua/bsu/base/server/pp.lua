@@ -234,6 +234,6 @@ BSU.DetourBefore("undo.Finish", "BSU_SetOwner", function()
 				end
 			end
 		end
+		currentUndo = nil
 	end
-	currentUndo = nil
 end)
