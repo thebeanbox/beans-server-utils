@@ -10,7 +10,7 @@ local WORLD_ID = "18446744073709551615" -- owner id for the world
 
 -- used for determining amount of bits needed to network owner info and ents (these do not limit anything serverside)
 
-local OWNER_INFO_MAX = 2 -- max keys in owner info, currently only storing name and userid (update this if more are added)
+local OWNER_INFO_MAX = 3 -- max keys in owner info, currently only storing name, steamid, and userid (update this if more are added)
 local OWNER_ENTS_MAX = 2 ^ 13 - 1 -- max ents per owner
 
 if SERVER then
@@ -145,6 +145,7 @@ function BSU.SetOwner(ent, owner)
 	if not IsValid(owner) or not owner:IsPlayer() then return end
 	local id = owner:SteamID64()
 	UpdateOwnerInfo(id, "name", owner:Nick()) -- used for HUD display
+	UpdateOwnerInfo(id, "steamid", owner:SteamID()) -- used for HUD display
 	UpdateOwnerInfo(id, "userid", owner:UserID()) -- used for getting the owner entity
 	SetEntityOwner(ent:EntIndex(), id)
 	ent:CallOnRemove("BSU_SetOwnerless", BSU.SetOwnerless)
@@ -153,7 +154,8 @@ end
 function BSU.SetOwnerWorld(ent)
 	if not IsValid(ent) or ent:IsPlayer() then return end
 	UpdateOwnerInfo(WORLD_ID, "name", "World") -- used for HUD display
-	UpdateOwnerInfo(WORLD_ID, "userid", -1) -- used for getting the owner entity
+	UpdateOwnerInfo(WORLD_ID, "steamid", "N/A")
+	UpdateOwnerInfo(WORLD_ID, "userid", -1)
 	SetEntityOwner(ent:EntIndex(), WORLD_ID)
 end
 
@@ -228,6 +230,11 @@ end
 -- returns name of the entity owner (will be "World" if entity is the world, nil if entity is ownerless)
 function BSU.GetOwnerName(ent)
 	return BSU.GetOwnerInfo(ent, "name")
+end
+
+-- returns STEAM_0 style id of the entity owner (will be "N/A" if entity is the world, nil if entity is ownerless)
+function BSU.GetOwnerSteamID(ent)
+	return BSU.GetOwnerInfo(ent, "steamid")
 end
 
 -- returns userid of the entity owner (will be -1 if entity is the world, nil if entity is ownerless)
