@@ -155,9 +155,11 @@ end
 -- try set the owner of newly created entities
 hook.Add("OnEntityCreated", "BSU_SetInternalOwner", function(ent)
 	if not ent:IsValid() then return end
-	ent:SetNW2String("BSU_ServerToString", tostring(ent))
 	-- need to wait a tick for the entity to initialize and other hooks/detours to have a chance to set owner
-	timer.Simple(0, function() SetInternalOwner(ent) end)
+	timer.Simple(0, function()
+		ent:SetNW2String("BSU_ServerToString", tostring(ent))
+		SetInternalOwner(ent)
+	end)
 end)
 
 -- detour some functions to catch players spawning entities and properly set entity owner
