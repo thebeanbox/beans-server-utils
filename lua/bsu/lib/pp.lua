@@ -271,8 +271,10 @@ local ENTITY = FindMetaTable("Entity")
 
 local GetNW2String = ENTITY.GetNW2String
 
+local null_tostring = tostring(NULL)
+
 function ENTITY:BSU_GetServerToString()
-	return GetNW2String(self, "BSU_ServerToString", "N/A")
+	return GetNW2String(self, "BSU_ServerToString", null_tostring)
 end
 
 local infoBits = math.floor(math.log(OWNER_INFO_MAX, 2)) + 1
