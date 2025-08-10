@@ -127,32 +127,36 @@ hook.Add("EntityTakeDamage", "BSU_DamagePermission", function(ent, dmg)
 	end
 end)
 
+local function SetInternalOwner(ent)
+	if not ent:IsValid() then return end
+
+	local owner = BSU.GetOwner(ent)
+	if owner then return end
+
+	if ent:CreatedByMap() then
+		BSU.SetOwnerWorld(ent)
+		return
+	end
+
+	-- try find the internal owner of engine entities (this mostly fixes ents spawned by npcs or weapons)
+	owner = ent:GetInternalVariable("m_hOwnerEntity") or NULL
+	if owner == NULL then owner = ent:GetInternalVariable("m_hOwner") or NULL end
+	if owner == NULL then owner = game.GetWorld() end -- default to world-owned
+
+	if owner:IsWorld() then
+		BSU.SetOwnerWorld(ent)
+	elseif owner:IsPlayer() then
+		BSU.SetOwner(ent, owner)
+	else
+		BSU.CopyOwner(owner, ent) -- try set the owner of the ent to the owner of it's internal owner
+	end
+end
+
 -- try set the owner of newly created entities
-hook.Add("OnEntityCreated", "BSU_SetOwnerEntities", function(ent)
+hook.Add("OnEntityCreated", "BSU_SetInternalOwner", function(ent)
 	if not ent:IsValid() then return end
 	-- need to wait a tick for the entity to initialize and other hooks/detours to have a chance to set owner
-	timer.Simple(0, function()
-		if not ent:IsValid() or IsValid(BSU.GetOwner(ent)) then return end
-
-		BSU.SetOwnerWorld(ent) -- default to world-owned
-
-		if ent:CreatedByMap() then return end
-
-		-- try fix the owner of engine entities not created by the map (this mostly fixes ents spawned by npcs or weapons)
-
-		-- seems to always be a player, npc (zombie that dropped a headcrab) or NULL
-		-- i don't think this will ever be nil, but just incase, it will fallback to NULL
-		local owner = ent:GetInternalVariable("m_hOwnerEntity") or NULL
-		-- sometimes is set to a weapon for projectile ents (has been seen to be nil)
-		if owner == NULL then owner = ent:GetInternalVariable("m_hOwner") or NULL end
-		if owner == NULL then return end
-
-		if owner:IsPlayer() then
-			BSU.SetOwner(ent, owner)
-		else
-			BSU.CopyOwner(owner, ent) -- try set the owner of the ent to the owner of it's internal owner
-		end
-	end)
+	timer.Simple(0, function() SetInternalOwner(ent) end)
 end)
 
 -- detour some functions to catch players spawning entities and properly set entity owner
