@@ -219,7 +219,11 @@ local color_invalid = Color(150, 150, 150)
 function BSU.GetOwnerColor(ent)
 	if not IsValid(ent) then return color_invalid end
 
-	local userid = BSU.GetOwnerInfo(ent, "userid")
+	local id = BSU._entowners[ent:EntIndex()]
+	if not id then return color_invalid end
+
+	local data = BSU._owners[id]
+	local userid = data.userid
 	if not userid then return color_invalid end
 	if userid == -1 then return color_white end
 
