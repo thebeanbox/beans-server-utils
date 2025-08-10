@@ -214,6 +214,21 @@ function BSU.GetOwnerString(ent)
 	return name, string.format("<%s>", steamid)
 end
 
+local color_invalid = Color(150, 150, 150)
+
+function BSU.GetOwnerColor(ent)
+	if not IsValid(ent) then return color_invalid end
+
+	local userid = BSU.GetOwnerInfo(ent, "userid")
+	if not userid then return color_invalid end
+	if userid == -1 then return color_white end
+
+	local ply = Player(userid)
+	if not ply:IsValid() then return color_invalid end
+
+	return team.GetColor(ply:Team())
+end
+
 -- returns info about the entity owner (nil if entity is ownerless or there's no info with the key)
 function BSU.GetOwnerInfo(ent, key)
 	if not IsValid(ent) then return end
