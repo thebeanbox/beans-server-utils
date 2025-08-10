@@ -128,8 +128,6 @@ hook.Add("EntityTakeDamage", "BSU_DamagePermission", function(ent, dmg)
 end)
 
 local function SetInternalOwner(ent)
-	if not ent:IsValid() then return end
-
 	local owner = BSU.GetOwner(ent)
 	if owner then return end
 
@@ -152,13 +150,29 @@ local function SetInternalOwner(ent)
 	end
 end
 
--- try set the owner of newly created entities
 hook.Add("OnEntityCreated", "BSU_SetInternalOwner", function(ent)
 	if not ent:IsValid() then return end
 	-- need to wait a tick for the entity to initialize and other hooks/detours to have a chance to set owner
 	timer.Simple(0, function()
-		ent:SetNW2String("BSU_ServerToString", tostring(ent))
+		if not ent:IsValid() then return end
 		SetInternalOwner(ent)
+	end)
+end)
+
+hook.Add("OnEntityCreated", "BSU_SetServerToString", function(ent)
+	if not ent:IsValid() then return end
+
+	local str = tostring(ent)
+	ent:SetNW2String("BSU_ServerToString", str)
+
+	-- need to wait a tick for certain entities
+	timer.Simple(0, function()
+		if not ent:IsValid() then return end
+
+		local str2 = tostring(ent)
+		if str2 ~= str then
+			ent:SetNW2String("BSU_ServerToString", str2)
+		end
 	end)
 end)
 
