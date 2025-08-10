@@ -18,7 +18,8 @@ function PANEL:Init()
 	self:SetCursor("sizeall")
 	self:OnScreenSizeChanged()
 
-	self.Text = {}
+	self.Lines = {}
+	self.Colors = {}
 
 	hook.Add("OnScreenSizeChanged", self, self.OnScreenSizeChanged)
 	hook.Add("ContextMenuOpened", self, self.ContextMenuOpened)
@@ -67,6 +68,9 @@ function PANEL:OnMouseReleased()
 	propinfo_y:SetFloat(y / sh)
 end
 
+local color_server = Color(152, 212, 255)
+local color_client = Color(232, 220, 117)
+
 function PANEL:Think()
 	local ply = LocalPlayer()
 	if not ply:IsValid() then return end
@@ -84,21 +88,31 @@ function PANEL:Think()
 
 	local ent = tr.Entity
 	if ent:IsValid() and not ent:IsPlayer() or ent:IsWorld() and self.InContextMenu then
-		self.Text = {
-			tostring(ent),
+		local cl_tostring = tostring(ent)
+		local sv_tostring = ent:BSU_GetServerToString()
+
+		local serverside = input.IsKeyDown(KEY_LSHIFT)
+
+		self.Lines = {
+			cl_tostring ~= sv_tostring and serverside and sv_tostring or cl_tostring,
 			ent:GetModel(),
-			BSU.GetOwnerString(ent)
+			{ BSU.GetOwnerString(ent) }
+		}
+
+		self.Colors = {
+			cl_tostring ~= sv_tostring and (serverside and color_server or color_client) or nil,
+			nil,
+			{ BSU.GetOwnerColor(ent) }
 		}
 
 		-- update size
-
 		w = 0
 		h = 0
 
 		surface.SetFont(font)
 
-		for _, v in ipairs(self.Text) do
-			local tw = surface.GetTextSize(v)
+		for _, v in ipairs(self.Lines) do
+			local tw = surface.GetTextSize(istable(v) and table.concat(v) or v)
 			w = math.max(w, tw)
 			h = h + 20
 		end
@@ -156,9 +170,30 @@ function PANEL:Paint(w, h)
 
 	draw.RoundedBox(4, 0, 0, w, h, color_bg)
 
-	for k, v in ipairs(self.Text) do
+	local lines = self.Lines
+	local colors = self.Colors
+
+	for k, line in ipairs(lines) do
 		local y = k * 20 - 10 + 4
-		draw.SimpleText(v, font, x, y, nil, align, TEXT_ALIGN_CENTER)
+		if istable(line) then
+			surface.SetFont(font)
+			local tw = 0
+			if left then
+				for j = 1, #line do
+					local text = line[j]
+					draw.SimpleText(text, font, x + tw, y, colors[k][j], align, TEXT_ALIGN_CENTER)
+					tw = tw + surface.GetTextSize(text)
+				end
+			else
+				for j = #line, 1, -1 do
+					local text = line[j]
+					draw.SimpleText(text, font, x - tw, y, colors[k][j], align, TEXT_ALIGN_CENTER)
+					tw = tw + surface.GetTextSize(text)
+				end
+			end
+		else
+			draw.SimpleText(line, font, x, y, colors[k], align, TEXT_ALIGN_CENTER)
+		end
 	end
 
 	surface.SetAlphaMultiplier(1)
