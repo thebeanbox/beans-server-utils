@@ -262,6 +262,14 @@ function BSU.GetOwnerUserID(ent)
 	return BSU.GetOwnerInfo(ent, "userid")
 end
 
+local ENTITY = FindMetaTable("Entity")
+
+local GetNW2String = ENTITY.GetNW2String
+
+function ENTITY:BSU_GetServerToString()
+	return GetNW2String(self, "BSU_ServerToString", "N/A")
+end
+
 local infoBits = math.floor(math.log(OWNER_INFO_MAX, 2)) + 1
 local entsBits = math.floor(math.log(OWNER_ENTS_MAX, 2)) + 1
 
