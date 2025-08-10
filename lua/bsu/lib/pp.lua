@@ -216,6 +216,7 @@ end
 
 local color_invalid = Color(150, 150, 150)
 
+-- returns color of the entity owner (team color if owner is a player, color_white if owner is the world, color_invalid if player is disconnected or entity is ownerless)
 function BSU.GetOwnerColor(ent)
 	if not IsValid(ent) then return color_invalid end
 
