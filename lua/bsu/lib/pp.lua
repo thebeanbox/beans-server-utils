@@ -199,14 +199,19 @@ function BSU.GetOwnerID(ent)
 	return BSU._entowners[ent:EntIndex()]
 end
 
--- returns string of the entity owner ("Name<STEAM_X:Y:Z>" if owner is a player, "World" if owner is the world, "N/A" if entity is ownerless)
+-- returns strings of the entity owner ("Name", "<STEAM_X:Y:Z>" if owner is a player, "World" if owner is the world, "N/A" if entity is ownerless)
 function BSU.GetOwnerString(ent)
 	if not IsValid(ent) then return "N/A" end
+
 	local id = BSU._entowners[ent:EntIndex()]
 	if not id then return "N/A" end
-	local name = BSU._owners[id].name or ""
+
+	local data = BSU._owners[id]
+	local name = data.name or "N/A"
 	if id == WORLD_ID then return name end
-	return string.format("%s<%s>", name, util.SteamIDFrom64(id))
+
+	local steamid = data.steamid or "N/A"
+	return name, string.format("<%s>", steamid)
 end
 
 -- returns info about the entity owner (nil if entity is ownerless or there's no info with the key)
