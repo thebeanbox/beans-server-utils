@@ -75,10 +75,19 @@ function PANEL:Think()
 	local ply = LocalPlayer()
 	if not ply:IsValid() then return end
 
-	local tr = util.GetPlayerTrace(ply)
-	tr.mask = MASK_SHOT -- fix not hitting some entities
-	tr = util.TraceLine(tr)
-	if not tr then return end
+	local data = util.GetPlayerTrace(ply)
+	data.mask = MASK_SHOT -- fix not hitting debris entities
+	data.hitclientonly = true
+
+	local tr = util.TraceLine(data)
+	if not tr then return end -- too early
+
+	local ent = tr.Entity
+	if not IsValid(ent) then
+		data.hitclientonly = nil
+		tr = util.TraceLine(data)
+		ent = tr.Entity
+	end
 
 	local w = self:GetWide()
 	local h = self:GetTall()
@@ -86,7 +95,6 @@ function PANEL:Think()
 	local sw = ScrW()
 	local sh = ScrH()
 
-	local ent = tr.Entity
 	if ent:IsValid() and not ent:IsPlayer() or ent:IsWorld() and self.InContextMenu then
 		local cl_tostring = tostring(ent)
 		local sv_tostring = ent:BSU_GetServerToString()
@@ -162,6 +170,7 @@ end
 
 function PANEL:Paint(w, h)
 	if isHoldingCamera then return end
+
 	local left = self.x + w / 2 < ScrW() / 2
 	local x = left and 4 or w - 4
 	local align = left and TEXT_ALIGN_LEFT or TEXT_ALIGN_RIGHT
