@@ -79,9 +79,9 @@ local function AutoComplete(concommand, argStr)
 	else
 		local result, names = {}, {}
 
-		for _, v in ipairs(BSU.GetAllCommandNames()) do
-			if name == string.sub(v, 1, #name) then
-				table.insert(names, v)
+		for _, v in ipairs(BSU.GetAllCommands()) do
+			if name == string.sub(v.name, 1, #name) then
+				table.insert(names, v.name)
 			end
 		end
 		table.sort(names, function(a, b) return #a < #b end)

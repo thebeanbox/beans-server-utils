@@ -48,9 +48,9 @@ hook.Add("PlayerSay", "BSU_ChatCommand", ChatCommand, PRE_HOOK_RETURN)
 
 local function SendCommandData(ply)
 	BSU.StartRPC("BSU.RegisterServerCommand")
-	for _, v in ipairs(BSU.GetCommandList()) do
-		if v:GetAccess() ~= BSU.CMD_CONSOLE then
-			BSU.AddArgsRPC(v:GetName(), v:GetDescription(), v:GetCategory(), v:GetArgs())
+	for _, cmd in ipairs(BSU.GetAllCommands()) do
+		if cmd:GetAccess() ~= BSU.CMD_CONSOLE then
+			BSU.AddArgsRPC(cmd:GetName(), cmd:GetDescription(), cmd:GetCategory(), cmd:GetArgs())
 		end
 	end
 	BSU.SendRPC(ply)

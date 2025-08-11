@@ -202,7 +202,8 @@ end
 
 -- holds command objects
 BSU._cmds = BSU._cmds or {}
-BSU._cmdlist = BSU._cmdlist or {}
+BSU._cmdcategories = BSU._cmdcategories or {}
+BSU._cmdcounter = 0
 
 -- command object
 local objCommand = {}
@@ -338,10 +339,13 @@ end
 
 function BSU.RegisterCommand(cmd)
 	BSU.RemoveCommand(cmd)
-	BSU._cmds[string.lower(cmd:GetName())] = cmd
+	cmd._index = BSU._cmdcounter
+	BSU._cmdcounter = BSU._cmdcounter + 1
+	local name = string.lower(cmd:GetName())
+	BSU._cmds[name] = cmd
 	local category = string.lower(cmd:GetCategory())
-	BSU._cmdlist[category] = BSU._cmdlist[category] or {}
-	table.insert(BSU._cmdlist[category], cmd)
+	if not BSU._cmdcategories[category] then BSU._cmdcategories[category] = {} end
+	BSU._cmdcategories[category][name] = cmd
 end
 
 function BSU.RemoveCommand(cmd)
@@ -349,14 +353,9 @@ function BSU.RemoveCommand(cmd)
 	if not BSU._cmds[name] then return end
 	BSU._cmds[name] = nil
 	local category = string.lower(cmd:GetCategory())
-	if not BSU._cmdlist[category] then return end
-	for k, v in ipairs(BSU._cmdlist[category]) do
-		if v == cmd then
-			table.remove(BSU._cmdlist[category][k])
-			if next(BSU._cmdlist[category]) == nil then BSU._cmdlist[category] = nil end
-			break
-		end
-	end
+	if not BSU._cmdcategories[category] then return end
+	BSU._cmdcategories[category][name] = nil
+	if next(BSU._cmdcategories[category]) == nil then BSU._cmdcategories[category] = nil end
 end
 
 function BSU.SetupCommand(name, setup)
@@ -376,11 +375,12 @@ function BSU.AliasCommand(alias, name)
 end
 
 function BSU.GetAllCommands()
-	return table.ClearKeys(BSU._cmds)
-end
-
-function BSU.GetAllCommandNames()
-	return table.GetKeys(BSU._cmds)
+	local cmds = {}
+	for _, cmd in pairs(BSU._cmds) do
+		cmds[#cmds + 1] = cmd
+	end
+	table.sort(cmds, function(a, b) return a._index < b._index end)
+	return cmds
 end
 
 function BSU.GetCommandByName(name)
@@ -388,37 +388,19 @@ function BSU.GetCommandByName(name)
 end
 
 function BSU.GetCommandsByCategory(category)
-	local list = {}
-	for _, cmd in ipairs(BSU._cmdlist[string.lower(category)]) do
-		table.insert(list, cmd)
+	local cmds = {}
+	for _, cmd in pairs(BSU._cmdcategories[string.lower(category)]) do
+		cmds[#cmds + 1] = cmd
 	end
-	return list
-end
-
-function BSU.GetCommandsByAccess(access)  -- only used serverside, is pointless clientside but kept for shared scripts
-	local list = {}
-	for _, cmd in pairs(BSU._cmds) do
-		if cmd.access == access then
-			table.insert(list, cmd)
-		end
-	end
-	return list
-end
-
-function BSU.GetCommandList()
-	local categories = table.GetKeys(BSU._cmdlist)
-	table.sort(categories, function(a, b) return a < b end)
-	local list = {}
-	for _, category in ipairs(categories) do
-		for _, cmd in ipairs(BSU._cmdlist[category]) do
-			table.insert(list, cmd)
-		end
-	end
-	return list
+	table.sort(cmds, function(a, b) return a._index < b._index end)
+	return cmds
 end
 
 function BSU.GetCommandCategories()
-	local categories = table.GetKeys(BSU._cmdlist)
+	local categories = {}
+	for name in pairs(BSU._cmdcategories) do
+		categories[#categories + 1] = name
+	end
 	table.sort(categories, function(a, b) return a < b end)
 	return categories
 end

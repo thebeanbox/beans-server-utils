@@ -5,9 +5,8 @@ BSU.SetupCommand("help", function(cmd)
 	cmd:SetAccess(BSU.CMD_CONSOLE)
 	cmd:SetFunction(function(self)
 		local msg = { color_white, "\n\n[BSU COMMAND LIST]\n\n" }
-		local categories = BSU.GetCommandCategories()
 
-		for _, v in ipairs(categories) do
+		for _, v in ipairs(BSU.GetCommandCategories()) do
 			table.Add(msg, { color_white, "[" .. string.upper(v) .. "]:" })
 
 			local cmds = BSU.GetCommandsByCategory(v)
