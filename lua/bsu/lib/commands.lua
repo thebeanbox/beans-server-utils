@@ -325,12 +325,13 @@ function BSU.Command(name, desc, category, access, silent, validcaller, func)
 	local cmd = setmetatable({
 		name = string.lower(name),
 		desc = desc or "",
-		category = category or "misc",
+		category = category and string.lower(category) or "misc",
 		access = access or BSU.CMD_ANYONE,
 		silent = silent or false,
 		validcaller = validcaller or false,
 		func = func or function() end,
 		args = {},
+		index = 0,
 	}, objCommand)
 	cmd.__index = cmd
 	cmd.__tostring = objCommand.__tostring
@@ -339,7 +340,7 @@ end
 
 function BSU.RegisterCommand(cmd)
 	BSU.RemoveCommand(cmd)
-	cmd._index = BSU._cmdcounter
+	cmd.index = BSU._cmdcounter
 	BSU._cmdcounter = BSU._cmdcounter + 1
 	local name = string.lower(cmd:GetName())
 	BSU._cmds[name] = cmd
@@ -379,7 +380,7 @@ function BSU.GetAllCommands()
 	for _, cmd in pairs(BSU._cmds) do
 		cmds[#cmds + 1] = cmd
 	end
-	table.sort(cmds, function(a, b) return a._index < b._index end)
+	table.sort(cmds, function(a, b) return a.index < b.index end)
 	return cmds
 end
 
@@ -392,7 +393,7 @@ function BSU.GetCommandsByCategory(category)
 	for _, cmd in pairs(BSU._cmdcategories[string.lower(category)]) do
 		cmds[#cmds + 1] = cmd
 	end
-	table.sort(cmds, function(a, b) return a._index < b._index end)
+	table.sort(cmds, function(a, b) return a.index < b.index end)
 	return cmds
 end
 
