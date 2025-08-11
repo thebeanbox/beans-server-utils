@@ -102,7 +102,7 @@ BSU.SetupCommand("nolag", function(cmd)
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		for _, ent in ipairs(ents.GetAll()) do
+		for _, ent in ents.Iterator() do
 			for i = 0, ent:GetPhysicsObjectCount() - 1 do
 				local physObj = ent:GetPhysicsObjectNum(i)
 				if IsValid(physObj) then
@@ -121,13 +121,13 @@ BSU.SetupCommand("cleanup", function(cmd)
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self, _, target)
 		local weps = {}
-		for _, v in ipairs(target:GetWeapons()) do
-			weps[v] = true
+		for _, ent in ipairs(target:GetWeapons()) do
+			weps[ent] = true
 		end
 
-		for _, v in ipairs(BSU.GetOwnerEntities(target:SteamID64())) do
-			if not weps[v] then -- don't strip their weapons
-				v:Remove()
+		for _, ent in ipairs(BSU.GetOwnerEntities(target:SteamID64())) do
+			if not weps[ent] then -- don't strip their weapons
+				ent:Remove()
 			end
 		end
 
@@ -136,28 +136,12 @@ BSU.SetupCommand("cleanup", function(cmd)
 	cmd:AddPlayerArg("target", { check = true })
 end)
 
-local debrisGroups = {
-	[COLLISION_GROUP_DEBRIS] = true,
-	[COLLISION_GROUP_DEBRIS_TRIGGER] = true,
-	[COLLISION_GROUP_INTERACTIVE_DEBRIS] = true,
-	[COLLISION_GROUP_INTERACTIVE] = true
-}
-
 BSU.SetupCommand("cleanupdebris", function(cmd)
 	cmd:SetDescription("Cleanup all props that are considered debris")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		for _, v in ipairs(ents.GetAll()) do
-			-- remove all entities that are debris and ownerless or world-owned
-			if debrisGroups[v:GetCollisionGroup()] then
-				-- BSU.GetOwner returns nil if the entity is ownerless
-				local owner = BSU.GetOwner(v)
-				if not owner or owner:IsWorld() then
-					v:Remove()
-				end
-			end
-		end
+		BSU.RemoveServerDebris()
 
 		self:BroadcastActionMsg("%caller% cleaned up debris")
 	end)
@@ -168,15 +152,20 @@ BSU.SetupCommand("cleanupdisconnected", function(cmd)
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self)
-		for _, v in ipairs(ents.GetAll()) do
-			-- BSU.GetOwner returns NULL if the player owner disconnected
-			-- (do not use IsValid or IsPlayer here otherwise world-owned entities will get removed too)
-			if BSU.GetOwner(v) == NULL then
-				v:Remove()
-			end
-		end
+		BSU.RemoveServerDisconnected()
 
-		self:BroadcastActionMsg("%caller% cleaned up disconnected")
+		self:BroadcastActionMsg("%caller% cleaned up disconnected props")
+	end)
+end)
+
+BSU.SetupCommand("cleanupgibs", function(cmd)
+	cmd:SetDescription("Cleanup all props that are gibs")
+	cmd:SetCategory("utility")
+	cmd:SetAccess(BSU.CMD_ADMIN)
+	cmd:SetFunction(function(self)
+		BSU.RemoveServerGibs()
+
+		self:BroadcastActionMsg("%caller% cleaned up gibs")
 	end)
 end)
 
@@ -184,57 +173,62 @@ BSU.SetupCommand("cleardecals", function(cmd)
 	cmd:SetDescription("Clear all clientside decals")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self)
-		for _, ply in ipairs(player.GetHumans()) do
+	cmd:SetFunction(function(self, _, targets)
+		for _, ply in ipairs(targets) do
 			ply:ConCommand("r_cleardecals")
 		end
 
-		self:BroadcastActionMsg("%caller% cleared clientside decals")
+		self:BroadcastActionMsg("%caller% cleared clientside decals for %targets%", { targets = targets })
 	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
 BSU.SetupCommand("cleargibs", function(cmd)
 	cmd:SetDescription("Clear all clientside gibs")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self)
-		BSU.RemoveClientProps()
+	cmd:SetFunction(function(self, _, targets)
+		BSU.RemoveClientProps(targets)
 
-		self:BroadcastActionMsg("%caller% cleared clientside gibs")
+		self:BroadcastActionMsg("%caller% cleared clientside gibs for %targets%", { targets = targets })
 	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
 BSU.SetupCommand("clearragdolls", function(cmd)
 	cmd:SetDescription("Clear all clientside ragdolls")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self)
-		BSU.RemoveClientRagdolls()
+	cmd:SetFunction(function(self, _, targets)
+		BSU.RemoveClientRagdolls(targets)
 
-		self:BroadcastActionMsg("%caller% cleared clientside ragdolls")
+		self:BroadcastActionMsg("%caller% cleared clientside ragdolls for %targets%", { targets = targets })
 	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
 BSU.SetupCommand("clearropes", function(cmd)
 	cmd:SetDescription("Clear all clientside ropes")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self)
-		BSU.RemoveClientRopes()
+	cmd:SetFunction(function(self, _, targets)
+		BSU.RemoveClientRopes(targets)
 
-		self:BroadcastActionMsg("%caller% cleared clientside ropes")
+		self:BroadcastActionMsg("%caller% cleared clientside ropes for %targets%", { targets = targets })
 	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
 BSU.SetupCommand("cleareffects", function(cmd)
 	cmd:SetDescription("Clear all clientside effects")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
-	cmd:SetFunction(function(self)
-		BSU.RemoveClientEffects()
+	cmd:SetFunction(function(self, _, targets)
+		BSU.RemoveClientEffects(targets)
 
-		self:BroadcastActionMsg("%caller% cleared clientside effects")
+		self:BroadcastActionMsg("%caller% cleared clientside effects for %targets%", { targets = targets })
 	end)
+	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
 BSU.SetupCommand("stopsound", function(cmd)
