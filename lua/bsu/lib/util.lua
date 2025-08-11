@@ -406,20 +406,66 @@ function BSU.FixMsgCArgs(...)
 	return unpack(args)
 end
 
+function BSU.RemoveServerDisconnected()
+	if CLIENT then return end
+	for _, ent in ents.Iterator() do
+		-- BSU.GetOwner returns NULL if the player owner disconnected
+		-- (do not use IsValid or IsPlayer here otherwise world-owned entities will get removed too)
+		if BSU.GetOwner(ent) == NULL then
+			ent:Remove()
+		end
+	end
+end
+
+local debrisGroups = {
+	[COLLISION_GROUP_DEBRIS] = true,
+	[COLLISION_GROUP_DEBRIS_TRIGGER] = true,
+	[COLLISION_GROUP_INTERACTIVE_DEBRIS] = true,
+	[COLLISION_GROUP_INTERACTIVE] = true
+}
+
+function BSU.RemoveServerDebris()
+	if CLIENT then return end
+	for _, ent in ents.Iterator() do
+		-- remove all entities that are debris and ownerless or world-owned
+		if debrisGroups[ent:GetCollisionGroup()] then
+			local owner = BSU.GetOwner(ent)
+			if not owner or owner:IsWorld() then
+				ent:Remove()
+			end
+		end
+	end
+end
+
 local function RemoveByClass(class)
 	for _, ent in ipairs(ents.FindByClass(class)) do
 		ent:Remove()
 	end
 end
 
+function BSU.RemoveServerGibs()
+	if CLIENT then return end
+	RemoveByClass("gib")
+	RemoveByClass("raggib")
+end
+
+local isMSVC = system.IsWindows()
+
+local function GetClassName(class)
+	return isMSVC and "class " .. class or #class .. class
+end
+
+local C_PhysPropClientside = GetClassName "C_PhysPropClientside"
+local C_ClientRagdoll = GetClassName "C_ClientRagdoll"
+local C_RopeKeyframe = GetClassName "C_RopeKeyframe"
+local CLuaEffect = GetClassName "CLuaEffect"
+
 function BSU.RemoveClientProps(plys)
 	if SERVER then
 		BSU.ClientRPC(plys, "BSU.RemoveClientProps")
-		RemoveByClass("raggib") -- VALVE 20TH ANNIVERSARY BABY!!!!!!!!!!!!!!!!!
 		return
 	end
-	RemoveByClass("class C_PhysPropClientside")
-	RemoveByClass("20C_PhysPropClientside")
+	RemoveByClass(C_PhysPropClientside)
 end
 
 function BSU.RemoveClientRagdolls(plys)
@@ -427,8 +473,7 @@ function BSU.RemoveClientRagdolls(plys)
 		BSU.ClientRPC(plys, "BSU.RemoveClientRagdolls")
 		return
 	end
-	RemoveByClass("class C_ClientRagdoll")
-	RemoveByClass("15C_ClientRagdoll")
+	RemoveByClass(C_ClientRagdoll)
 end
 
 function BSU.RemoveClientRopes(plys)
@@ -436,8 +481,7 @@ function BSU.RemoveClientRopes(plys)
 		BSU.ClientRPC(plys, "BSU.RemoveClientRopes")
 		return
 	end
-	RemoveByClass("class C_RopeKeyframe")
-	RemoveByClass("14C_RopeKeyframe")
+	RemoveByClass(C_RopeKeyframe)
 end
 
 function BSU.RemoveClientEffects(plys)
@@ -445,6 +489,5 @@ function BSU.RemoveClientEffects(plys)
 		BSU.ClientRPC(plys, "BSU.RemoveClientEffects")
 		return
 	end
-	RemoveByClass("class CLuaEffect")
-	RemoveByClass("10CLuaEffect")
+	RemoveByClass(CLuaEffect)
 end
