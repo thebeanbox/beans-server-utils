@@ -6,7 +6,7 @@ BSU._ownerents = BSU._ownerents or {} -- [steamid64] = entindex
 
 local infoUpdates, entsUpdates = {}, {}
 
-local WORLD_ID = "18446744073709551615" -- owner id for the world
+local WORLD_ID = "0" -- owner id for the world
 
 -- used for determining amount of bits needed to network owner info and ents (these do not limit anything serverside)
 
