@@ -180,7 +180,7 @@ BSU.SetupCommand("cleardecals", function(cmd)
 
 		self:BroadcastActionMsg("%caller% cleared clientside decals for %targets%", { targets = targets })
 	end)
-	cmd:AddPlayersArg("targets", { default = "^", filter = true })
+	cmd:AddPlayersArg("targets", { default = "*", filter = true })
 end)
 
 BSU.SetupCommand("cleargibs", function(cmd)
@@ -192,7 +192,7 @@ BSU.SetupCommand("cleargibs", function(cmd)
 
 		self:BroadcastActionMsg("%caller% cleared clientside gibs for %targets%", { targets = targets })
 	end)
-	cmd:AddPlayersArg("targets", { default = "^", filter = true })
+	cmd:AddPlayersArg("targets", { default = "*", filter = true })
 end)
 
 BSU.SetupCommand("clearragdolls", function(cmd)
@@ -204,7 +204,7 @@ BSU.SetupCommand("clearragdolls", function(cmd)
 
 		self:BroadcastActionMsg("%caller% cleared clientside ragdolls for %targets%", { targets = targets })
 	end)
-	cmd:AddPlayersArg("targets", { default = "^", filter = true })
+	cmd:AddPlayersArg("targets", { default = "*", filter = true })
 end)
 
 BSU.SetupCommand("clearropes", function(cmd)
@@ -216,7 +216,7 @@ BSU.SetupCommand("clearropes", function(cmd)
 
 		self:BroadcastActionMsg("%caller% cleared clientside ropes for %targets%", { targets = targets })
 	end)
-	cmd:AddPlayersArg("targets", { default = "^", filter = true })
+	cmd:AddPlayersArg("targets", { default = "*", filter = true })
 end)
 
 BSU.SetupCommand("cleareffects", function(cmd)
@@ -228,7 +228,7 @@ BSU.SetupCommand("cleareffects", function(cmd)
 
 		self:BroadcastActionMsg("%caller% cleared clientside effects for %targets%", { targets = targets })
 	end)
-	cmd:AddPlayersArg("targets", { default = "^", filter = true })
+	cmd:AddPlayersArg("targets", { default = "*", filter = true })
 end)
 
 BSU.SetupCommand("stopsound", function(cmd)
