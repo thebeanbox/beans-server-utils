@@ -207,6 +207,8 @@ function BSU.GetOwnerString(ent)
 	if not id then return "N/A" end
 
 	local data = BSU._owners[id]
+	if not data then return end
+
 	local name = data.name or "N/A"
 	if id == WORLD_ID then return name end
 
@@ -224,6 +226,8 @@ function BSU.GetOwnerColor(ent)
 	if not id then return color_invalid end
 
 	local data = BSU._owners[id]
+	if not data then return end
+
 	local userid = data.userid
 	if not userid then return color_invalid end
 	if userid == -1 then return color_white end
@@ -237,9 +241,14 @@ end
 -- returns info about the entity owner (nil if entity is ownerless or there's no info with the key)
 function BSU.GetOwnerInfo(ent, key)
 	if not IsValid(ent) then return end
+
 	local id = BSU._entowners[ent:EntIndex()]
-	if not id or not BSU._owners[id] then return end
-	return BSU._owners[id][string.lower(key)]
+	if not id then return end
+
+	local data = BSU._owners[id]
+	if not data then return end
+
+	return data[string.lower(key)]
 end
 
 -- returns owner of the entity (can be a player or the world, NULL entity if player is disconnected, nil if entity is ownerless)
