@@ -7,7 +7,7 @@ local propinfo_enabled = GetConVar("bsu_propinfo_enabled")
 local font = "TargetIDSmall"
 local color_bg = Color(0, 0, 0, 80)
 
-local isHoldingCamera = false
+local isHoldingCamera = true
 
 PANEL.AlphaMultiplier = 0
 PANEL.AlphaTarget = 0
@@ -213,13 +213,12 @@ local function CreatePropInfoPanel(_, _, enabled)
 	if tobool(enabled) then BSU.PropInfo = vgui.Create("BSU_PropInfo") end
 end
 
-hook.Add("Think", "BSU_ShouldHideHUD", function()
-	local activeWeapon = LocalPlayer():GetActiveWeapon()
-	if not IsValid(activeWeapon) then
-		isHoldingCamera = false
-		return
-	end
-	isHoldingCamera = activeWeapon:GetClass() == "gmod_camera"
+hook.Add("HUDPaint", "BSU_PropInfo", function()
+	isHoldingCamera = false
+end)
+
+hook.Add("PostRender", "BSU_PropInfo", function()
+	isHoldingCamera = true
 end)
 
 hook.Add("OnGamemodeLoaded", "BSU_PropInfo", function()
