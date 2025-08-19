@@ -105,7 +105,7 @@ local function LogDupe(plyColor, plyName, plySteamID, name, entCount, constrCoun
 			BSU.LOG_CLR_PARAM, "<", plySteamID, ">",
 			BSU.LOG_CLR_TEXT, " pasted a dupe '",
 			BSU.LOG_CLR_PARAM, name,
-			BSU.LOG_CLR_TEXT, "' with",
+			BSU.LOG_CLR_TEXT, "' with ",
 			BSU.LOG_CLR_PARAM, entCount,
 			BSU.LOG_CLR_TEXT, " entit", entCount == 1 and "y" or "ies", " and ",
 			BSU.LOG_CLR_PARAM, constrCount,
