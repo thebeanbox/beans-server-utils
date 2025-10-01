@@ -839,7 +839,7 @@ local jailTemplate = {
 	{ ang = Angle(0, 90, 0), pos = Vector(0,  35, 50), mdl = "models/props_wasteland/interior_fence001g.mdl" },
 }
 local jailMin = Vector(-30, -35, -10)
-local jailMax = Vector(30,  35, 115)
+local jailMax = Vector(30, 35, 115)
 local jailedLookup = {}
 
 BSU.SetupCommand("jail", function(cmd)
@@ -853,12 +853,14 @@ BSU.SetupCommand("jail", function(cmd)
 			if self:CheckExclusive(v, true) and not v.bsu_jailed then
 				self:SetExclusive(v, "jailed")
 
+				local origin = v:GetPos()
+
 				local entities = {}
 				for _, data in ipairs(jailTemplate) do
 					local ent = ents.Create("prop_physics")
 					BSU.SetOwnerWorld(ent)
 					ent:SetModel(data.mdl)
-					ent:SetPos(v:GetPos() + data.pos)
+					ent:SetPos(origin + data.pos)
 					ent:SetAngles(data.ang)
 					ent:Spawn()
 
@@ -871,7 +873,9 @@ BSU.SetupCommand("jail", function(cmd)
 				end
 
 				v.bsu_jailed = {
-					origin = v:GetPos(),
+					origin = origin,
+					min = origin + jailMin,
+					max = origin + jailMax,
 					entities = entities,
 				}
 				jailedLookup[v] = v.bsu_jailed
@@ -924,10 +928,9 @@ hook.Add("Think", "BSU_Jailed", function()
 			jailedLookup[ply] = nil
 			continue
 		end
-		local origin = data.origin
-		local insideBounds = ply:GetPos():WithinAABox(origin + jailMin, origin + jailMax)
+		local insideBounds = ply:GetPos():WithinAABox(data.min, data.max)
 		if not insideBounds then
-			ply:SetPos(origin)
+			ply:SetPos(data.origin)
 		end
 	end
 end)
