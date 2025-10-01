@@ -184,7 +184,7 @@ local function RemoveDetourNode(nodes, target)
 			-- "unwrap" the inner nodes
 			if num > 0 then
 				-- shift "after" nodes
-				for j = i, #nodes do
+				for j = #nodes, i, -1 do
 					nodes[j + num] = nodes[j]
 				end
 				-- add inner nodes where the target was
