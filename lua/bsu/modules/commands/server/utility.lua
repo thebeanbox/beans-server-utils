@@ -53,7 +53,7 @@ BSU.SetupCommand("goto", function(cmd)
 end)
 
 BSU.SetupCommand("bring", function(cmd)
-	cmd:SetDescription("Teleport yourself to a player")
+	cmd:SetDescription("Teleport a player to yourself")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self, caller, targets)

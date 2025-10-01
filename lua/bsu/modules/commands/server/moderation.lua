@@ -309,7 +309,7 @@ BSU.SetupCommand("kick", function(cmd)
 end)
 
 BSU.SetupCommand("votekick", function(cmd)
-	cmd:SetDescription("Start a vote to ban a player")
+	cmd:SetDescription("Start a vote to kick a player")
 	cmd:SetCategory("utility")
 	cmd:SetAccess(BSU.CMD_ADMIN)
 	cmd:SetFunction(function(self, caller, target, reason)
