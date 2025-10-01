@@ -840,6 +840,7 @@ local jailTemplate = {
 }
 local jailMin = Vector(-30, -35, -10)
 local jailMax = Vector(30,  35, 115)
+local jailedLookup = {}
 
 BSU.SetupCommand("jail", function(cmd)
 	cmd:SetDescription("Prosecute players")
@@ -873,6 +874,7 @@ BSU.SetupCommand("jail", function(cmd)
 					origin = v:GetPos(),
 					entities = entities,
 				}
+				jailedLookup[v] = v.bsu_jailed
 
 				table.insert(jailed, v)
 			end
@@ -901,7 +903,10 @@ BSU.SetupCommand("unjail", function(cmd)
 						ent:Remove()
 					end
 				end
+
 				v.bsu_jailed = nil
+				jailedLookup[v] = nil
+
 				table.insert(unjailed, v)
 			end
 		end
@@ -913,13 +918,16 @@ BSU.SetupCommand("unjail", function(cmd)
 	cmd:AddPlayersArg("targets", { default = "^", filter = true })
 end)
 
-hook.Add("Tick", "BSU_Jailed", function()
-	for _, ply in ipairs(player.GetAll()) do
-		if ply.bsu_jailed then
-			local withinJail = ply:GetPos():WithinAABox(ply.bsu_jailed.origin + jailMin, ply.bsu_jailed.origin + jailMax)
-			if not withinJail then
-				ply:SetPos(ply.bsu_jailed.origin)
-			end
+hook.Add("Think", "BSU_Jailed", function()
+	for ply, data in pairs(jailedLookup) do
+		if not ply:IsValid() then
+			jailedLookup[ply] = nil
+			continue
+		end
+		local origin = data.origin
+		local insideBounds = ply:GetPos():WithinAABox(origin + jailMin, origin + jailMax)
+		if not insideBounds then
+			ply:SetPos(origin)
 		end
 	end
 end)
