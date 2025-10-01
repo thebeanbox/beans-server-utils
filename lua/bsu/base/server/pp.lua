@@ -103,12 +103,10 @@ hook.Add("EntityTakeDamage", "BSU_DamagePermission", function(ent, dmg)
 	local attacker = dmg:GetAttacker()
 	if not attacker:IsValid() then return end
 
-	-- option for entities on fire
+	-- entities on fire
 	if attacker:GetClass() == "entityflame" then
-		local owner = BSU.GetOwner(ent)
-		if owner and (owner:IsWorld() or (owner:IsPlayer() and owner:GetInfoNum("bsu_allow_fire_damage", 0) ~= 0)) then
-			return
-		end
+		local parent = attacker:GetParent()
+		if parent:IsValid() then attacker = parent end
 	end
 
 	if not attacker:IsPlayer() then attacker = BSU.GetOwner(attacker) end

@@ -172,7 +172,6 @@ local function AddPropProtectionMenu()
 		UpdatePlayerElems()
 
 		pnl:CheckBox("Persist permissions across sessions", "bsu_permission_persist")
-		pnl:CheckBox("Allow props to take fire damage", "bsu_allow_fire_damage")
 	end)
 end
 
