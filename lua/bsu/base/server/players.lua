@@ -51,12 +51,12 @@ end)
 
 -- update total_time and last_visit pdata values for all connected players
 local function UpdatePlayerTime()
-	for _, v in ipairs(player.GetAll()) do
-		if not v.bsu_ready then continue end
+	for _, ply in player.Iterator() do
+		if not ply.bsu_ready then continue end
 
-		local totalTime = BSU.GetPDataNumber(v, "total_time", 0)
-		if hook.Run("BSU_PlayerTotalTime", v, totalTime) ~= false then
-			BSU.SetPData(v, "total_time", totalTime + 1, true) -- increment by 1 sec
+		local totalTime = BSU.GetPDataNumber(ply, "total_time", 0)
+		if hook.Run("BSU_PlayerTotalTime", ply, totalTime) ~= false then
+			BSU.SetPData(ply, "total_time", totalTime + 1, true) -- increment by 1 sec
 		end
 	end
 end

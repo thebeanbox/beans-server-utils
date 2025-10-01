@@ -64,11 +64,12 @@ local function AutoComplete(concommand, argStr)
 		if arg.kind == 2 or arg.kind == 3 then
 			local suggestions = { argFiller }
 
-			local plyName = string.gsub(string.lower(handler.args[n + 1] or ""), "^\"", "")
+			local tarName = string.lower(string.gsub(handler.args[n + 1] or "", "^\"", ""))
 
-			for _, v in ipairs(player.GetAll()) do
-				if plyName == string.sub(string.lower(v:Nick()), 1, #plyName) then
-					table.insert(suggestions, string_format(template, string_format("\"%s\"", v:Nick())))
+			for _, ply in player.Iterator() do
+				local plyName = ply:Nick()
+				if tarName == string.lower(string.sub(plyName, 1, #tarName)) then
+					table.insert(suggestions, string_format(template, string_format("\"%s\"", plyName)))
 				end
 			end
 

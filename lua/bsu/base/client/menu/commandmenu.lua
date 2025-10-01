@@ -113,7 +113,7 @@ function commandMenu:SelectCommand(cmd)
 		elseif kind == 2 then
 			local comboBox = vgui.Create("DComboBox", argRow)
 			comboBox:AddChoice("[Yourself]", "^")
-			for _, ply in ipairs(player.GetAll()) do
+			for _, ply in player.Iterator() do
 				comboBox:AddChoice(ply:Nick(), "$" .. ply:SteamID())
 			end
 			comboBox:Dock(FILL)
@@ -148,7 +148,7 @@ function commandMenu:SelectCommand(cmd)
 					textEntry:SetValue("*")
 				end)
 
-				for _, ply in ipairs(player.GetAll()) do
+				for _, ply in player.Iterator() do
 					menu:AddOption(ply:Nick(), function()
 						textEntry:SetValue(textEntry:GetValue() .. "$" .. ply:SteamID())
 					end)

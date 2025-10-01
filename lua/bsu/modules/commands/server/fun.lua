@@ -48,7 +48,7 @@ hook.Add("PlayerInitialSpawn", "BSU_BuildPVPInit", function(ply)
 end)
 
 hook.Add("PlayerDisconnected", "BSU_BuildPVPCleanup", function(ply)
-	for _, v in ipairs(player.GetAll()) do
+	for _, v in player.Iterator() do
 		v.bsu_pvpblocked[ply] = nil
 	end
 end)
