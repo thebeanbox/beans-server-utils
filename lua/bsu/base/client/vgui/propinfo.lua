@@ -68,6 +68,8 @@ function PANEL:OnMouseReleased()
 	propinfo_y:SetFloat(y / sh)
 end
 
+local TraceLine = util.LegacyTraceLine or util.TraceLine -- incase a baddon overwrites it
+
 local color_server = Color(152, 212, 255)
 local color_client = Color(232, 220, 117)
 
@@ -79,13 +81,13 @@ function PANEL:Think()
 	data.mask = MASK_SHOT -- fix not hitting debris entities
 	data.hitclientonly = true
 
-	local tr = util.TraceLine(data)
+	local tr = TraceLine(data)
 	if not tr then return end -- too early
 
 	local ent = tr.Entity
 	if not IsValid(ent) then
 		data.hitclientonly = nil
-		tr = util.TraceLine(data)
+		tr = TraceLine(data)
 		ent = tr.Entity
 	end
 
