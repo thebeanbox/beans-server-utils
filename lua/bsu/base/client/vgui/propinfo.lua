@@ -7,7 +7,7 @@ local propinfo_enabled = GetConVar("bsu_propinfo_enabled")
 local font = "TargetIDSmall"
 local color_bg = Color(0, 0, 0, 80)
 
-local isHoldingCamera = true
+local lastHUDFrame = 0
 
 PANEL.AlphaMultiplier = 0
 PANEL.AlphaTarget = 0
@@ -171,7 +171,7 @@ function PANEL:Think()
 end
 
 function PANEL:Paint(w, h)
-	if isHoldingCamera then return end
+	if lastHUDFrame ~= FrameNumber() then return end
 
 	local left = self.x + w / 2 < ScrW() / 2
 	local x = left and 4 or w - 4
@@ -216,11 +216,7 @@ local function CreatePropInfoPanel(_, _, enabled)
 end
 
 hook.Add("HUDPaint", "BSU_PropInfo", function()
-	isHoldingCamera = false
-end)
-
-hook.Add("PostRender", "BSU_PropInfo", function()
-	isHoldingCamera = true
+	lastHUDFrame = FrameNumber()
 end)
 
 hook.Add("OnGamemodeLoaded", "BSU_PropInfo", function()
